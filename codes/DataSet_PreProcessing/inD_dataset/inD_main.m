@@ -1,18 +1,14 @@
-%% This script plots the annotated figures
-% based on an example from https://www.mathworks.com/help/vision/ug/labeler-pixel-label-data-storage.html#mw_93281620-b095-4dcd-a39e-c539c54de244
+%% This script is the main script needed to compile the data from inD dataset
 
-% 
+% set of images to load
 images = [18:1:29];
-%images = [18:1:19];
-%images = 18;
-
 
 % load background images
 originalImage = imread(strcat(num2str(18),'_background.png'));
 annotatedImage = imread(strcat('annotated_',num2str(18),'_background.png'));        %using the same background image for all scenes as it roughly remains the same; also segmenting all images takes time.
 img_size = size(annotatedImage);
 
-%% for better visualization
+% for better visualization, increase the grayscale value of the different regions
 annotatedImage_enhanced = annotatedImage;
 for ii = 1:img_size(1)
     for jj = 1:img_size(2)
@@ -21,12 +17,10 @@ for ii = 1:img_size(1)
         end
         if (annotatedImage(ii,jj)==4 || annotatedImage(ii,jj)==5 || annotatedImage(ii,jj)==6) %unmarked crosswalk
             annotatedImage_enhanced(ii,jj) = 100;
-        end
-        
+        end        
         if (annotatedImage(ii,jj)==3) %Sidewalk
             annotatedImage_enhanced(ii,jj) = 150;
-        end
-        
+        end        
         if (annotatedImage(ii,jj)==1) %marked crosswalk
             annotatedImage_enhanced(ii,jj) = 200;
         end
@@ -48,7 +42,7 @@ annotatedImage_enhanced(-road_center(2), road_center(1)) = 255;
 
 annotatedImage_enhanced_w_tracks = annotatedImage_enhanced;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%% loop starts
 for image_id = 1:length(images)
     image_no = images(image_id);
 
@@ -67,11 +61,8 @@ for image_id = 1:length(images)
     new_track_end_ind = [new_track_end_ind; size(tracksData,1)];
 
     %initialize additional tracks' data
-    %tracksData.HybridState([1:size(tracksData,1)]) = strings;
-    %tracksData.Region([1:size(tracksData,1)]) = strings;
     tracksData.xCenterPix([1:size(tracksData,1)]) = 0;
     tracksData.yCenterPix([1:size(tracksData,1)]) = 0;
-    %tracksData.isCrossing([1:size(tracksData,1)]) = false;
     tracksData.distCW([1:size(tracksData,1)]) = inf;
     tracksData.closestCW([1:size(tracksData,1)]) = 0;
 
@@ -86,7 +77,7 @@ for image_id = 1:length(images)
 
     cw.center_y = -int32([mean(cw.y1), mean(cw.y2), mean(cw.y3), mean(cw.y4)]);
     cw.center_x = int32([mean(cw.x1), mean(cw.x2), mean(cw.x3), mean(cw.x4)]);
-    cw.center_lat_offset = int32([27, 24, 30, 27]);
+    cw.center_lat_offset = int32([27, 24, 30, 27]);     %this was calculated manually from the images
 
     %loop count
     track_ind = 1;
@@ -95,7 +86,7 @@ for image_id = 1:length(images)
     N_tracks = size(tracksMetaData,1);
 
 
-% loop starts
+% inner loop starts
 for kk = 1:N_tracks    
     
     tracksData.class([new_track_start_ind(kk):new_track_end_ind(kk)]) = tracksMetaData.class(kk);
@@ -108,11 +99,6 @@ for kk = 1:N_tracks
     % subsequent processing
     formattedTracksData{image_id}{track_ind,1} = tracksData([track_start_frame:track_end_frame],:);
     
-    %debugging
-    if (track_ind == 3)
-        x = 1;
-    end
-    
     % a) identify the hybrid state of the pedestrians and distance to closest CW (if the track is a
     % pedestrian track)
     % check if track is pedestrian
@@ -121,8 +107,7 @@ for kk = 1:N_tracks
                 hybridState(formattedTracksData{image_id}{track_ind,1}, cw, orthopxToMeter, annotatedImage_enhanced, annotatedImage_enhanced_w_tracks); 
     
         % plot background with all pedestrian tracks for this scene
-        imshow(annotatedImage_enhanced_w_tracks)
-    
+        imshow(annotatedImage_enhanced_w_tracks)  
     end
     
     % b) identify the lane and the distance to the closest CW (if the track is a car track)  
@@ -130,23 +115,20 @@ for kk = 1:N_tracks
         formattedTracksData{image_id}{track_ind,1}  = carState(formattedTracksData{image_id}{track_ind,1}, cw, orthopxToMeter, road_center);
     end
             
-
-           
+         
     % update loop id
     track_ind = track_ind+1;
-
-
-end % loop ends for the image
+end % inner loop ends for the image
 
 
 end % loop ends for all images
 
 
 % plot background with all pedestrian tracks for this scene
-%imshow(annotatedImage_enhanced)
+% imshow(annotatedImage_enhanced)
 
 %calculate the descriptives of the tracks
-trackDescriptives;
+% trackDescriptives;
 
 % %find the lane of the cars
 % findLane;
