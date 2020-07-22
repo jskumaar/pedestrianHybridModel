@@ -1,0 +1,1 @@
+cross_2d.m and similarly named scripts plots the object tags as running rectangular boxes based on time. This visualization has been move now to Tableau which is more easy to use.
