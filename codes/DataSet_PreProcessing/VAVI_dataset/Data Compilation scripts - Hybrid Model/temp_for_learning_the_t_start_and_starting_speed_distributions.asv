@@ -1,0 +1,35 @@
+%% temp_for learning the t start and starting speed distributions
+% this file finds the distributions of starting speed and starting time for
+% the dta
+
+
+
+
+%% Updated 10/28/2019
+%
+
+clear all
+
+load('AllFeaturesCrossingWise_PW_5_SpeedHist.mat')
+
+EventIndices = xlsread('DiscreteStateEventIndicesW5.xlsx');
+
+indexWaiting = [1:540]';
+indexWaiting(EventIndices(:,6)==0)=[];
+
+
+
+
+
+
+
+for ii=1:403   
+    index = EventIndices(indexWaiting(ii),8) - EventIndices(indexWaiting(ii),4)+5;
+    StartingVelocity(ii,1) = DataPredict{indexWaiting(ii)}.PedestrianAbsoluteVelocityAverage(index,1);
+    StartingVelocity(ii,2) = DataPredict{indexWaiting(ii)}.PedestrianAbsoluteVelocityAverage(index+5,1); 
+end
+mean(StartingVelocity)
+
+save('StartingVelocityDistribution.mat','StartingSpeed_05_Normal','StartSpeed_10_Normal')
+
+
