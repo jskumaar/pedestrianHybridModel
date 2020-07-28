@@ -1,7 +1,7 @@
 %% This script finds the descriptives of the tracks and the pedestrians
 
 %parameters
-ts = 1/25;
+delta_T = 1/25;
 moving_threshold = 0.2;
 
 img_size = size(annotatedImage_enhanced);
@@ -25,7 +25,6 @@ for image_id = 1:length(images)
     tracksMetaData = readtable(strcat(num2str(image_no),'_tracksMeta.csv'));
     max_track_size = max(tracksMetaData.numFrames);
 
-
     %% 1) find the list of interacting cars for each pedestrian track
     for ped_ind = 1:size(ped_crossing_tracks,1)
         ped_track = ped_crossing_tracks(ped_ind);
@@ -43,13 +42,11 @@ for image_id = 1:length(images)
                 interact_cars_temp = [interact_cars_temp; car_track];
             end
         end
-
         interact_cars{ped_ind,1} = interact_cars_temp;
     end
 
 
     %% 2) find the closest vehicle at every time step and its parameters
-
     %rotation matrices for the different crosswalks
     cw1_rot = [cosd(-14), -sind(-14); sind(-14), cosd(-14)];
     cw2_rot = [cosd(-10), -sind(-10); sind(-10), cosd(-10)];
@@ -58,17 +55,13 @@ for image_id = 1:length(images)
 
     for ped_ind = 1:size(ped_crossing_tracks,1)
 
-    ped_track = ped_crossing_tracks(ped_ind);
-    ego_veh_gap_hist = [];
-    % for feature calculation
-    pedData = formattedTracksData{image_id}{ped_track};
-    ped_vel = [pedData.xVelocity, pedData.yVelocity];
-    % identify wait start time
-    wait_start_time = find(strcmp(pedData.HybridState, 'Wait')==1,1,'first');
-
-    if ped_track == 43
-        x=1;
-    end
+        ped_track = ped_crossing_tracks(ped_ind);
+        ego_veh_gap_hist = [];
+        % for feature calculation
+        pedData = formattedTracksData{image_id}{ped_track};
+        ped_vel = [pedData.xVelocity, pedData.yVelocity];
+        % identify wait start time
+        wait_start_time = find(strcmp(pedData.HybridState, 'Wait')==1,1,'first');
 
         % at every time step of the pedestrian trajectory
         for time_step = 1:size(formattedTracksData{image_id}{ped_track},1)
@@ -90,10 +83,6 @@ for image_id = 1:length(images)
                 interact_car_track = interact_cars{ped_ind}(car_ind);
                 carData = formattedTracksData{image_id}{interact_car_track};
                 car_ts = find(carData.frame == pedFrame); 
-
-                if interact_car_track==37
-                    x=1;
-                end
 
                 % if a common frame exists for both the car and the
                 % pedestrian
@@ -214,12 +203,7 @@ for image_id = 1:length(images)
                                 long_disp_ped_cw_pixels_temp = -disp_ped_cw_pixels(2);
                             end
                         end
-
-                        % debugging
-                        if ped_ind==5
-                            x=1;
-                        end
-    %                   
+                       
                         % find the ego-vehicle:
                         % Is the car approaching the pedestrian?
                         % Is this car closer than the previous closest car?
@@ -229,7 +213,6 @@ for image_id = 1:length(images)
                             closeCar_ind = interact_car_track;
                             long_disp_ped_cw_pixels = long_disp_ped_cw_pixels_temp;
                         end                    
-
 
                         % save the variables
                         pedData.closeCar_ind(time_step) = closeCar_ind;
@@ -241,8 +224,8 @@ for image_id = 1:length(images)
                         % is this a new gap? i.e. a new car when the
                         % pedestrian is approaching the crosswalk?
                         if time_step > 1
-                            if ( closeCar_ind ~= pedData.closeCar_ind(time_step-1) && ...
-                                 closeCar_ind ~= inf && strcmp(pedData.HybridState{time_step},'Approach') ) 
+                            if ( closeCar_ind ~= pedData.closeCar_ind(time_step-1) && closeCar_ind ~= inf && ...
+                                 ( strcmp(pedData.HybridState{time_step},'Approach') || strcmp(pedData.HybridState{time_step},'Wait') ) )
                                 
                                 if isempty(intersect(closeCar_ind, ego_veh_gap_hist))
                                         pedData.Gap_start(time_step) = true;
@@ -251,8 +234,8 @@ for image_id = 1:length(images)
                                         %features for Gap
                                         % calculate the features for the hybrid system model
                                         % 1) speed of the pedestrian in the last one sec
-                                        if time_step>10
-                                            F_pedSpeed = mean(sqrt(ped_vel(time_step-9:time_step, 1).^2 + ped_vel(time_step-9:time_step, 2).^2));
+                                        if time_step > 1/ts
+                                            F_pedSpeed = mean(sqrt(ped_vel(time_step - 1/ts:time_step, 1).^2 + ped_vel(time_step-1/ts : time_step, 2).^2));
                                         else
                                             F_pedSpeed = mean(sqrt(ped_vel(1:time_step, 1).^2 + ped_vel(1:time_step, 2).^2));
                                         end
@@ -264,7 +247,7 @@ for image_id = 1:length(images)
                                         % 4) cumulative waiting time
                                         if ~isempty(wait_start_time)
                                             if (strcmp(pedData.HybridState{time_step}, 'Wait'))
-                                                F_cumWait = (time_step - wait_start_time)*ts;
+                                                F_cumWait = (time_step - wait_start_time)*delta_T;
                                             else
                                                 F_cumWait = 0;
                                             end
@@ -300,16 +283,15 @@ for image_id = 1:length(images)
                                         GapFeatures.F_pedDistToCurb(gap_ind,1) = lat_disp_cw_pixels;
                                         GapFeatures.ped_close_cw(gap_ind,1) = cw_ped;
                                         GapFeatures.F_vehAcc(gap_ind,1) = F_vehAcc;
-                                        
-                                                                                
+                                                                                                                        
                                         %update Gap id
                                         gap_ind = gap_ind + 1;
                                 end
-                            end
-                        
-                                              
-                            %has the pedestrian started crossing?
-                            if ( strcmp(pedData.HybridState{time_step},'Crossing') && ~strcmp(pedData.HybridState{time_step-1},'Crossing') )
+                            end %end of inner gap checking loop
+                                                                      
+                            %has the pedestrian started crossing or started jaywalking?
+                            if ( strcmp(pedData.HybridState{time_step},'Crossing') && ~strcmp(pedData.HybridState{time_step-1},'Crossing')  || ...
+                                 strcmp(pedData.HybridState{time_step},'Jaywalking') && ~strcmp(pedData.HybridState{time_step-1},'Jaywalking')   )
 
                                 % if the pedestrian crossed for the ego-vehicle
                                 % (closeCar_ind), whose gap started sometime
@@ -320,30 +302,34 @@ for image_id = 1:length(images)
 
                                 GapFeatures_ind = intersect(intersect(GapFeatures_ind_temp1,GapFeatures_ind_temp2), GapFeatures_ind_temp3);
 
-
-                                if ~isempty(GapFeatures_ind)
-                                    GapFeatures.CrossDecision(GapFeatures_ind,1) = true;
+                                if ~isempty(GapFeatures_ind)                                    
                                     GapFeatures.CrossStart(GapFeatures_ind,1) = pedFrame;
                                     GapFeatures.CrossCW(GapFeatures_ind,1) = cw_ped;
+                                    % check whether the pedestrian crossed
+                                    % the street or jaywalked during this
+                                    % particular gap
+                                    if ( strcmp(pedData.HybridState{time_step},'Crossing') && ~strcmp(pedData.HybridState{time_step-1},'Crossing') )
+                                        GapFeatures.CrossDecision(GapFeatures_ind,1) = true;
+                                        GapFeatures.JaywalkDecision(GapFeatures_ind,1) = false;
+                                    else
+                                        GapFeatures.CrossDecision(GapFeatures_ind,1) = false;
+                                        GapFeatures.JaywalkDecision(GapFeatures_ind,1) = true;
+                                    end
                                 end
+                            end  % end of loop checking for crossing or jaywalking
+                        end % end of outer gap checking loop
+                  
 
+                end  %end of car loop for one car
+      
+            end % end of all car loops
 
-                            end
-                        end
-                        
+        end % end of loop for all time steps of one pedestrians
 
-                        
-
-                end
-            x=1;       
-            end
-
-        end
-        x = 1;
         formattedTracksData{image_id}{ped_track} = pedData;
-    end
+    end  % end of loop for all pedestrians in a scene
 
-end
+end % end of loop for all scenes
 
 
 
