@@ -6,7 +6,6 @@ function dataset_x = cvm(dataset_x)
     ADE_allTracks = zeros(N_tracks,1);
     FDE_allTracks = zeros(N_tracks,1);
 
-    
     for ii = 1:N_tracks
        trackData = dataset_x.trackData{ii};
        
@@ -25,7 +24,7 @@ function dataset_x = cvm(dataset_x)
                gt_pos = [trackData.xCenter(jj+1:jj+H), trackData.yCenter(jj+1:jj+H)];
                % error
                error_pos = pred_pos - gt_pos;
-               del_T = ceil(0.4/dataset_x.deltaT);
+               del_T = ceil(0.04/dataset_x.deltaT);
                error_pos = error_pos(del_T:del_T:end,:);
                
                ADE_temp(jj) = mean(sqrt(sum(error_pos.^2,2)));

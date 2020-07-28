@@ -19,6 +19,9 @@ SVMModel = SVM_ExtremeOutlier_NoHighDeceleration_6Features_noGap_noGaze.Classifi
 
 load('GapData_12Scenes.mat');
 
+% combine the boolean outputs of cross and jaywalk into a single variale if
+% needed
+GapFeatures.Decision = GapFeatures.CrossDecision + 2*GapFeatures.JaywalkDecision;
 
 %% Step 2: Process Gap data
 scaling_factor = 12;
@@ -70,6 +73,13 @@ end
 [Performance,Actual,Predicted] = classifierPerformance(actual_decision,predicted_decision,0.5);
 
 
+%% Boot-strapping jaywalk data to balance the three classes
+for ii=1:7
+    % boot strapping 7 times provided optimal results when tuned manually
+   SVMTrainData_subset = [SVMTrainData_subset; JWData];
+    
+    
+end
 
 
 

@@ -1,3 +1,8 @@
+%% This script finds on which lane the vehicle is in
+
+function formattedTracksData = findLaneFunc(formattedTracksData, tracks, annotatedImage_enhanced, N_scenes, orthopxToMeter, cw)
+
+
 %% find the lane of the cars
 scale_down_factor = 12;
 
@@ -14,23 +19,19 @@ end
 
 road_center = int32(mean(road_pixels));
 annotatedImage_enhanced(-road_center(2), road_center(1)) = 255;
-imshow(annotatedImage_enhanced)
+%imshow(annotatedImage_enhanced)
 
 %% loop
-for image_id = 1:size(images,1)
+for image_id = 1:N_scenes
     car_tracks = tracks{image_id}.car_tracks;
+    car_lane = [];
     
-
 for car_ind = 1:size(car_tracks,1)
     for ii = 1:size(formattedTracksData{image_id}{car_tracks(car_ind),1},1)
         
-        % convert to pixels
-        % pixel to meter scaling factor
-        orthopxToMeter = recordingMetaData.orthoPxToMeter;
-        
+        % convert to pixels       
         formattedTracksData{image_id}{car_tracks(car_ind),1}.xCenterPix = int32(formattedTracksData{image_id}{car_tracks(car_ind),1}.xCenter/(scale_down_factor*orthopxToMeter));
         formattedTracksData{image_id}{car_tracks(car_ind),1}.yCenterPix = int32(formattedTracksData{image_id}{car_tracks(car_ind),1}.yCenter/(scale_down_factor*orthopxToMeter));
-
 
         car_pos = [formattedTracksData{image_id}{car_tracks(car_ind),1}.xCenterPix(ii), formattedTracksData{image_id}{car_tracks(car_ind),1}.yCenterPix(ii)];
         car_cw_heading = atan2(double([road_center(2) - car_pos(2)]), double([road_center(1) - car_pos(1)]))*180/pi;
@@ -64,8 +65,7 @@ for car_ind = 1:size(car_tracks,1)
                      car_lane{car_ind}{ii,1} = 'West_Right';
                  else
                      car_lane{car_ind}{ii,1} = 'West_Left';
-                 end
-                 
+                 end               
                  cw_dist(car_ind) = dist_cw2;
                  cw_ind(car_ind) = 2;
             end           
@@ -96,10 +96,13 @@ for car_ind = 1:size(car_tracks,1)
         
         
     end
+    car_tracks(car_ind)
     formattedTracksData{image_id}{car_tracks(car_ind),1}.car_lane = car_lane{car_ind};
     
-            x = 1;
     
 end
 
-end
+end     % loop ends for all scenes
+
+
+end     % function ends

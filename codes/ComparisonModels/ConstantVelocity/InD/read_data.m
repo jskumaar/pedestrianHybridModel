@@ -11,7 +11,7 @@ global pred_horizon obs_horizon
         % add dataset path
         addpath(genpath(dataset_x.path))
         %count the number of tracks in the dataset
-        files = dir(strcat(dataset_x.path,'tracks'));
+        files = dir(strcat(dataset_x.path,'\tracks'));
         N_scenes = length(files)-3; %3 default hidden files
         track_ind = 1; %reset track index to 1 for this dataset
 
@@ -34,7 +34,7 @@ global pred_horizon obs_horizon
         end
 
 
-        files = dir(strcat(dataset_x.path,'tracksMeta'));
+        files = dir(strcat(dataset_x.path,'\tracksMeta'));
         track_ind = 1;
         % read and compile the tracks data
         for jj=1:N_scenes

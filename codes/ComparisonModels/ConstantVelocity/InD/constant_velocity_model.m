@@ -2,23 +2,23 @@
 
        
 
-%% 
-% clear all
-% datasets = initialize_cvm();
-% N_datasets = size(datasets,1);
 % 
-% for ii=1:1
-%    % read dataset data
-%    datasets(ii) = read_data(datasets(ii));
-%    
-%    % run cvm predictions and calculate error
-%    datasets(ii) = cvm(datasets(ii));
-%    
-%    % display results
-%    disp(datasets(ii).name)
-%    disp(strcat('ADE:', num2str(datasets(ii).mean_cvm_ADE)));
-%    disp(strcat('FDE:', num2str(datasets(ii).mean_cvm_FDE)));
-% end
+clear all
+datasets = initialize_cvm();
+N_datasets = size(datasets,1);
+
+for ii=1:1
+   % read dataset data
+   datasets(ii) = read_data(datasets(ii));
+   
+   % run cvm predictions and calculate error
+   datasets(ii) = cvm(datasets(ii));
+   
+   % display results
+   disp(datasets(ii).name)
+   disp(strcat('ADE:', num2str(datasets(ii).mean_cvm_ADE)));
+   disp(strcat('FDE:', num2str(datasets(ii).mean_cvm_FDE)));
+end
 
 
 %% find errors based on agent type, movement, etc.
@@ -55,8 +55,7 @@ for ii=1:N_tracks
     if strcmp(datasets(1).class{ii},'pedestrian')
         datasets(1).cvm_ADE_agent_ped(N_ped,:) = [ii,datasets(1).cvm_ADE(ii), mean(datasets(1).trackData{ii}.lonVelocity(1:end)), mean(datasets(1).trackData{ii}.lonAcceleration(1:end))];
         N_ped = N_ped +1;
-    end
-    
+    end   
 end
 
 

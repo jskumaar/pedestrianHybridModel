@@ -1,14 +1,13 @@
-%% This script is the main script needed to compile the data from inD dataset
+%% This script is the main script needed to compile the data from inD intersection dataset
 
-%% Note:
-% [1] cw.center_lat_offset: was calculated manually from the images 
-
+function [formattedTracksData, allTracksMetaData, N_scenes, annotatedImage_enhanced, orthopxToMeter, cw] = inD_compile()
 
 % set of images to load
-images = [18:1:29];
+images = [18:1:19];
+N_scenes = length(images);
 
 % load background images
-originalImage = imread(strcat(num2str(18),'_background.png'));
+% originalImage = imread(strcat(num2str(18),'_background.png'));
 annotatedImage = imread(strcat('annotated_',num2str(18),'_background.png'));        %using the same background image for all scenes as it roughly remains the same; also segmenting all images takes time.
 img_size = size(annotatedImage);
 
@@ -111,33 +110,20 @@ for kk = 1:N_tracks
                 hybridState(formattedTracksData{image_id}{track_ind,1}, cw, orthopxToMeter, annotatedImage_enhanced, annotatedImage_enhanced_w_tracks); 
     
         % plot background with all pedestrian tracks for this scene
-        % imshow(annotatedImage_enhanced_w_tracks)  
+        imshow(annotatedImage_enhanced_w_tracks)  
     end
     
     % b) identify the lane and the distance to the closest CW (if the track is a car track)  
     if strcmp(formattedTracksData{image_id}{track_ind,1}.class{1}, 'car')  
         formattedTracksData{image_id}{track_ind,1}  = carState(formattedTracksData{image_id}{track_ind,1}, cw, orthopxToMeter, road_center);
     end
-            
-         
+                        
     % update loop id
     track_ind = track_ind+1;
 end % inner loop ends for the image
 
+allTracksMetaData{image_id} = tracksMetaData;
 
 end % loop ends for all images
 
-
-% plot background with all pedestrian tracks for this scene
-% imshow(annotatedImage_enhanced)
-
-%calculate the descriptives of the tracks
-trackDescriptivesData = trackDescriptives(formattedTracksData, images);
-
-%plot the descriptives of the tracks
-PlotDescriptivesInD(tracks, trackDescriptivesComplete);
-
-% find the ego-vehicles corresponding to each pedestrian
-egoCar_v2;
-
-
+end % function end

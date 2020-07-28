@@ -3,12 +3,12 @@ function datasets = initialize_cvm()
 %parameters
 global pred_horizon obs_horizon;
 
-pred_horizon = 4.8; % seconds
-obs_horizon  = 0.1;  % seconds
+pred_horizon = 0.04; % seconds
+obs_horizon  = 0.04;  % seconds
 
 
 %include path of datasets
-datasets(1).path = 'G:\My Drive\Research\MAVRIC_Summer_2020\Publicly available Data Sets\inD\inD-dataset-v1.0\data\';
+datasets(1).path = 'G:\My Drive\Research\MAVRIC_Summer_2020\Publicly_available_Data_Sets\inD\inD-dataset-v1.0\data';
 datasets(1).name = 'inD'; 
 datasets(1).deltaT = 0.04;
 datasets(1).pred_horizon = [];

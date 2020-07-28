@@ -6,23 +6,103 @@
 % Noise
 %% Updated: 07/21/20
 
-clear all
+%clear all
 
 %% addpath of necessary directories
-p1 = genpath('G:\My Drive\Research\1.Projects\pedestrianHybridModel\codes\DiscreteStateModels');
+p1 = genpath('G:\My Drive\Research\1.Projects\pedestrianHybridModel\codes');
 p2 = genpath('G:\My Drive\Research\1.Projects\pedestrianHybridModel\datasets');
 
 addpath(p1)
 addpath(p2)
+
+% load the SVM models
+load('GapAcceptance_inD_6Features_noGaze_noTimeGap_QuadraticSVM.mat');
+DiscreteModel = GapAcceptance_inD_6Features_noGaze_noTimeGap_QuadraticSVM.ClassificationSVM;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% pseudocode
+%% Step 1: get the individual tracks of all agents for all scenes
 % for inD dataset
-tracks = getDatainD;  
+% delta_T = 0.04;   % sampling rate is 25 Hz, 0.04 seconds for each data point
+  SampFreq = int32(1/delta_T); 
+% [tracksData, tracksMetaData, N_scenes, annotatedImage_enhanced, orthopxToMeter, cw] = inD_compile(); 
+% [tracks, ~] = trackDescriptives(tracksData, N_scenes);
+tracksMetaData{1}.ego_veh_gap_hist(1:size(tracksMetaData{1},1)) = {zeros(20,1)};  % for inD dataset the maximum number of gaps for a pedestrian track is '13'
+
 % % for VAVI dataset
-% tracks = getDatainD;
+% tracks = VAVI_compile();
 
 
+%% Step 2: For every time step in a scene, run the prediction and update loops
+
+for scene_id = 1:N_scenes
+    % Step 3: Find the time instances of the scenes
+    scene_start_time = min(tracksMetaData{scene_id}.initialFrame) + 1 ;
+    scene_end_time = max(tracksMetaData{scene_id}.finalFrame) + 1;
+    
+    %initialzie
+    currentTSPedEgoData = table();
+    
+    % Step 4: Time loop of the scene
+    for scene_time = scene_start_time : scene_end_time
+        
+        % Step 5: Find the active tracks for this time step
+        activeTracks = find(tracksMetaData{scene_id}.initialFrame + 1 >= scene_time &... 
+                            tracksMetaData{scene_id}.initialFrame + 1 <= scene_time);  
+        activeCarTracks = intersect(tracks{1}.car_moving_tracks, activeTracks);
+        activePedTracks = intersect(tracks{1}.ped_tracks, activeTracks);
+    
+        % For every active pedestrian run the prediction model
+        for ped_loop_id = 1: length(activePedTracks)
+            % initialize
+            flag.EgoCar = false;  %flag for the presence of an ego-car
+            
+            ped_index = activePedTracks(ped_loop_id);
+            ped_track_time_step = scene_time - tracksMetaData{scene_id}.initialFrame(ped_index); % the tracksMetaData frames start from '0' and are 1 value lower than 'scene_time'.
+           
+            % 1) Initialize the pedestrian according to the track id
+            simulatedTracks{scene_id}{ped_index}(ped_track_time_step, :) =  tracksData{scene_id}{ped_index}(ped_track_time_step, :);
+            currentPedData = simulatedTracks{scene_id}{ped_index};
+            currentPedMetaData = tracksMetaData{scene_id};           
+                           
+            for car_loop_id = 1: length(activeCarTracks)
+                car_index = activeCarTracks(car_loop_id);
+                car_track_time_step = scene_time - tracksMetaData{scene_id}.initialFrame(car_index); % the tracksMetaData frames start from '0' and are 1 value lower than 'scene_time'.
+                currentTSActiveCarData(car_loop_id,:) = tracksData{scene_id}{car_index}(car_track_time_step, :);
+            end
+            
+            
+        % Step 9: Update the states of the pedestrians
+
+
+        % Step 10: Estimate the prediction error
+        
+        
+        % Save all variables
+       
+        end
+        
+        
+        % Step 11: Check if the pedestrians belong to a group
+        if length(activePedTracks)>1
+           for  ped_loop_id = 1: length(activePedTracks)
+                ped_index = activePedTracks(ped_loop_id);
+                groupCurrentPedData(ped_loop_id,:) = simulatedTracks{scene_id}{ped_index}(scene_time,:);            
+           end
+           
+           % add conditions to check if they are in a group at this time
+           % step.
+            
+            
+        end
+        
+        % Step 11: Update the states of all the active cars
+        
+    
+    end  % end of time loop for this scene
+    
+end  % end of all scenes
 
 
 
