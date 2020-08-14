@@ -72,19 +72,7 @@ load('GapData_12Scenes.mat');
 GapFeatures_SVM = GapFeatures;
 
 
-AcceptedGaps = find(GapFeatures_SVM.Decision==1 | GapFeatures_SVM.Decision==2);
-RejectedGaps = find(GapFeatures_SVM.Decision==0);
 
-AcceptedGaps_test = find(SVMTestData.Decision==1 |  SVMTestData.Decision==2);
-RejectedGaps_test = find(SVMTestData.Decision==0);
-
-AcceptedGaps_train = find(SVMTrainData.Decision==1 | SVMTrainData.Decision==2);
-RejectedGaps_train = find(SVMTrainData.CrossDecision==0);
-
-RejectedGaps_train_subset = RejectedGaps_train(randperm(length(RejectedGaps_train), 850));
-
-AcceptedGaps_train_ss = find(SVMTrainData_subset.CrossDecision==1);
-RejectedGaps_train_ss = find(SVMTrainData_subset.CrossDecision==0);
 
 
 Velocity_Gaps = GapFeatures_SVM.F_pedDistToVeh./GapFeatures_SVM.F_vehVel;

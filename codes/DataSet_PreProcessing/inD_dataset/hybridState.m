@@ -1,10 +1,11 @@
-function [tracksData, annotatedImage_enhanced_w_tracks] = hybridState(tracksData, cw, orthopxToMeter, annotatedImage_enhanced, annotatedImage_enhanced_w_tracks)
+function [tracksData] = hybridState(tracksData, cw, flag, orthopxToMeter, annotatedImage_enhanced)
     %Note:
     %1) make sure the enhanced annotataed background image is the input to
     %this function
 
     % fixed parameters
     scale_down_factor = 12;
+    flag.pred = false; %temporarily fixing this parameter
 
     % parameters
     heading_threshold = 90; %45 degrees
@@ -16,10 +17,13 @@ function [tracksData, annotatedImage_enhanced_w_tracks] = hybridState(tracksData
 
     % initialize variables
     isCrossing = false;
-
+    ped_head = 0;
+    
     % convert track data to pixels
-    tracksData.xCenterPix = int32(tracksData.xCenter/(scale_down_factor*orthopxToMeter));
-    tracksData.yCenterPix = int32(tracksData.yCenter/(scale_down_factor*orthopxToMeter));
+    if ~tracksData.xCenterPix
+        tracksData.xCenterPix = int32(tracksData.xCenter/(scale_down_factor*orthopxToMeter));
+        tracksData.yCenterPix = int32(tracksData.yCenter/(scale_down_factor*orthopxToMeter));
+    end
 
     % length of this particular pedestrian track    
     N_instances = size(tracksData,1);
@@ -34,15 +38,15 @@ function [tracksData, annotatedImage_enhanced_w_tracks] = hybridState(tracksData
            % 1) position of pedestrians (make sure the values match with the
            % enhanced values in annotated_plot.m)
            % initialize
-           tracksData.Region{ii} = strings;
+           tracksData.Region(ii) = strings;
            if (annotatedImage_enhanced(-pixel_pos(2), pixel_pos(1))==200)
-               tracksData.Region{ii} = 'Crosswalk_Marked';
+               tracksData.Region(ii) = 'Crosswalk_Marked';
            elseif (annotatedImage_enhanced(-pixel_pos(2), pixel_pos(1))==100)
-               tracksData.Region{ii} = 'Crosswalk_UnMarked';
+               tracksData.Region(ii) = 'Crosswalk_UnMarked';
            elseif (annotatedImage_enhanced(-pixel_pos(2), pixel_pos(1))==50)
-               tracksData.Region{ii} = 'Road';
+               tracksData.Region(ii) = 'Road';
            elseif (annotatedImage_enhanced(-pixel_pos(2), pixel_pos(1))==150)
-               tracksData.Region{ii} = 'Sidewalk';               
+               tracksData.Region(ii) = 'Sidewalk';               
            end 
 
            % 2) is pedestrian heading towards a crosswalk?
@@ -57,7 +61,11 @@ function [tracksData, annotatedImage_enhanced_w_tracks] = hybridState(tracksData
             if ( abs(x_vel) < walking_threshold )
                 x_vel = 0;
             end
-            ped_head = atan2(y_vel, x_vel)*180/pi; 
+            % when pedestrian is stopped, maintain the previpus heading
+            % instead of saying it as zero.
+            if x_vel~=0 || y_vel~=0
+                ped_head = atan2(y_vel, x_vel)*180/pi; 
+            end
 
            % angle between pedestrian and the crosswalks
             ped_cw1_angle = atan2(double([cw.center_y(1) - pixel_pos(2)]), double([cw.center_x(1) - pixel_pos(1)]))*180/pi;
@@ -71,8 +79,7 @@ function [tracksData, annotatedImage_enhanced_w_tracks] = hybridState(tracksData
            dist_cw3 = sqrt(double(cw.center_x(3) - pixel_pos(1))^2 + double(cw.center_y(3) - pixel_pos(2))^2);
            dist_cw4 = sqrt(double(cw.center_x(4) - pixel_pos(1))^2 + double(cw.center_y(4) - pixel_pos(2))^2);
            dist_cw_temp = [inf, inf, inf, inf];  
-           dist_cw = [];    %distance to the crosswalk
-
+          
            % when the heading angle is within +/- heading_threshold and pedestrian is close to a crosswalk, 
            % then pedestrian is approaching one of the crosswalks 
            cw_heading_state = 'Not_Headed';
@@ -111,47 +118,63 @@ function [tracksData, annotatedImage_enhanced_w_tracks] = hybridState(tracksData
            end
 
         %% Hybrid state update    
+        % run the hybrid state update only during the update stage and not
+        % during the prediction stage
+        if ~flag.pred
+            % initialize the hybrid state
+              hybrid_state = 'None'; 
+              prob_hybrid_state = [0, 0, 0, 0, 0];
 
-        % initialize the hybrid state
-            hybrid_state = 'None';    
-        % conditions for Hybrid State of Pedestrians
-        % (1) approach: if pedestrian is on sidewalk and headed towards a crosswalk
-            if ( strcmp(tracksData.Region{ii},'Sidewalk') & strcmp(cw_heading_state,'Headed') & strcmp(walk_state, 'Walking') )
-               hybrid_state = 'Approach'; 
-               annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 60;
-            end
+            % conditions for Hybrid State of Pedestrians
+            % (1) approach: if pedestrian is on sidewalk and headed towards a crosswalk
+                if ( strcmp(tracksData.Region(ii),'Sidewalk') & strcmp(cw_heading_state,'Headed') & strcmp(walk_state, 'Walking') )
+                   hybrid_state = 'Approach';
+                   prob_hybrid_state = [1, 0, 0, 0, 0];
+                   annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 60;
+                end
 
-        % (2) wait: if pedestrian is on sidewalk near a crosswalk and is walking very slowly. 
-        % Note: Using absolute distance to center of crosswalk for now.
-            if ( strcmp(tracksData.Region{ii},'Sidewalk') & strcmp(cw_heading_state,'Headed') & strcmp(walk_state, 'Stopping') & (dist_cw < dec_zone) )
-               hybrid_state = 'Wait'; 
-               annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 0;
-               isCrossing = true;
-            end
+            % (2) wait: if pedestrian is on sidewalk near a crosswalk and is walking very slowly. 
+            % Note: Using absolute distance to center of crosswalk for now.
+                if ( strcmp(tracksData.Region(ii),'Sidewalk') & strcmp(cw_heading_state,'Headed') & strcmp(walk_state, 'Stopping') & (dist_cw < dec_zone) )
+                   hybrid_state = 'Wait'; 
+                   prob_hybrid_state = [0, 1, 0, 0, 0];
+                   annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 0;
+                   isCrossing = true;
+                end
 
-        % (3) cross: if pedestrian is on the road (note if they are crossing or
-        % jaywalking)
-            if (strcmp(tracksData.Region{ii},'Crosswalk_Marked') | strcmp(tracksData.Region{ii},'Crosswalk_UnMarked') )
-               hybrid_state = 'Crossing'; 
-               annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 255;
-               isCrossing = true;
-            end    
-            if (strcmp(tracksData.Region{ii},'Road') )
-               hybrid_state = 'Jaywalking'; 
-               annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 255;
-               isCrossing = true;
-            end
+            % (3) cross: if pedestrian is on the road (note if they are crossing or
+            % jaywalking)
+                if (strcmp(tracksData.Region(ii),'Crosswalk_Marked') | strcmp(tracksData.Region{ii},'Crosswalk_UnMarked') )
+                   hybrid_state = 'Crossing';
+                   prob_hybrid_state = [0, 0, 1, 0, 0];
+                   annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 255;
+                   isCrossing = true;
+                end    
+                if (strcmp(tracksData.Region(ii),'Road') )
+                   hybrid_state = 'Jaywalking'; 
+                   prob_hybrid_state = [0, 0, 0, 1, 0];
+                   annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 255;
+                   isCrossing = true;
+                end
 
-        % (4) walkaway: if pedestrian just crossed the street and is on the
-        % sidewalk
-            if ( strcmp(tracksData.Region{ii},'Sidewalk') & strcmp(cw_heading_state,'Not_Headed') & strcmp(walk_state, 'Walking') )
-               hybrid_state = 'Walk_away'; 
-               annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 120;
-            end
+            % (4) walkaway: if pedestrian just crossed the street and is on the
+            % sidewalk
+                if ( strcmp(tracksData.Region(ii),'Sidewalk') & strcmp(cw_heading_state,'Not_Headed') & strcmp(walk_state, 'Walking') )
+                   hybrid_state = 'Walk_away'; 
+                   prob_hybrid_state = [0, 0, 0, 0, 1];
+                   annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 120;
+                end
 
-            % update the hybrid state
-            tracksData.HybridState{ii} = hybrid_state;  
-            tracksData.isCrossing(ii) = isCrossing; 
+                % update the hybrid state
+                tracksData.HybridState{ii} = hybrid_state;  
+                tracksData.ProbHybridState{ii} = prob_hybrid_state;  
+                tracksData.isCrossing(ii) = isCrossing; 
+                tracksData.calcHeading{ii} = ped_head;
+            
+            
+        end % end of hybrid update (not prediction) loop
+            
+            % update the close cw variables
             tracksData.closestCW(ii) = cw_ind;
             tracksData.distCW(ii) = dist_cw;
 
@@ -161,7 +184,6 @@ function [tracksData, annotatedImage_enhanced_w_tracks] = hybridState(tracksData
 
     end
     %% loop ends
-    x=1;
 
 end
 

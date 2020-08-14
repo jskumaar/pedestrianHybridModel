@@ -3,12 +3,6 @@ function tracksData = carState(tracksData, cw, orthopxToMeter, road_center)
 % Assumption 1: when the car has crossed a crosswalk, then it is considered to be
 % approaching the next crosswalk along the same direction.
 
-%debugging
-if tracksData.trackId(1) == 21
-    x = 1;
-end
-
-
 
 % parameters
 scale_down_factor = 12;
@@ -70,9 +64,9 @@ if mean(tracksData.lonVelocity) > 0.1
                 % for crosswalk 1
                  %if abs(car_heading-car_cw_heading) < 90
                  if ( car_heading > -45 && car_heading < 45 )
-                     car_lane{ii,1} = 'East_Left';
+                     carData.car_lane = 'East_Left';
                  else
-                     car_lane{ii,1} = 'East_Right';
+                     carData.car_lane = 'East_Right';
                  end
                  % note the closest cw and its distance; note that the car
                  % when the difference in car heading and cw heading is
@@ -89,9 +83,9 @@ if mean(tracksData.lonVelocity) > 0.1
                 % car is heading towards the intersection or away from it
                 % for crosswalk 2
                  if ( car_heading > -45 && car_heading < 45 )
-                     car_lane{ii,1} = 'West_Right';
+                     carData.car_lane = 'West_Right';
                  else
-                     car_lane{ii,1} = 'West_Left';
+                     carData.car_lane = 'West_Left';
                  end
                  
                  if abs(car_heading-car_cw2_angle) < 110
@@ -108,9 +102,9 @@ if mean(tracksData.lonVelocity) > 0.1
                 % car is heading towards the intersection or away from it
                 % for crosswalk 3
                  if ( car_heading > 10 && car_heading < 135 )
-                     car_lane{ii,1} = 'South_Right';
+                     carData.car_lane = 'South_Right';
                  else
-                     car_lane{ii,1} = 'South_Left';
+                     carData.car_lane = 'South_Left';
                  end   
                  if abs(car_heading-car_cw3_angle) < 90
                      cw_dist = dist_cw3;
@@ -124,9 +118,9 @@ if mean(tracksData.lonVelocity) > 0.1
                 % for crosswalk 4
                  %if abs(car_heading-car_cw_heading) < 90
                  if ( car_heading > -135 && car_heading < -45 )
-                     car_lane{ii,1} = 'North_Right';
+                     carData.car_lane = 'North_Right';
                  else
-                     car_lane{ii,1} = 'North_Left';
+                     carData.car_lane = 'North_Left';
                  end
                  if abs(car_heading-car_cw4_angle) < 90
                      cw_dist = dist_cw4;
@@ -141,6 +135,7 @@ if mean(tracksData.lonVelocity) > 0.1
         % update the cw data
         tracksData.distCW(ii) = cw_dist;
         tracksData.closestCW(ii) = cw_ind;
+        tracksData.calcHeading(ii) = car_heading;
      
    end
    

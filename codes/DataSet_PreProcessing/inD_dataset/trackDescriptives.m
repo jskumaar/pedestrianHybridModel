@@ -27,6 +27,7 @@ function [tracks, trackDescriptivesData] = trackDescriptives(formattedTracksData
 
         %note the indices of pedestrians, crossing or waiting
         ped_crossing_tracks = [];
+        ped_not_crossing_tracks = [];
         ped_waiting_tracks = [];
         ped_tracks = [];
         car_tracks = [];
@@ -48,6 +49,8 @@ function [tracks, trackDescriptivesData] = trackDescriptives(formattedTracksData
                     else
                         ped_jaywalking_tracks = [ped_jaywalking_tracks; ii];
                     end
+                else
+                    ped_not_crossing_tracks = [ped_not_crossing_tracks; ii];
                 end
 
                 if ( find(strcmp(formattedTracksData{image_id}{ii,1}.HybridState, 'Wait') ==1 ) ) 
@@ -104,6 +107,7 @@ function [tracks, trackDescriptivesData] = trackDescriptives(formattedTracksData
         % save the tracks data for this scene
         trackDescriptivesComplete{image_id} = trackDescriptivesData;
         tracks{image_id}.ped_crossing_tracks = ped_crossing_tracks;
+        tracks{image_id}.ped_not_crossing_tracks = ped_not_crossing_tracks;
         tracks{image_id}.ped_jaywalking_tracks = ped_jaywalking_tracks;
         tracks{image_id}.ped_waiting_tracks = ped_waiting_tracks;
         tracks{image_id}.ped_tracks = ped_tracks;
@@ -122,7 +126,7 @@ compiledDescriptives.pedCrossSpeed = [];
 compiledDescriptives.pedWalkAwaySpeed = [];
 compiledDescriptives.waitDuration = [];
 
-for ii=1:12
+for ii=1:length(tracks)
     
     ped_tracks = tracks{ii}.ped_tracks;
     ped_waiting_tracks = tracks{ii}.ped_waiting_tracks;
@@ -146,7 +150,7 @@ NoOfTracks.N_ped_wait_cross = 0;
 NoOfTracks.N_car = 0;
 NoOfTracks.N_parked_cars = 0;
 
-for ii=1:12
+for ii=1:length(tracks)
     NoOfTracks.N_ped = NoOfTracks.N_ped + size(tracks{ii}.ped_tracks,1);
     NoOfTracks.N_ped_jaywalk = NoOfTracks.N_ped_jaywalk + size(tracks{ii}.ped_jaywalking_tracks,1);
     NoOfTracks.N_ped_cross = NoOfTracks.N_ped_cross + size(tracks{ii}.ped_crossing_tracks,1);
@@ -168,7 +172,7 @@ NoOfTracks.N_ped_no_crossing_intent = NoOfTracks.N_ped - NoOfTracks.N_ped_crossi
 
 %% save necessary variables
 % check the name of the file
-save('inD_trackDescriptives_temp.mat','NoOfTracks','tracks','trackDescriptivesComplete','compiledDescriptives')
+save('inD_trackDescriptives_removed_ped_tracks.mat','NoOfTracks','tracks','tracks_updated','trackDescriptivesComplete','compiledDescriptives')
 
     
 
