@@ -1,0 +1,195 @@
+function updatedActiveCarData = updateCarState(currentTSActiveCarData, del_t, reset, cw)
+
+% parameters
+turn_threshold = 0.7;
+
+% initialize
+N_cars = size(currentTSActiveCarData, 1);
+reachGoal = false;
+
+for car_id = 1:N_cars       
+    carData = currentTSActiveCarData(car_id,:);
+    car_pos = [carData.xCenterPix, carData.yCenterPix];
+    carHeading = carData.calcHeading;
+        
+    % use constant turn model if they are turning
+    if carData.Turn
+        % maintain the same acceleration (ideally only lateral accel must be the same) until reaching the new
+        % lane
+        carData.xVelocity = carData.xVelocity  + del_t*carData.xAcceleration ;
+        carData.yVelocity = carData.yVelocity  + del_t*carData.yAcceleration ;
+    end
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % reset states based on goal, when car is not turning
+    % crosswalk 1
+    if ~carData.Turn && reachGoal
+        if strcmp(carData.car_lane,'East_Right')
+            head1Disp = reset.carLane.goal(1,:) - carPos;
+            head2Disp = reset.carCW.goal(1,:) - carPos;
+            head3Disp = reset.carCW.goal(4,:) - carPos;
+            head1 = atan2(head1Disp(2), head1Disp(1));
+            head2 = atan2(head2Disp(2), head2Disp(1)); 
+            head3 = atan2(head3Disp(2), head3Disp(1)); 
+            
+            if abs(head1)> 90
+                carHeading = head1;
+            elseif abs(head2) > 90
+                carHeading = head2;
+            else
+                carHeading = head3;
+            end
+        end
+        
+        if strcmp(carData.car_lane,'West_Right')
+            head1Disp = reset.carLane.goal(3,:) - carPos;
+            head2Disp = reset.carCW.goal(3,:) - carPos;
+            head3Disp = reset.carCW.goal(2,:) - carPos;
+            head1 = atan2(head1Disp(2), head1Disp(1));
+            head2 = atan2(head2Disp(2), head2Disp(1)); 
+            head3 = atan2(head3Disp(2), head3Disp(1)); 
+            
+            if abs(head1) < 90
+                carHeading = head1;
+            elseif abs(head2) < 90
+                carHeading = head2;
+            else
+                carHeading = head3;
+            end
+        end
+        
+        if strcmp(carData.car_lane,'South_Right')
+            head1Disp = reset.carLane.goal(5,:) - carPos;
+            head2Disp = reset.carCW.goal(5,:) - carPos;
+            head3Disp = reset.carCW.goal(8,:) - carPos;
+            head1 = atan2(head1Disp(2), head1Disp(1));
+            head2 = atan2(head2Disp(2), head2Disp(1)); 
+            head3 = atan2(head3Disp(2), head3Disp(1)); 
+            
+            if head1 > 0
+                carHeading = head1;
+            elseif head2 > 0
+                carHeading = head2;
+            else
+                carHeading = head3;
+            end
+        end
+        
+        if strcmp(carData.car_lane,'North_Right')
+            head1Disp = reset.carLane.goal(7,:) - carPos;
+            head2Disp = reset.carCW.goal(7,:) - carPos;
+            head3Disp = reset.carCW.goal(6,:) - carPos;
+            head1 = atan2(head1Disp(2), head1Disp(1));
+            head2 = atan2(head2Disp(2), head2Disp(1)); 
+            head3 = atan2(head3Disp(2), head3Disp(1)); 
+            
+            if head1 < 0
+                carHeading = head1;
+            elseif head2 < 0
+                carHeading = head2;
+            else
+                carHeading = head3;
+            end
+        end
+        
+        if strcmp(carData.car_lane,'East_Left')            
+            head1Disp = reset.carCW.goal(2,:) - carPos;
+            head2Disp = reset.carLane.goal(2,:) - carPos;
+            head1 = atan2(head1Disp(2), head1Disp(1));
+            head2 = atan2(head2Disp(2), head2Disp(1)); 
+            
+            if abs(head1) < 90
+                carHeading = head1;
+            else
+                carHeading = head2;
+            end
+        end
+        
+        if strcmp(carData.car_lane,'West_Left')            
+            head1Disp = reset.carCW.goal(4,:) - carPos;
+            head2Disp = reset.carLane.goal(4,:) - carPos;
+            head1 = atan2(head1Disp(2), head1Disp(1));
+            head2 = atan2(head2Disp(2), head2Disp(1)); 
+            
+            if abs(head1) > 90
+                carHeading = head1;
+            else
+                carHeading = head2;
+            end
+        end
+
+        if strcmp(carData.car_lane,'South_Left')            
+            head1Disp = reset.carCW.goal(6,:) - carPos;
+            head2Disp = reset.carLane.goal(6,:) - carPos;
+            head1 = atan2(head1Disp(2), head1Disp(1));
+            head2 = atan2(head2Disp(2), head2Disp(1)); 
+            
+            if abs(head1) < 0
+                carHeading = head1;
+            else
+                carHeading = head2;
+            end
+        end
+        
+        if strcmp(carData.car_lane,'North_Left')            
+            head1Disp = reset.carCW.goal(8,:) - carPos;
+            head2Disp = reset.carLane.goal(8,:) - carPos;
+            head1 = atan2(head1Disp(2), head1Disp(1));
+            head2 = atan2(head2Disp(2), head2Disp(1)); 
+            
+            if abs(head1) > 0
+                carHeading = head1;
+            else
+                carHeading = head2;
+            end
+        end
+
+    end
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    %update the position (velocity remains constant if vehicle is not
+    %turning)
+    carData.xcenterPix = carData.xcenterPix + del_t*carData.xVelocity;
+    carData.ycenterPix = carData.ycenterPix + del_t*carData.yVelocity;    
+    
+    % check if the vehicle changed the road/lane
+    if carData.changeLane
+       % find new heading
+       if 
+       carGoalDisp = reset.
+       end
+        
+    end
+    
+    % check if the vehicle is turning and not changed lanes yet
+    if abs(carData.latAcceleration) > turn_threshold && ~carData.changeLane
+        carData.Turn = true;
+    else
+        carData.Turn = false;
+    end
+    
+    % distance between car and crosswalk (in pixels)
+    dist_cw1 = sqrt(double(cw.center_x(1) - car_pos(1))^2 + double(cw.center_y(1) - car_pos(2))^2);
+    dist_cw2 = sqrt(double(cw.center_x(2) - car_pos(1))^2 + double(cw.center_y(2) - car_pos(2))^2); 
+    dist_cw3 = sqrt(double(cw.center_x(3) - car_pos(1))^2 + double(cw.center_y(3) - car_pos(2))^2);
+    dist_cw4 = sqrt(double(cw.center_x(4) - car_pos(1))^2 + double(cw.center_y(4) - car_pos(2))^2);  
+    
+end
+
+
+end

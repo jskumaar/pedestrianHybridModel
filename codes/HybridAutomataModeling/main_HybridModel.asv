@@ -30,10 +30,10 @@ addpath(p2)
 load('GapAcceptance_inD_6Features_noGaze_noTimeGap_FGaussianSVM_2300RejGaps_BootStrapped.mat', 'GapAcceptance_inD_6Features_noGaze_noTimeGap_GaussianSVM');
 GapAcceptanceModel = GapAcceptance_inD_6Features_noGaze_noTimeGap_GaussianSVM.ClassificationSVM;
 Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
-% Load the crossing intent model
-load('CrossIntent_inD_6Features_onlyMean_noVehAcc_GaussianSVM_3s.mat');
-CrossIntentModel = CrossIntent_inD_6Features_onlyMean_noVehAcc_GaussianSVM_3s.classificationSVM;
-Prob_CrossIntentModel = fitSVMPosterior(CrossIntentModel);
+
+
+
+% % 
 % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % 
 %% Step 1: get the individual tracks of all agents for all scenes
@@ -90,12 +90,13 @@ for scene_id = 1:N_scenes
     scene_end_time = scene_end_time + mod(scene_end_time, reSampleRate);
     
     %initialize variables
+    %currentTSPedEgoData = table();
     ped_index_within_scene_history = [];
-    scene_time_step = 1;  % time loop of the scene
+    
 
-    % scene time loop starts
     for scene_time = scene_start_time : reSampleRate : scene_end_time
-        % Find the active car and pedestrian tracks for this time step
+
+        % Step 2a: Find the active car and pedestrian tracks for this time step
         activeTracks = find(tracksMetaData{scene_id}.finalFrame >= scene_time &... 
                             tracksMetaData{scene_id}.initialFrame <= scene_time);  
         activeCarTracks = intersect(tracks{scene_id}.car_moving_tracks, activeTracks);
@@ -114,14 +115,16 @@ for scene_id = 1:N_scenes
             % check if it is an existing pedestrian or a new pedestrian           
             if ~ismember(ped_index_within_scene, ped_index_within_scene_history)
                 ped_index_within_scene_history = [ped_index_within_scene_history; ped_index_within_scene];
-                pred_ped_index = pred_ped_index + 1;  % this index keeps track of all pedestrians from all scenes               
+                pred_ped_index = pred_ped_index + 1;  % this index keeps track of all pedestrians from all scenes
+                
                 % initialize the pedestrian
                 predicted_ped_traj.scene_id(pred_ped_index) = scene_id;
                 predicted_ped_traj.track_id(pred_ped_index) = ped_index_within_scene;
             end
                       
-            % Update the current data of all active cars
-            % 10 - xVelocity, 11- yVelocity, 14-lonVelocity, 16-lonAcceleration, 18 - xCenterPix, 19 - yCenterPix, 21- closestCW,
+            % 2) Update the current data of all active cars
+            % 10 - xVelocity, 11- yVelocity, 14-lonVelocity,
+            % 16-lonAcceleration, 18 - xCenterPix, 19 - yCenterPix, 21- closestCW,
             % 23- calcHeading, 24 - car lane
             variablesToCopy = [10, 11, 14, 16, 18, 19, 21, 23, 24];
             for car_loop_id = 1: length(activeCarTracks)
@@ -133,11 +136,10 @@ for scene_id = 1:N_scenes
                 currentTSActiveCarData.reachGoal(car_loop_id) = false;
             end
 
-            % 4) Run the prediction framework
-            pedPredictions = predictStates(currentPedData, currentPedMetaData, currentTSActiveCarData, ped_track_time_step, pred_horizon, AdjustedSampFreq, cw, annotatedImage_enhanced, reset,...
-                                           Prob_GapAcceptanceModel, Prob_CrossingIntentModel);
+            % 4) Run the Bayesian prediction framework
+            pedPredictions = predictStates(currentPedData, currentPedMetaData, currentTSActiveCarData, ped_track_time_step, pred_horizon, AdjustedSampFreq, cw, annotatedImage_enhanced, reset);
             
-            % 5) Save the predictions
+            % 5) Save all variables
             predicted_ped_traj.data{pred_ped_index}{scene_time_step} = pedPredictions;
        
         end  % end of all pedestrians
