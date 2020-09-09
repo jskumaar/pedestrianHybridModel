@@ -1,18 +1,15 @@
 %% This script is the main script needed to compile the data from inD intersection dataset
 
-%function [formattedTracksData, allTracksMetaData, N_scenes, annotatedImage_enhanced, orthopxToMeter, cw] = inD_compile(SampFreq, AdjustedSampFreq)
-
-function [N_scenes, annotatedImage_enhanced, cw] = inD_compile(SampFreq, AdjustedSampFreq)
-
-
+function [formattedTracksData, allTracksMetaData, N_scenes, annotatedImage_enhanced] = inD_compile(Params, reset)
+%function [allTracksMetaData, N_scenes, annotatedImage_enhanced, cw] = inD_compile(SampFreq, AdjustedSampFreq)
 
 % set of images to load
-% images = [18:1:29];
-images = 18;
+images = [18:1:29];
+% images = 18;
 N_scenes = length(images);
+skip_ts = Params.reSampleRate;
 
 % load background images
-% originalImage = imread(strcat(num2str(18),'_background.png'));
 annotatedImage = imread(strcat('annotated_',num2str(18),'_background.png'));        %using the same background image for all scenes as it roughly remains the same; also segmenting all images takes time.
 img_size = size(annotatedImage);
 
@@ -64,83 +61,83 @@ cw.center_lat_offset = int32([27, 24, 30, 27]);     %this was calculated manuall
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %% loop starts
-% for image_id = 1:length(images)
-%     image_no = images(image_id);
-% 
-%     %% Process tracks corresponding to the image no
-%     tracksData = readtable(strcat(num2str(image_no),'_tracks.csv'));
-%     tracksMetaData = readtable(strcat(num2str(image_no),'_tracksMeta.csv'));
-%     recordingMetaData = readtable(strcat(num2str(image_no),'_recordingMeta.csv'));
-%     tempTrackDiff = diff(tracksData.trackId);
-%   
-%     % pixel to meter scaling factor
-%     orthopxToMeter = recordingMetaData.orthoPxToMeter;
-%     
-%     %indices for track (is same as trackId when the number of scenes is just 1)
-%     new_track_end_ind = find(tempTrackDiff~=0);
-%     new_track_start_ind = [1; new_track_end_ind+1];
-%     new_track_end_ind = [new_track_end_ind; size(tracksData,1)];
-% 
-%     %initialize additional tracks' data
-%     tracksData.xCenterPix([1:size(tracksData,1)]) = 0;
-%     tracksData.yCenterPix([1:size(tracksData,1)]) = 0;
-%     tracksData.distCW([1:size(tracksData,1)]) = inf;
-%     tracksData.closestCW([1:size(tracksData,1)]) = 0;
-% 
-%     %loop count
-%     track_ind = 1;
-%     stopped_car_ind = [];
-%     ped_crossing_ind = [];
-%     N_tracks = size(tracksMetaData,1);
-% 
-% 
-% % inner loop starts
-% for kk = 1:N_tracks    
-%     
-%     tracksData.class([new_track_start_ind(kk):new_track_end_ind(kk)]) = tracksMetaData.class(kk);
-%     
-%     % frame indices (note that this is before resampling)
-%     track_start_frame = new_track_start_ind(kk);
-%     track_end_frame = new_track_end_ind(kk);
-% 
-%     % if frame does not start from initial time step or other sampling
-%     % time, move it to the next sampling time
-%     if  tracksData.frame(track_start_frame)~=0 
-%         if mod(tracksData.frame(track_start_frame),skip_ts)~=0 
-%             track_start_frame = track_start_frame + (skip_ts - mod(tracksData.frame(track_start_frame),skip_ts) );
+for scene_id = 1:length(images)
+    image_no = images(scene_id);
+ 
+    % Process tracks corresponding to the image no
+    tracksData = readtable(strcat(num2str(image_no),'_tracks.csv'));
+    tracksMetaData = readtable(strcat(num2str(image_no),'_tracksMeta.csv'));
+    recordingMetaData = readtable(strcat(num2str(image_no),'_recordingMeta.csv'));
+    tempTrackDiff = diff(tracksData.trackId); 
+    % pixel to meter scaling factor
+    orthopxToMeter = recordingMetaData.orthoPxToMeter;
+    % indices for track (is same as trackId when the number of scenes is just 1)
+    new_track_end_ind = find(tempTrackDiff~=0);
+    new_track_start_ind = [1; new_track_end_ind+1];
+    new_track_end_ind = [new_track_end_ind; size(tracksData,1)];
+
+    %initialize additional tracks' data
+    tracksData.xCenterPix([1:size(tracksData,1)]) = 0;
+    tracksData.yCenterPix([1:size(tracksData,1)]) = 0;
+    tracksData.distCW([1:size(tracksData,1)]) = inf;
+    tracksData.closestCW([1:size(tracksData,1)]) = 0;
+    %loop count
+    track_ind = 1;
+    N_tracks = size(tracksMetaData,1);
+
+% inner loop starts
+for track_id = 1:N_tracks
+    % add class data, i.e. whether the track is a car or a pedestrian
+    tracksData.class([new_track_start_ind(track_id):new_track_end_ind(track_id)]) = tracksMetaData.class(track_id);   
+    % frame indices (note that this is before resampling)
+    track_start_frame = new_track_start_ind(track_id);
+    track_end_frame = new_track_end_ind(track_id);
+
+    % if frame does not start from initial time step or other sampling
+    % time, move it to the next sampling time
+    if  tracksData.frame(track_start_frame)~=0 
+        if mod(tracksData.frame(track_start_frame),skip_ts)~=0 
+            track_start_frame = track_start_frame + (skip_ts - mod(tracksData.frame(track_start_frame),skip_ts) );
+        end
+    end
+        
+    % split the data according to its track index and use that for
+    % subsequent processing   
+    formattedTracksData{scene_id}{track_ind,1} = tracksData([track_start_frame : skip_ts : track_end_frame], :);
+    
+    % a) identify the hybrid state of the pedestrians and distance to closest CW (if the track is a
+    % pedestrian track)
+    % check if track is pedestrian
+    flag.pred = false;
+    if strcmp(formattedTracksData{scene_id}{track_ind,1}.class{1}, 'pedestrian')   
+        [formattedTracksData{scene_id}{track_ind,1}] = ....
+                hybridStateCopy(formattedTracksData{scene_id}{track_ind,1}, cw, flag, annotatedImage_enhanced, Params);    
+        % plot background with all pedestrian tracks for this scene
+        % imshow(annotatedImage_enhanced_w_tracks)  
+    end   
+    % b) identify the lane and the distance to the closest CW (if the track is a car track)  
+    if strcmp(formattedTracksData{scene_id}{track_ind,1}.class{1}, 'car')  
+        formattedTracksData{scene_id}{track_ind,1}  = carState(formattedTracksData{scene_id}{track_ind,1}, cw, road_center, Params);
+    end
+      
+%     %% add a wait time variable
+%     N_instances = size(formattedTracksData{scene_id}{track_id},1);
+%     if strcmp(formattedTracksData{scene_id}{track_id}.class(1), 'pedestrian')
+%        wait_time_steps  = cumsum(formattedTracksData{scene_id}{track_id}.ProbHybridState(:,2))-1;   %exclude the 1st time step when wait started
+%         if (sum(wait_time_steps~=0)~=0)
+%             formattedTracksData{scene_id}{track_id}.wait_time_steps = wait_time_steps*skip_ts;
+%         else
+%             formattedTracksData{scene_id}{track_id}.wait_time_steps = -1*ones(N_instances,1);
 %         end
 %     end
-%         
+
+      
+    % update loop id
+    track_ind = track_ind+1;
+end % inner loop ends for the image
 % 
-%     % split the data according to its track index and use that for
-%     % subsequent processing
-%    
-%     formattedTracksData{image_id}{track_ind,1} = tracksData([track_start_frame : skip_ts : track_end_frame], :);
-%     
-%     % a) identify the hybrid state of the pedestrians and distance to closest CW (if the track is a
-%     % pedestrian track)
-%     % check if track is pedestrian
-%     flag.pred = false;
-%     if strcmp(formattedTracksData{image_id}{track_ind,1}.class{1}, 'pedestrian')   
-%         [formattedTracksData{image_id}{track_ind,1}, annotatedImage_enhanced_w_tracks] = ....
-%                 hybridState(formattedTracksData{image_id}{track_ind,1}, cw, flag, orthopxToMeter, annotatedImage_enhanced, annotatedImage_enhanced_w_tracks); 
-%     
-%         % plot background with all pedestrian tracks for this scene
-%         imshow(annotatedImage_enhanced_w_tracks)  
-%     end
-%     
-%     % b) identify the lane and the distance to the closest CW (if the track is a car track)  
-%     if strcmp(formattedTracksData{image_id}{track_ind,1}.class{1}, 'car')  
-%         formattedTracksData{image_id}{track_ind,1}  = carState(formattedTracksData{image_id}{track_ind,1}, cw, orthopxToMeter, road_center);
-%     end
-%     
-%             
-%     % update loop id
-%     track_ind = track_ind+1;
-% end % inner loop ends for the image
+allTracksMetaData{scene_id} = tracksMetaData;
 % 
-% allTracksMetaData{image_id} = tracksMetaData;
+end % loop ends for all images
 % 
-% end % loop ends for all images
-% 
-% end % function end
+end % function end

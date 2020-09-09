@@ -76,23 +76,23 @@
 % N_scenes = size(tracksData,2);
 % moving_threshold = 0.1;
 % 
-% for scene_id = 1: N_scenes
-%    N_tracks = size(tracksData{scene_id}, 1);
+% for sceneId = 1: N_scenes
+%    N_tracks = size(tracksData{sceneId}, 1);
 %    
 %    
 %    for track_id = 1:N_tracks
 %        
 %        % initialize heading
 %        heading = 0;
-%        N_instances = size(tracksData{scene_id}{track_id}, 1);
+%        N_instances = size(tracksData{sceneId}{track_id}, 1);
 %        
 %        for track_time_step = 1:N_instances
 %           % calculate heading
-%             y_vel = tracksData{scene_id}{track_id}.yVelocity(track_time_step);
+%             y_vel = tracksData{sceneId}{track_id}.yVelocity(track_time_step);
 %             if ( abs(y_vel) < moving_threshold )
 %                 y_vel = 0;
 %             end
-%             x_vel = tracksData{scene_id}{track_id}.xVelocity(track_time_step);
+%             x_vel = tracksData{sceneId}{track_id}.xVelocity(track_time_step);
 %             if ( abs(x_vel) < moving_threshold )
 %                 x_vel = 0;
 %             end
@@ -102,7 +102,7 @@
 %             end
 %             
 %             % copy the heading
-%             tracksData{scene_id}{track_id}.calcHeading(track_time_step) = heading;
+%             tracksData{sceneId}{track_id}.calcHeading(track_time_step) = heading;
 %            
 %        end
 % 
@@ -129,20 +129,20 @@
 % % compile the pedestrian tracks, crossing and not crossing
 % N_scenes = size(tracks,2);
 % 
-% for scene_id = 1:N_scenes
-%     ped_notCrossing_tracks = tracks{scene_id}.ped_tracks;
+% for sceneId = 1:N_scenes
+%     ped_notCrossing_tracks = tracks{sceneId}.ped_tracks;
 %     
 %     % remove crossing tracks from this
-%     ped_crossing_tracks = tracks{scene_id}.ped_crossing_tracks;
+%     ped_crossing_tracks = tracks{sceneId}.ped_crossing_tracks;
 %     [~,ind,~] = intersect(ped_notCrossing_tracks, ped_crossing_tracks);
 %     ped_notCrossing_tracks(ind) = [];
 %     
 %     % remove jaywalking tracks
-%     ped_jaywalking_tracks = tracks{scene_id}.ped_jaywalking_tracks;
+%     ped_jaywalking_tracks = tracks{sceneId}.ped_jaywalking_tracks;
 %     [~,ind,~] = intersect(ped_notCrossing_tracks, ped_jaywalking_tracks);
 %     ped_notCrossing_tracks(ind) = [];
 %    
-%     tracks{scene_id}.ped_notCrossing_tracks = ped_notCrossing_tracks;
+%     tracks{sceneId}.ped_notCrossing_tracks = ped_notCrossing_tracks;
 %     
 % end
 % 
@@ -150,11 +150,11 @@
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % write compiled track data to hdf5 file
 % 
-% for scene_id=1:12
+% for sceneId=1:12
 % 
-% filename = strcat('compiledData_inD_','scene_',num2str(scene_id),'.dat');
+% filename = strcat('compiledData_inD_','scene_',num2str(sceneId),'.dat');
 % 
-% writecell(formattedTracksData{scene_id},filename)
+% writecell(formattedTracksData{sceneId},filename)
 % 
 % end
 % 
@@ -162,44 +162,172 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % change data format from cell to double
-ped_close = [];
-for scene_id=1:12
-    
-    ped_tracks = [tracks_updated{scene_id}.ped_crossing_tracks; tracks_updated{scene_id}.ped_not_crossing_tracks];
-    
-    N_tracks = length(ped_tracks);
-    
-    for ii = 1:N_tracks
-        
-        isPedClose = false;
-        track_id = ped_tracks(ii);
-        N_instances = size(formattedTracksData{scene_id}{track_id}, 1);
-        
-        for jj=1:N_instances
-            if ( abs( formattedTracksData{scene_id}{track_id}.long_disp_ped_cw_pixels(jj)) < 0.2 && strcmp(formattedTracksData{scene_id}{track_id}.HybridState(jj), 'Approach') )
-                formattedTracksData{scene_id}{track_id}.pedClose(jj) = true;
-                isPedClose = true;
-            else
-                formattedTracksData{scene_id}{track_id}.pedClose(jj) = false;
-            end
-        end
-        
-        if isPedClose
-            ped_close = [ped_close; [scene_id, track_id] ];
-        end
-    end
+% ped_close = [];
+% for sceneId=1:12
+%     
+%     ped_tracks = [tracks_updated{sceneId}.ped_crossing_tracks; tracks_updated{sceneId}.ped_not_crossing_tracks];
+%     
+%     N_tracks = length(ped_tracks);
+%     
+%     for ii = 1:N_tracks
+%         
+%         isPedClose = false;
+%         sceneId = ped_tracks(ii);
+%         N_instances = size(formattedTracksData{sceneId}{sceneId}, 1);
+%         
+%         for jj=1:N_instances
+%             if ( abs( formattedTracksData{sceneId}{sceneId}.long_disp_ped_cw_pixels(jj)) < 0.2 && strcmp(formattedTracksData{sceneId}{sceneId}.HybridState(jj), 'Approach') )
+%                 formattedTracksData{sceneId}{sceneId}.pedClose(jj) = true;
+%                 isPedClose = true;
+%             else
+%                 formattedTracksData{sceneId}{sceneId}.pedClose(jj) = false;
+%             end
+%         end
+%         
+%         if isPedClose
+%             ped_close = [ped_close; [sceneId, sceneId] ];
+%         end
+%     end
+% 
+% 
+% end
+% 
+% 
+% 
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % % read tracks Meta Data
+% % 
+% % for jj=1:12
+% %     sceneId = 17+jj;
+% %     tracksMetaData{jj} = readtable(strcat(num2str(sceneId),'_tracksMeta.csv')) ;
+% % 
+% % end
+% 
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % create a wait time 
+% 
+% for sceneId = 1:12
+%     N_tracks = size(formattedTracksData{sceneId},1);
+%     for track_id = 1:N_tracks
+%         act_wt = [];
+%         N_instances = size(formattedTracksData{sceneId}{track_id},1);
+%         if strcmp(formattedTracksData{sceneId}{track_id}.class(1), 'pedestrian')
+%            wait_times  = find(strcmp(formattedTracksData{sceneId}{track_id}.HybridState, 'Wait'));
+%            del_wt = diff(wait_times);
+%            if ~isempty(del_wt)
+%                act_wt = wait_times(1);
+%                for ii = 1:size(del_wt)-1
+%                    if (del_wt(ii+1) - del_wt(ii)) > 2                   
+%                        act_wt = [act_wt, wait_times(ii+2)];
+%                    end
+%                end
+%            end
+%            
+%         
+%         wait_time_steps = [];
+%         ind = 1;
+%         loop = 1;
+%         if ~isempty(act_wt)
+%             while(loop)
+%                 if ind<=length(act_wt)
+%                     if length(wait_time_steps)+1==act_wt(ind)
+%                         wait_time_steps = [wait_time_steps; act_wt(ind)];
+%                     else
+%                         if ~isempty(wait_time_steps)
+%                             wait_time_steps = [wait_time_steps; wait_time_steps(end)];
+%                         else
+%                             wait_time_steps = 0;
+%                         end
+%                     end
+%                 else
+%                     wait_time_steps = [wait_time_steps; wait_time_steps(end)];
+%                 end
+%                 
+%                 ind = ind+1;
+% 
+%                 if length(wait_time_steps)==N_instances
+%                     loop = 0;
+%                 end
+%             end
+%         end
+%         
+%         if ~isempty(wait_time_steps)
+%             formattedTracksData{sceneId}{track_id}.wait_time_steps = wait_time_steps;
+%         else
+%             formattedTracksData{sceneId}{track_id}.wait_time_steps = -1*ones(N_instances,1);
+%         end
+% 
+%         end
+%     end
+% end
 
 
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%Aliter%%%%%%%%%%%%%%%%%
+% skip_ts = 5;
+% for sceneId = 1:12
+%     N_tracks = size(formattedTracksData{sceneId},1);
+%     
+%     
+%     
+%     for track_id = 1:N_tracks
+% 
+%         N_instances = size(formattedTracksData{sceneId}{track_id},1);
+%         if strcmp(formattedTracksData{sceneId}{track_id}.class(1), 'pedestrian')
+%            wait_time_steps  = cumsum(formattedTracksData{sceneId}{track_id}.ProbHybridState(:,2));
+% %             if (sum(wait_time_steps~=0)~=0)
+% %                 formattedTracksData{sceneId}{track_id}.wait_time_steps = wait_time_steps*skip_ts;
+% %             else
+% %                 formattedTracksData{sceneId}{track_id}.wait_time_steps = -1*ones(N_instances,1);
+% %             end
+%             formattedTracksData{sceneId}{track_id}.wait_time_steps = wait_time_steps*skip_ts;
+%         end
+% 
+%     end
+% end
 
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% read tracks Meta Data
-
-for jj=1:12
-    scene_id = 17+jj;
-   tracksMetaData{jj} = readtable(strcat(num2str(scene_id),'_tracksMeta.csv')) ;
-
-end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% for sceneId = 1:12
+%    tracks{sceneId}.pedCrossingTracks = tracks{sceneId}.ped_crossing_tracks;
+%    tracks{sceneId}.pedNotCrossingTracks = tracks{sceneId}.ped_not_crossing_tracks;  
+%    tracks{sceneId}.pedJaywalkingTracks = tracks{sceneId}.ped_jaywalking_tracks;
+%    tracks{sceneId}.pedWaitingTracks = tracks{sceneId}.ped_waiting_tracks;
+%    tracks{sceneId}.pedTracks = tracks{sceneId}.ped_tracks;
+%    tracks{sceneId}.carTracks = tracks{sceneId}.car_tracks;
+%    tracks{sceneId}.carParkedTracks = tracks{sceneId}.car_parked_tracks;
+%    tracks{sceneId}.carMovingTracks = tracks{sceneId}.car_moving_tracks;
+%    
+%    
+%    tracks{sceneId}.ped_crossing_tracks = [];
+%    tracks{sceneId}.ped_not_crossing_tracks = [];  
+%    tracks{sceneId}.ped_jaywalking_tracks = [];
+%    tracks{sceneId}.ped_waiting_tracks = [];
+%    tracks{sceneId}.ped_tracks = [];
+%    tracks{sceneId}.car_tracks = [];
+%    tracks{sceneId}.car_parked_tracks = [];
+%    tracks{sceneId}.car_moving_tracks = [];
+%    
+%    tracksUpdated{sceneId}.pedCrossingTracks = tracks_updated{sceneId}.ped_crossing_tracks;
+%    tracksUpdated{sceneId}.pedNotCrossingTracks = tracks_updated{sceneId}.ped_not_crossing_tracks;  
+%    tracksUpdated{sceneId}.pedJaywalkingTracks = tracks_updated{sceneId}.ped_jaywalking_tracks;
+%    tracksUpdated{sceneId}.pedWaitingTracks = tracks_updated{sceneId}.ped_waiting_tracks;
+%    tracksUpdated{sceneId}.pedTracks = tracks_updated{sceneId}.ped_tracks;
+%    tracksUpdated{sceneId}.carTracks = tracks_updated{sceneId}.car_tracks;
+%    tracksUpdated{sceneId}.carParkedTracks = tracks_updated{sceneId}.car_parked_tracks;
+%    tracksUpdated{sceneId}.carMovingTracks = tracks_updated{sceneId}.car_moving_tracks;
+%    
+%    
+%    tracks_updated{sceneId}.ped_crossing_tracks = [];
+%    tracks_updated{sceneId}.ped_not_crossing_tracks = [];  
+%    tracks_updated{sceneId}.ped_jaywalking_tracks = [];
+%    tracks_updated{sceneId}.ped_waiting_tracks = [];
+%    tracks_updated{sceneId}.ped_tracks = [];
+%    tracks_updated{sceneId}.car_tracks = [];
+%    tracks_updated{sceneId}.car_parked_tracks = [];
+%    tracks_updated{sceneId}.car_moving_tracks = [];
+% 
+%     
+% end
+% 

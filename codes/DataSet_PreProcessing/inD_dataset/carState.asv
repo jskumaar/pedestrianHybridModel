@@ -1,4 +1,4 @@
-function carTrackData = carState(carTrackData, cw, reset, Params)
+function carTrackData = carState(carTrackData, cw, road_center, Params)
 
 % Assumption 1: when the car has crossed a crosswalk, then it is considered to be
 % approaching the next crosswalk along the same direction.

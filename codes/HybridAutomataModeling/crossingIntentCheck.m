@@ -1,6 +1,19 @@
 %% This function calculates the probability of the intent to cross for the observed pedestrian data
 
-function prob_crossing_intent = crossingIntentCheck(currentObsPedData, ped_track_time_step, SampFreq)
+function prob_crossing_intent = crossingIntentCheck(current, ped_track_time_step, Params, Prob_CrossIntentModel)
+
+
+% compile crossing intent parameters
+
+
+
+
+
+
+
+
+
+
 
 
 
