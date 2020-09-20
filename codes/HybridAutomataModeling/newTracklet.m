@@ -3,7 +3,7 @@
 % this tracklet
 % Output: set of tracklets with additionally a new tracklet
 
-function predTracklet = newTracklet(predTracklet, node_no, prob_tracklet)
+function [predTracklet, flag] = newTracklet(flag, predTracklet, node_no, prob_tracklet)
     % current number of tracklets
     N_tracklets = size(predTracklet.data,1);
     % create a new tracklet and initialize it
@@ -16,4 +16,21 @@ function predTracklet = newTracklet(predTracklet, node_no, prob_tracklet)
     predTracklet.Goal(N_tracklets+1,:) = 'NA';
     
     predTracklet.kfData{N_tracklets+1,1} = predTracklet.kfData{N_tracklets}(end, :);
+    
+    if N_tracklets>=3
+        x=1;
+    end
+    
+    % initialize all flags for the new tracklet
+    flag.dataCompile(N_tracklets+1) = false;
+    flag.pred(N_tracklets+1) = false;
+    flag.EgoCar(N_tracklets+1) = false;
+    flag.GapStart(N_tracklets+1) = false;
+    flag.sampleWaitTime(N_tracklets+1) = false;
+    flag.startCross(N_tracklets+1) = false;
+    flag.finishedCrossing(N_tracklets+1) = false;
+    flag.reachCrosswalk(N_tracklets+1) = false;    
+    flag.checkIntent(N_tracklets+1) = false;
+    flag.atCrosswalk(N_tracklets+1) = false;
+    
 end

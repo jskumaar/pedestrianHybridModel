@@ -1,12 +1,17 @@
 %% This script initializes the H-Ped model parameters
 
+% %% dataset parameters
+if dataset=="inD"
+    inD_params;
+end
+
 %% H-Ped model variables
 
 %a) AV parameters
 Params.sensingRange = 500; % in pixels (~50 m)
 
 % b) prediction parameters
-Params.predHorizon = 3*Params.AdjustedSampFreq;      % 3 s
+Params.predHorizon = 6*Params.AdjustedSampFreq;      % 6 s
 Params.rollOverWindow = 1*Params.AdjustedSampFreq;  % in time steps; 1s
 Params.observationWindow = 3*Params.AdjustedSampFreq; % in time stepsl 3s
 
@@ -25,10 +30,7 @@ Params.headingRateLimit = 50; %(degrees/s)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-% %% dataset parameters
-% if dataSet=="inD"
-%     inD_params;
-% end
+
 
 %% Kalman filter model
 % Process and Measurement covariances

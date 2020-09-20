@@ -1,4 +1,4 @@
-function [tracksData] = hybridState(tracksData, cw, flag, annotatedImage_enhanced, Params)
+function [tracksData] = hybridState(tracksData, cw, flag, annotatedImage_enhanced, Params, trackletNo)
     %Note:
     %1) make sure the enhanced annotataed background image is the input to
     %this function
@@ -7,7 +7,6 @@ function [tracksData] = hybridState(tracksData, cw, flag, annotatedImage_enhance
     scaleDownFactor = Params.scaleFactor;
     orthopxToMeter = Params.orthopxToMeter;
     reSampleRate = Params.reSampleRate;
-    %flag.pred = false; %temporarily fixing this parameter
 
     % parameters
     headingThreshold = Params.headingThreshold; %45 degrees
@@ -94,21 +93,6 @@ function [tracksData] = hybridState(tracksData, cw, flag, annotatedImage_enhance
            % crosswalk
            [dist_cw, cwInd] = min(dist_cw_temp);
            
-           % 
-           
-          
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-
            % 3) is pedestrian walking?
            ped_vel = sqrt(tracksData.xVelocity(ii)^2 + tracksData.yVelocity(ii)^2);
            if ped_vel < stoppingThreshold
@@ -118,9 +102,10 @@ function [tracksData] = hybridState(tracksData, cw, flag, annotatedImage_enhance
            end
 
         %% Hybrid state update    
-        % run the hybrid state update only during the update stage and not
-        % during the prediction stage
-        if ~flag.pred
+        % run the hybrid state update only when needed (i.e. during update
+        % stage, and when the hybrid state needs to be identified from the
+        % continuous state predictions)
+        if ~flag.pred(trackletNo)
             % 1) position of pedestrians (make sure the values match with the
             % enhanced values in annotated_plot.m)
             % initialize

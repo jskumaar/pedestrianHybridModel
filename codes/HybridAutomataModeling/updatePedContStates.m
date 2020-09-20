@@ -8,17 +8,23 @@ reSampleRate = Params.reSampleRate;
 
 
 
+%
+
+
 % initialize
-pedPosPixels = double([predData.xCenterPix(end-1), predData.yCenterPix(end-1)]);
-predData.recordingId(end) = predData.recordingId(end-1);
-predData.trackId(end) = predData.trackId(end-1);
-
-
-% set default update values for constant velocity model
-predData.calcHeading(end) = predData.calcHeading(end-1);
-predData.xVelocity(end) = predData.xVelocity(end-1);
-predData.yVelocity(end) = predData.yVelocity(end-1);
-predData.waitTimeSteps(end) = predData.waitTimeSteps(end-1);
+if predData.xCenterPix(end)==0
+    pedPosPixels = double([predData.xCenterPix(end-1), predData.yCenterPix(end-1)]);
+    predData.recordingId(end) = predData.recordingId(end-1);  
+    predData.trackId(end) = predData.trackId(end-1);
+    % set default update values for constant velocity model
+    predData.calcHeading(end) = predData.calcHeading(end-1);
+    predData.xVelocity(end) = predData.xVelocity(end-1);
+    predData.yVelocity(end) = predData.yVelocity(end-1);
+    predData.waitTimeSteps(end) = predData.waitTimeSteps(end-1);
+else
+    pedPosPixels = double([predData.xCenterPix(end), predData.yCenterPix(end)]);
+    predData(end+1, :) = predData(end, :);  
+end
 
 
 % calculate angle between pedestrian and approaching crosswalk
@@ -29,18 +35,19 @@ pedCwAngle = [ atan2(([cw.center_y(1) - pedPosPixels(2)]), ([cw.center_x(1) - pe
              
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% reset continuous states if discrete state changed for first time
-if size(predData,1) > 1
+if (size(predData,1) > 1 && predData.HybridState(end)~="" )
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%    
 % if crosswalk 1
 if predData.closestCW(end-1)==1
-    if pedCwAngle(1) < 0  % West right lane (Lane 1)
+    if pedCwAngle(1) < 0  % East right lane (Lane 1)
          % 1st Approach
          if ( strcmp(predData.HybridState(end), 'Approach') &&  ~strcmp(predData.HybridState(end-1), 'Approach') )
              pedGoalDisp = reset.approach.goal(1,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
-             predData.xVelocity(end) = predData.xVelocity(end-1);
-             predData.yVelocity(end) = predData.yVelocity(end-1);
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
+             predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
              
          % 1st Wait
          elseif ( strcmp(predData.HybridState(end), 'Wait') &&  strcmp(predData.HybridState(end-1), 'Approach') )
@@ -49,9 +56,9 @@ if predData.closestCW(end-1)==1
              predData.yVelocity(end) = 0;
              predData.waitTimeSteps(end) = 0;
          % 1st Cross
-         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Approach') || strcmp(predData.HybridState(end-1), 'Wait') ) )
+         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Wait') || strcmp(predData.HybridState(end-1), 'Wait') ) )
              pedGoalDisp = reset.approach.goal(2,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              %sample longitudinal velocity in the range of 1 - 2 m/s
              vel = rand(1) + 1;
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
@@ -59,22 +66,25 @@ if predData.closestCW(end-1)==1
          % 1st Walkaway
          elseif ( strcmp(predData.HybridState(end), 'Walkaway') &&  (strcmp(predData.HybridState(end-1), 'Cross') || strcmp(predData.HybridState(end-1), 'Jaywalking') ) )
              if strcmp(walkawayDirection, 'Approach')         
-                    predData.calcHeading(end) = reset.approach.heading(5,:);
+                    %predData.calcHeading(end) = reset.approach.heading(5,:);
+                    pedGoalDisp = reset.approach.goal(8,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              else
-                    predData.calcHeading(end) = reset.walkaway.heading(2,:);
+                    pedGoalDisp = reset.walkaway.goal(1,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              end
-             %sample longitudinal velocity in the range of 1 - 2 m/s
-             vel = rand(1) + 1;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
-             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          end
-    else        % West Left Lane (lane 2)
+    else        % East Left Lane (lane 2)
          % 1st Approach
          if ( strcmp(predData.HybridState(end), 'Approach') &&  ~strcmp(predData.HybridState(end-1), 'Approach') )
              pedGoalDisp = reset.approach.goal(2,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
-             predData.xVelocity(end) = predData.xVelocity(end-1);
-             predData.yVelocity(end) = predData.yVelocity(end-1);                  
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
+             predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));                 
          % 1st Wait
          elseif ( strcmp(predData.HybridState(end), 'Wait') &&  strcmp(predData.HybridState(end-1), 'Approach') )
              predData.calcHeading(end) = reset.wait.heading(2,:);
@@ -82,9 +92,9 @@ if predData.closestCW(end-1)==1
              predData.yVelocity(end) = 0;
              predData.waitTimeSteps(end) = 0;
          % 1st Cross
-         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Approach') || strcmp(predData.HybridState(end-1), 'Wait') ) )
+         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Wait') || strcmp(predData.HybridState(end-1), 'Wait') ) )
              pedGoalDisp = reset.approach.goal(1,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              %sample longitudinal velocity in the range of 1 - 2 m/s
              vel = rand(1) + 1;
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
@@ -92,29 +102,31 @@ if predData.closestCW(end-1)==1
          % 1st Walkaway
          elseif ( strcmp(predData.HybridState(end), 'Walkaway') &&  (strcmp(predData.HybridState(end-1), 'Cross') || strcmp(predData.HybridState(end-1), 'Jaywalking') ) )
              if strcmp(walkawayDirection, 'Approach')         
-                    predData.calcHeading(end) = reset.approach.heading(8,:);
+                   pedGoalDisp = reset.approach.goal(5,:) - pedPosPixels;
+                   predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              else
-                    predData.calcHeading(end) = reset.walkaway.heading(1,:);
+                   pedGoalDisp = reset.walkaway.goal(2,:) - pedPosPixels;
+                   predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              end
-             %sample longitudinal velocity in the range of 1 - 2 m/s
-             vel = rand(1) + 1;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
-             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          end
     end
-end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
 % if crosswalk 2
-if predData.closestCW(end-1)==2
+elseif predData.closestCW(end-1)==2
 
-    if pedCwAngle(2) > 0  % East right lane (Lane 3)
+    if pedCwAngle(2) > 0  % West right lane (Lane 3)
          % 1st Approach
          if ( strcmp(predData.HybridState(end), 'Approach') &&  ~strcmp(predData.HybridState(end-1), 'Approach') )
-             pedGoalDisp = reset.approach.goal(4,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
-             predData.xVelocity(end) = predData.xVelocity(end-1);
-             predData.yVelocity(end) = predData.yVelocity(end-1);
+             pedGoalDisp = reset.approach.goal(3,:) - pedPosPixels;
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
+             predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          % 1st Wait
          elseif ( strcmp(predData.HybridState(end), 'Wait') &&  strcmp(predData.HybridState(end-1), 'Approach') )
              predData.calcHeading(end) = reset.wait.heading(3,:);
@@ -122,9 +134,9 @@ if predData.closestCW(end-1)==2
              predData.yVelocity(end) = 0;
              predData.waitTimeSteps(end) = 0;
          % 1st Cross
-         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Approach') || strcmp(predData.HybridState(end-1), 'Wait') ) )
+         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Wait') || strcmp(predData.HybridState(end-1), 'Wait') ) )
              pedGoalDisp = reset.approach.goal(4,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              %sample longitudinal velocity in the range of 1 - 2 m/s
              vel = rand(1) + 1;
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
@@ -132,22 +144,24 @@ if predData.closestCW(end-1)==2
          % 1st Walkaway
          elseif ( strcmp(predData.HybridState(end), 'Walkaway') &&  (strcmp(predData.HybridState(end-1), 'Cross') || strcmp(predData.HybridState(end-1), 'Jaywalking') ) )
              if strcmp(walkawayDirection, 'Approach')         
-                    predData.calcHeading(end) = reset.approach.heading(7,:);
+                    pedGoalDisp = reset.approach.goal(6,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              else
-                    predData.calcHeading(end) = reset.walkaway.heading(4,:);
+                    pedGoalDisp = reset.walkaway.goal(3,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              end
-             %sample longitudinal velocity in the range of 1 - 2 m/s
-             vel = rand(1) + 1;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
-             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          end
-    else        % East Left Lane (Lane 4)
+    else        % West Left Lane (Lane 4)
          % 1st Approach
          if ( strcmp(predData.HybridState(end), 'Approach') &&  ~strcmp(predData.HybridState(end-1), 'Approach') )
              pedGoalDisp = reset.approach.goal(4,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
-             predData.xVelocity(end) = predData.xVelocity(end-1);
-             predData.yVelocity(end) = predData.yVelocity(end-1);
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
+             predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          % 1st Wait
          elseif ( strcmp(predData.HybridState(end), 'Wait') &&  strcmp(predData.HybridState(end-1), 'Approach') )
              predData.calcHeading(end) = reset.wait.heading(4,:);
@@ -155,9 +169,9 @@ if predData.closestCW(end-1)==2
              predData.yVelocity(end) = 0;
              predData.waitTimeSteps(end) = 0;
          % 1st Cross
-         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Approach') || strcmp(predData.HybridState(end-1), 'Wait') ) )
+         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Wait') || strcmp(predData.HybridState(end-1), 'Wait') ) )
              pedGoalDisp = reset.approach.goal(3,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              %sample longitudinal velocity in the range of 1 - 2 m/s
              vel = rand(1) + 1;
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
@@ -165,29 +179,31 @@ if predData.closestCW(end-1)==2
          % 1st Walkaway
          elseif ( strcmp(predData.HybridState(end), 'Walkaway') &&  (strcmp(predData.HybridState(end-1), 'Cross') || strcmp(predData.HybridState(end-1), 'Jaywalking') ) )
              if strcmp(walkawayDirection, 'Approach')         
-                    predData.calcHeading(end) = reset.approach.heading(6,:);
+                    pedGoalDisp = reset.approach.goal(7,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              else
-                    predData.calcHeading(end) = reset.walkaway.heading(3,:);
+                    pedGoalDisp = reset.walkaway.goal(4,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              end
-             %sample longitudinal velocity in the range of 1 - 2 m/s
-             vel = rand(1) + 1;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
-             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          end
     end
     
-end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % if crosswalk 3
-if predData.closestCW(end-1)==3
+elseif predData.closestCW(end-1)==3
    if abs(pedCwAngle(3)) > 90  % South right lane (lane 5)
          % 1st Approach
          if ( strcmp(predData.HybridState(end), 'Approach') &&  ~strcmp(predData.HybridState(end-1), 'Approach') )
              pedGoalDisp = reset.approach.goal(5,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
-             predData.xVelocity(end) = predData.xVelocity(end-1);
-             predData.yVelocity(end) = predData.yVelocity(end-1);
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
+             predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          % 1st Wait
          elseif ( strcmp(predData.HybridState(end), 'Wait') &&  strcmp(predData.HybridState(end-1), 'Approach') )
              predData.calcHeading(end) = reset.wait.heading(5,:);
@@ -195,9 +211,9 @@ if predData.closestCW(end-1)==3
              predData.yVelocity(end) = 0;
              predData.waitTimeSteps(end) = 0;
          % 1st Cross
-         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Approach') || strcmp(predData.HybridState(end-1), 'Wait') ) )
+         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Wait') || strcmp(predData.HybridState(end-1), 'Wait') ) )
              pedGoalDisp = reset.approach.goal(6,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              %sample longitudinal velocity in the range of 1 - 2 m/s
              vel = rand(1) + 1;
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
@@ -205,22 +221,24 @@ if predData.closestCW(end-1)==3
          % 1st Walkaway
          elseif ( strcmp(predData.HybridState(end), 'Walkaway') &&  (strcmp(predData.HybridState(end-1), 'Cross') || strcmp(predData.HybridState(end-1), 'Jaywalking') ) )
              if strcmp(walkawayDirection, 'Approach')         
-                    predData.calcHeading(end) = reset.approach.heading(3,:);
+                    pedGoalDisp = reset.approach.goal(2,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              else
-                    predData.calcHeading(end) = reset.walkaway.heading(6,:);
+                    pedGoalDisp = reset.walkaway.goal(5,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              end
-             %sample longitudinal velocity in the range of 1 - 2 m/s
-             vel = rand(1) + 1;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
-             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          end
     else        % South Left Lane (Lane 6)
          % 1st Approach
          if ( strcmp(predData.HybridState(end), 'Approach') &&  ~strcmp(predData.HybridState(end-1), 'Approach') )
              pedGoalDisp = reset.approach.goal(6,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
-             predData.xVelocity(end) = predData.xVelocity(end-1);
-             predData.yVelocity(end) = predData.yVelocity(end-1);
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
+             predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          % 1st Wait
          elseif ( strcmp(predData.HybridState(end), 'Wait') &&  strcmp(predData.HybridState(end-1), 'Approach') )
              predData.calcHeading(end) = reset.wait.heading(6,:);
@@ -228,9 +246,9 @@ if predData.closestCW(end-1)==3
              predData.yVelocity(end) = 0;
              predData.waitTimeSteps(end) = 0;
          % 1st Cross
-         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Approach') || strcmp(predData.HybridState(end-1), 'Wait') ) )
+         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Wait') || strcmp(predData.HybridState(end-1), 'Wait') ) )
              pedGoalDisp = reset.approach.goal(5,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              %sample longitudinal velocity in the range of 1 - 2 m/s
              vel = rand(1) + 1;
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
@@ -238,30 +256,32 @@ if predData.closestCW(end-1)==3
          % 1st Walkaway
          elseif ( strcmp(predData.HybridState(end), 'Walkaway') &&  (strcmp(predData.HybridState(end-1), 'Cross') || strcmp(predData.HybridState(end-1), 'Jaywalking') ) )
              if strcmp(walkawayDirection, 'Approach')         
-                    predData.calcHeading(end) = reset.approach.heading(2,:);
+                    pedGoalDisp = reset.approach.goal(3,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              else
-                    predData.calcHeading(end) = reset.walkaway.heading(5,:);
+                    pedGoalDisp = reset.walkaway.goal(6,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              end
-             %sample longitudinal velocity in the range of 1 - 2 m/s
-             vel = rand(1) + 1;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
-             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          end
     end
     
-end
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % if crosswalk 4
-if predData.closestCW(end-1)==4
+elseif predData.closestCW(end-1)==4
    if abs(pedCwAngle(4)) < 90  % North right lane (Lane 7)
          % 1st Approach
          if ( strcmp(predData.HybridState(end), 'Approach') &&  ~strcmp(predData.HybridState(end-1), 'Approach') )
              pedGoalDisp = reset.approach.goal(7,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
-             predData.xVelocity(end) = predData.xVelocity(end-1);
-             predData.yVelocity(end) = predData.yVelocity(end-1);
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
+             predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          % 1st Wait
          elseif ( strcmp(predData.HybridState(end), 'Wait') &&  strcmp(predData.HybridState(end-1), 'Approach') )
              predData.calcHeading(end) = reset.wait.heading(7,:);
@@ -269,9 +289,9 @@ if predData.closestCW(end-1)==4
              predData.yVelocity(end) = 0;
              predData.waitTimeSteps(end) = 0;
          % 1st Cross
-         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Approach') || strcmp(predData.HybridState(end-1), 'Wait') ) )
+         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Wait') || strcmp(predData.HybridState(end-1), 'Wait') ) )
              pedGoalDisp = reset.approach.goal(8,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              %sample longitudinal velocity in the range of 1 - 2 m/s
              vel = rand(1) + 1;
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
@@ -279,22 +299,24 @@ if predData.closestCW(end-1)==4
          % 1st Walkaway
          elseif ( strcmp(predData.HybridState(end), 'Walkaway') &&  (strcmp(predData.HybridState(end-1), 'Cross') || strcmp(predData.HybridState(end-1), 'Jaywalking') ) )
              if strcmp(walkawayDirection, 'Approach')         
-                    predData.calcHeading(end) = reset.approach.heading(1,:);
+                    pedGoalDisp = reset.approach.goal(4,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              else
-                    predData.calcHeading(end) = reset.walkaway.heading(8,:);
+                    pedGoalDisp = reset.walkaway.goal(7,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              end
-             %sample longitudinal velocity in the range of 1 - 2 m/s
-             vel = rand(1) + 1;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
-             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          end
     else        % North Left Lane (Lane 8)
          % 1st Approach
          if ( strcmp(predData.HybridState(end), 'Approach') &&  ~strcmp(predData.HybridState(end-1), 'Approach') )
              pedGoalDisp = reset.approach.goal(8,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
-             predData.xVelocity(end) = predData.xVelocity(end-1);
-             predData.yVelocity(end) = predData.yVelocity(end-1);
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
+             predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          % 1st Wait
          elseif ( strcmp(predData.HybridState(end), 'Wait') &&  strcmp(predData.HybridState(end-1), 'Approach') )
              predData.calcHeading(end) = reset.wait.heading(8,:);
@@ -302,9 +324,9 @@ if predData.closestCW(end-1)==4
              predData.yVelocity(end) = 0;
              predData.waitTimeSteps(end) = 0;
          % 1st Cross
-         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Approach') || strcmp(predData.HybridState(end-1), 'Wait') ) )
+         elseif ( strcmp(predData.HybridState(end), 'Cross') &&  (strcmp(predData.HybridState(end-1), 'Wait') || strcmp(predData.HybridState(end-1), 'Wait') ) )
              pedGoalDisp = reset.approach.goal(7,:) - pedPosPixels;
-             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1));
+             predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              %sample longitudinal velocity in the range of 1 - 2 m/s
              vel = rand(1) + 1;
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
@@ -312,18 +334,23 @@ if predData.closestCW(end-1)==4
          % 1st Walkaway
          elseif ( strcmp(predData.HybridState(end), 'Walkaway') &&  (strcmp(predData.HybridState(end-1), 'Cross') || strcmp(predData.HybridState(end-1), 'Jaywalking') ) )
              if strcmp(walkawayDirection, 'Approach')         
-                    predData.calcHeading(end) = reset.approach.heading(4,:);
+                    pedGoalDisp = reset.approach.goal(1,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              else
-                    predData.calcHeading(end) = reset.walkaway.heading(7,:);
+                    pedGoalDisp = reset.walkaway.goal(8,:) - pedPosPixels;
+                    predData.calcHeading(end) = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              end
-             %sample longitudinal velocity in the range of 1 - 2 m/s
-             vel = rand(1) + 1;
+             vel = norm( [predData.xVelocity(end-1), predData.yVelocity(end-1)]);
              predData.xVelocity(end) = vel*cosd(predData.calcHeading(end));
-             predData.yVelocity(end) = vel*sind(predData.calcHeading(end));
+             predData.yVelocity(end) = vel*sind(predData.calcHeading(end)); 
          end
    end
     
 end
+
+
+
+
 
 
 end  

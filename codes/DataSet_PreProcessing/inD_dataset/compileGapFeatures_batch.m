@@ -1,4 +1,12 @@
 %% This script compiles the Gap features for batch processing
+p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+addpath(p1)
+addpath(p2)
+
+%load('tracksData_reSampled_correctDisCW_v6.mat')
+load('inD_trackDescriptives_removed_ped_tracks.mat') 
+tracks = tracks_updated;
 
 % parameters
 dec_zone = 5; % in m
@@ -8,12 +16,12 @@ AdjustedSampFreq = 5;
 %initialize
 gap_ind = 1;
 GapFeatures = table();
+missedGapCounter = 0;
 
 
 for scene_id = 1:N_scenes
 
-    tracksMetaDataScene = tracksMetaData{scene_id};
-    
+  
     car_tracks = tracks{scene_id}.car_tracks;
     car_parked_tracks = tracks{scene_id}.car_parked_tracks;
     ped_crossing_tracks = tracks{scene_id}.ped_crossing_tracks;
@@ -52,11 +60,11 @@ for scene_id = 1:N_scenes
     %                      ( strcmp(pedData.HybridState{time_step},'Approach') || strcmp(pedData.HybridState{time_step},'Wait') ) )
 
                 GapCond_1 = pedData.closeCar_ind(time_step) ~= pedData.closeCar_ind(time_step-1) && ...
-                            abs(pedData.long_disp_ped_cw(time_step)) < dec_zone && pedData.closeCar_ind(time_step) ~= inf && ...
+                            abs(pedData.longDispPedCw(time_step)) < dec_zone && pedData.closeCar_ind(time_step) ~= inf && ...
                             ( strcmp(pedData.HybridState{time_step},'Approach') || strcmp(pedData.HybridState{time_step},'Wait') );
                 % There is an ego-vehicle and pedestrian has just entered the decision zone
-                GapCond_2 = abs(pedData.long_disp_ped_cw(time_step-1)) >= dec_zone && ...
-                            abs(pedData.long_disp_ped_cw(time_step)) < dec_zone && ...
+                GapCond_2 = abs(pedData.longDispPedCw(time_step-1)) >= dec_zone && ...
+                            abs(pedData.longDispPedCw(time_step)) < dec_zone && ...
                             pedData.closeCar_ind(time_step) ~= inf && ( strcmp(pedData.HybridState{time_step},'Approach') || strcmp(pedData.HybridState{time_step},'Wait') );
 
 
@@ -80,7 +88,11 @@ for scene_id = 1:N_scenes
                                 % 3) longitudinal distance to vehicle - already calculated
 
                                 % 4) cumulative waiting time
-                                F_cumWait = pedData.wait_time_steps(end);
+                                if sum(ismember(pedData.Properties.VariableNames,'waitTimeSteps'))
+                                    F_cumWait = pedData.waitTimeSteps(end);
+                                else
+                                    F_cumWait = pedData.wait_time_steps(end);
+                                end
                                 % 5) vehicle speed
                                 if ( pedData.closeCar_ind(time_step)~=inf)
                                     F_vehVel = [formattedTracksData{scene_id}{closeCar_ind}.lonVelocity(car_ts)];
@@ -93,29 +105,35 @@ for scene_id = 1:N_scenes
                                 F_gazeRatio = sum(pedData.isLooking(end-AdjustedSampFreq+1:end))/AdjustedSampFreq;
 
 
-                                % Need to include Gaze later!!
+                                
 
                                 % compile gap features
-                                GapFeatures.recording(gap_ind,1) = pedData.recordingId(1);
-                                GapFeatures.frame(gap_ind,1) = pedFrame;
-                                GapFeatures.pedTrack(gap_ind,1) = ped_track;
-                                GapFeatures.egoCarTrack(gap_ind,1) = closeCar_ind;
-                                GapFeatures.ped_close_cw(gap_ind,1) = cw_ped;
-
-                                GapFeatures.F_pedSpeed(gap_ind,1) = F_pedSpeed;
-                                GapFeatures.F_cumWait(gap_ind,1) = F_cumWait;
-                                GapFeatures.F_vehVel(gap_ind,1) = F_vehVel;
-                                GapFeatures.F_vehAcc(gap_ind,1) = F_vehAcc;
-                                GapFeatures.F_gazeRatio(gap_ind,1) = F_gazeRatio;
-                                GapFeatures.F_pedDistToCurb(gap_ind,1) = pedData.lat_disp_ped_cw(time_step);                          
-                                GapFeatures.F_pedDistToVeh(gap_ind,1) = pedData.long_disp_ped_car(time_step);
-                                GapFeatures.F_pedDistToCW(gap_ind,1) = pedData.long_disp_ped_cw(time_step);                          
-                                GapFeatures.F_isSameDirection(gap_ind,1) = pedData.isPedSameDirection(time_step);                          
+                                if sum(ismember(pedData.Properties.VariableNames,'isNearLane'))
                                 
-                                GapFeatures.F_isEgoNearLane(gap_ind,1) = pedData.isNearLane(time_step);
+                                    GapFeatures.recording(gap_ind,1) = pedData.recordingId(1);
+                                    GapFeatures.frame(gap_ind,1) = pedFrame;
+                                    GapFeatures.pedTrack(gap_ind,1) = ped_track;
+                                    GapFeatures.egoCarTrack(gap_ind,1) = closeCar_ind;
+                                    GapFeatures.ped_close_cw(gap_ind,1) = cw_ped;
 
-                                %update Gap id
-                                gap_ind = gap_ind + 1;
+                                    GapFeatures.F_pedSpeed(gap_ind,1) = F_pedSpeed;
+                                    GapFeatures.F_cumWait(gap_ind,1) = F_cumWait;
+                                    GapFeatures.F_vehVel(gap_ind,1) = F_vehVel;
+                                    GapFeatures.F_vehAcc(gap_ind,1) = F_vehAcc;
+                                    GapFeatures.F_gazeRatio(gap_ind,1) = F_gazeRatio;
+                                    GapFeatures.F_pedDistToCurb(gap_ind,1) = pedData.latDispPedCw(time_step);                          
+                                    GapFeatures.F_pedDistToVeh(gap_ind,1) = pedData.long_disp_ped_car(time_step);
+                                    GapFeatures.F_pedDistToCW(gap_ind,1) = pedData.longDispPedCw(time_step);                          
+                                    GapFeatures.F_isSameDirection(gap_ind,1) = pedData.isPedSameDirection(time_step);                          
+
+
+                                    GapFeatures.F_isEgoNearLane(gap_ind,1) = pedData.isNearLane(time_step);
+
+                                    %update Gap id
+                                    gap_ind = gap_ind + 1;
+                                else
+                                    missedGapCounter = missedGapCounter+1;
+                                end
                             end
                     end %end of inner gap checking loop
 

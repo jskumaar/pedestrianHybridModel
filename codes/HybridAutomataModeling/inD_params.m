@@ -45,20 +45,20 @@ for ii = 1:imgSize(1)
     end
 end
  
-% center of the road
-imgSize = size(annotatedImageEnhanced);
-roadPixels = [];
-for ii = 1:imgSize(1)
-    for jj = 1:imgSize(2)
-        if annotatedImageEnhanced(ii,jj)==50
-            roadPixels = [roadPixels; [jj, -ii]];
-        end
-    end
-end
-roadCenter = (mean(roadPixels));
-annotatedImageEnhanced(-int32(roadCenter(2)), int32(roadCenter(1))) = 255;
-annotatedImageEnhanced_w_Tracks = annotatedImageEnhanced;
-
+% % center of the road
+% imgSize = size(annotatedImageEnhanced);
+% roadPixels = [];
+% for ii = 1:imgSize(1)
+%     for jj = 1:imgSize(2)
+%         if annotatedImageEnhanced(ii,jj)==50
+%             roadPixels = [roadPixels; [jj, -ii]];
+%         end
+%     end
+% end
+% roadCenter = (mean(roadPixels));
+% annotatedImageEnhanced(-int32(roadCenter(2)), int32(roadCenter(1))) = 255;
+% annotatedImageEnhanced_w_Tracks = annotatedImageEnhanced;
+Params.imgSize = imgSize;
 %identify the centers of the crosswalks; use the knowledge of the
 %scene; we know that there are two crosswalks and they are on the
 %opposite ends of the intersection; use x = 500 as the mid-point for x to
@@ -110,14 +110,14 @@ resetStates.wait.heading = [cw.theta(1) - 90;
                       cw.theta(4);
                       cw.theta(4) - 180];
                    
-resetStates.walkaway.goal = [620, -185;
-                       950, -270;
-                       130, -455;
-                       100, -345;
-                       610, -560;
-                       520, -580;
-                       320, -150;
-                       440, -110];                   
+resetStates.walkaway.goal =   [620, -185;
+                               950, -270;
+                               130, -455;
+                               100, -345;
+                               610, -560;
+                               520, -580;
+                               320, -150;
+                               440, -110];                   
 
 resetStates.walkaway.erCw1Final = [920, -120];                  
 

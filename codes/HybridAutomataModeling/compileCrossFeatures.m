@@ -50,12 +50,15 @@ if size(varargin)~=0
     CrossFeatures.std_veh_acc = std(veh_acc); 
 
     CrossFeatures.gaze_ratio = sum(gaze(close_car_ind))/length(close_car_ind);
-    CrossFeatures.direction = mean(isSamedirection(end-AdjustedSampFreq+1:end))>0.5;
+    CrossFeatures.isSameDirection = mean(isSamedirection(end-AdjustedSampFreq+1:end))>0.5;
     CrossFeatures.isNearLane = mean(isNearLane(end-AdjustedSampFreq+1:end))>0.5;
 
     CrossFeatures.mean_veh_ped_dist = mean(veh_ped_dist(ego_car_ind));
     CrossFeatures.std_veh_ped_dist = std(veh_ped_dist(ego_car_ind));    
 end
+
+
+
 
 ped_ind = find(DTCurb~=0 & DTCW~=0);
 

@@ -33,8 +33,8 @@ if cwPed~=0
     % distance between pedestrian and the approaching crosswalk in the rotated
     % frame
     pedCwAngle = atan2(double([cw.center_y(cwPed) - pedPosPixels(2)]), double([cw.center_x(cwPed) - pedPosPixels(1)]))*180/pi;
-    pedPosPixelsRot = int32(cw_ped_rot * (pedPosPixels'  - double(imgCenter)) + double(imgCenter));
-    cwPosPixelsRot = int32(cw_ped_rot * (cw_PosPixels'  - double(imgCenter)) + double(imgCenter));
+    pedPosPixelsRot = (cw_ped_rot * (pedPosPixels'  - double(imgCenter)) + double(imgCenter));
+    cwPosPixelsRot = (cw_ped_rot * (cw_PosPixels'  - double(imgCenter)) + double(imgCenter));
     dispPedCwPixels = pedPosPixelsRot - cwPosPixelsRot;
 
     % longitudinal displacement to cw center 
@@ -101,7 +101,7 @@ for carInd = 1:size(activeCarTracksData,1)
     %% if the vehicle is close to crosswalk; % find the distance between the car and pedestrian based on the CW, the car is approaching
     if (cwCar~=0 && cwCar~=inf)
         cwCarRot = [cosd(theta(cwCar)), -sind(theta(cwCar)); sind(theta(cwCar)), cosd(theta(cwCar))];
-        carPosPixelsRot = int32(cwCarRot * (carPosPixels'  - double(imgCenter)) + double(imgCenter));
+        carPosPixelsRot = (cwCarRot * (carPosPixels'  - double(imgCenter)) + double(imgCenter));
     
 
         % % longitudinal displacement to ego-car; later cars that have passed the
@@ -163,8 +163,8 @@ pedData.closeCar_ind = closeCar_ind;
 pedData.cw_car = cwCar;
 pedData.cw_ped = cwPed;
 pedData.isLooking = isLooking;
-pedData.calcPedHeading = pedHeading;
-pedData.calcCarHeading = carHeading;
+%pedData.calcPedHeading = pedHeading;
+%pedData.calcCarHeading = carHeading;
 pedData.isPedSameDirection = isPedSameDirection;
 
 end  % end of the function

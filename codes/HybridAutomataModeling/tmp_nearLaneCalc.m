@@ -9,6 +9,10 @@ movingThreshold =  Params.movingThreshold; % m/s
 headingThreshold =  Params.headingThreshold; %90 degrees
 theta = cw.theta;
 
+load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
+tracks = tracksUpdated;
+
+
 for sceneId = 1:N_Scenes
    allPedTracks = [tracks{sceneId}.pedCrossingTracks; tracks{sceneId}.pedNotCrossingTracks];
    N_pedTracks = length(allPedTracks);
@@ -33,7 +37,7 @@ for sceneId = 1:N_Scenes
               if strcmp(formattedTracksData{sceneId}{pedTrackId}.class(1), 'pedestrian')
                     waitTimeSteps  = cumsum(formattedTracksData{sceneId}{pedTrackId}.ProbHybridState(:,2));
                     formattedTracksData{sceneId}{pedTrackId}.waitTimeSteps = waitTimeSteps;
-                    if exist('formattedTracksData{sceneId}{pedTrackId}.wait_time_steps') 
+                    if sum(ismember(formattedTracksData{sceneId}{pedTrackId}.Properties.VariableNames,'wait_time_steps')) 
                         formattedTracksData{sceneId}{pedTrackId}.wait_time_steps = []; 
                     end
               end
@@ -83,10 +87,15 @@ for sceneId = 1:N_Scenes
               %% Near lane calculation
              
               %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-               if exist('pedData.closeCar_ind') 
+               if sum(ismember(pedData.Properties.VariableNames,'closeCar_ind'))
+                   
                   if pedData.closestCW(pedTimeStep) == 1
-                       distPedRightLane = norm(reset.carCW.goal(1,:) - pedPos);
-                       distPedLeftLane = norm(reset.carCW.goal(2,:) - pedPos);
+                      sceneId
+                      trackNo
+                      pedTimeStep
+                      
+                       distPedRightLane = norm(resetStates.carCW.goal(1,:) - pedPos);
+                       distPedLeftLane = norm(resetStates.carCW.goal(2,:) - pedPos);
 
                        if distPedRightLane < distPedLeftLane
                             pedData.Lane(pedTimeStep, :) = "Right";
@@ -123,8 +132,13 @@ for sceneId = 1:N_Scenes
                        end
 
                    elseif pedData.closestCW(pedTimeStep) == 2
-                       distPedRightLane = norm(reset.carCW.goal(3,:) - pedPos);
-                       distPedLeftLane = norm(reset.carCW.goal(4,:) - pedPos);
+                       
+                       sceneId
+                      trackNo
+                      pedTimeStep
+                       
+                       distPedRightLane = norm(resetStates.carCW.goal(3,:) - pedPos);
+                       distPedLeftLane = norm(resetStates.carCW.goal(4,:) - pedPos);
 
                        if distPedRightLane < distPedLeftLane
                             pedData.Lane(pedTimeStep, :) = "Right";
@@ -160,8 +174,13 @@ for sceneId = 1:N_Scenes
 
 
                    elseif pedData.closestCW(pedTimeStep) == 3
-                       distPedRightLane = norm(reset.carCW.goal(5,:) - pedPos);
-                       distPedLeftLane = norm(reset.carCW.goal(6,:) - pedPos);
+                       
+                       sceneId
+                      trackNo
+                      pedTimeStep
+                      
+                       distPedRightLane = norm(resetStates.carCW.goal(5,:) - pedPos);
+                       distPedLeftLane = norm(resetStates.carCW.goal(6,:) - pedPos);
 
                        if distPedRightLane < distPedLeftLane
                             pedData.Lane(pedTimeStep, :) = "Right";
@@ -196,9 +215,13 @@ for sceneId = 1:N_Scenes
 
 
                    elseif pedData.closestCW(pedTimeStep) == 4
-
-                       distPedRightLane = norm(reset.carCW.goal(7,:) - pedPos);
-                       distPedLeftLane = norm(reset.carCW.goal(8,:) - pedPos);
+                        
+                       sceneId
+                      trackNo
+                      pedTimeStep
+                      
+                       distPedRightLane = norm(resetStates.carCW.goal(7,:) - pedPos);
+                       distPedLeftLane = norm(resetStates.carCW.goal(8,:) - pedPos);
 
                        if distPedRightLane < distPedLeftLane
                             pedData.Lane(pedTimeStep, :) = "Right";
@@ -237,10 +260,10 @@ for sceneId = 1:N_Scenes
               %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
            
        end
-       if exist('pedData.lat_disp_ped_cw ')
+       if sum(ismember(pedData.Properties.VariableNames,'lat_disp_ped_cw'))
         pedData.lat_disp_ped_cw = [];
        end
-       if exist('pedData.long_disp_ped_cw')
+       if sum(ismember(pedData.Properties.VariableNames,'long_disp_ped_cw'))
         pedData.long_disp_ped_cw = [];
        end
        formattedTracksData{sceneId}{pedTrackId} = pedData;

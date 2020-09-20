@@ -21,7 +21,7 @@
 % orthopxToMeter = 0.0081;
 % 
 % 
-CrossFeatures_SVM_withEgo = CrossIntentData_withEgoCar;
+CrossFeatures_SVM_withOutEgo = CrossIntentData_withOutEgoCar;
 % 
 % % CrossFeatures_SVM_withEgo.F_pedDistToCW = double(abs(CrossFeatures_SVM_withEgo.F_pedDistToCW))*(scaling_factor*orthopxToMeter);
 % % CrossFeatures_SVM_withEgo.F_pedDistToVeh = double(abs(CrossFeatures_SVM_withEgo.F_pedDistToVeh))*(scaling_factor*orthopxToMeter);
@@ -31,21 +31,21 @@ CrossFeatures_SVM_withEgo = CrossIntentData_withEgoCar;
 %% Step 3: Split the data into test and train sets
 TrainData_percent = 80;
 
-N_tracks = size(CrossFeatures_SVM_withEgo,1);
+N_tracks = size(CrossFeatures_SVM_withOutEgo,1);
 All_tracks = [1:N_tracks]';
 
 Train_tracks = randperm(N_tracks, int32(TrainData_percent/100*N_tracks))';
 Test_tracks = All_tracks;
 Test_tracks(Train_tracks) = [];
 
-SVMTrainData = CrossFeatures_SVM_withEgo(Train_tracks,:);
-SVMTestData = CrossFeatures_SVM_withEgo(Test_tracks,:);
+SVMTrainData = CrossFeatures_SVM_withOutEgo(Train_tracks,:);
+SVMTestData = CrossFeatures_SVM_withOutEgo(Test_tracks,:);
 
 
 
 % indices
-Cross = find(CrossFeatures_SVM_withEgo.cross_intent==1);
-NotCross = find(CrossFeatures_SVM_withEgo.cross_intent==0);
+Cross = find(CrossFeatures_SVM_withOutEgo.cross_intent==1);
+NotCross = find(CrossFeatures_SVM_withOutEgo.cross_intent==0);
 
 Cross_train = find(SVMTrainData.cross_intent==1);
 NotCross_train = find(SVMTrainData.cross_intent==0);
@@ -54,17 +54,17 @@ Cross_test = find(SVMTestData.cross_intent==1);
 NotCross_test = find(SVMTestData.cross_intent==0);
 
 % SVM data
-SVMTrainData_Cross_WE = SVMTrainData(Cross_train,:);
-SVMTrainData_NotCross_WE = SVMTrainData(NotCross_train,:);
+SVMTrainData_Cross_WOE = SVMTrainData(Cross_train,:);
+SVMTrainData_NotCross_WOE = SVMTrainData(NotCross_train,:);
 
-SVMTestData_NotCross_WE = SVMTestData(NotCross_test,:);
-SVMTestData_Cross_WE = SVMTestData(Cross_test,:);
+SVMTestData_NotCross_WOE = SVMTestData(NotCross_test,:);
+SVMTestData_Cross_WOE = SVMTestData(Cross_test,:);
 
-SVMTrainData_BootSrapped_WE = SVMTrainData;
+SVMTrainData_BootSrapped_WOE = SVMTrainData;
 
 % boot strapping x times provided optimal results when tuned manually
 for ii=1:1
-   SVMTrainData_BootSrapped_WE = [SVMTrainData_BootSrapped_WE; SVMTrainData_NotCross_WE];
+   SVMTrainData_BootSrapped_WOE = [SVMTrainData_BootSrapped_WOE; SVMTrainData_NotCross_WOE];
 end
 
 
@@ -90,26 +90,26 @@ SVMModel =CrossIntent_inD_6Features_noVehAcc_GaussianSVM_3s.ClassificationSVM;
 
 predicted_decision = [];
 actual_decision = [];
-for test_ind = 1:size(SVMTrainData_BootSrapped_WE,1)
+for test_ind = 1:size(SVMTrainData_BootSrapped_WOE,1)
     
     % feature order for VR dataset model
     % features = [SVMTestData.F_cumWait(test_ind), SVMTestData.F_pedSpeed(test_ind), SVMTestData.F_pedDistToCurb(test_ind),...
     %            SVMTestData.F_pedDistToCW(test_ind), SVMTestData.F_pedDistToVeh(test_ind),  SVMTestData.F_vehVel(test_ind), ];
     
-    mean_veh_speed          = SVMTrainData_BootSrapped_WE.mean_veh_speed(test_ind);
-    std_veh_speed           = SVMTrainData_BootSrapped_WE.std_veh_speed(test_ind);
-    mean_veh_acc            = SVMTrainData_BootSrapped_WE.mean_veh_acc(test_ind);
-    std_veh_acc             = SVMTrainData_BootSrapped_WE.std_veh_acc(test_ind);
-    mean_veh_ped_dist       = SVMTrainData_BootSrapped_WE.mean_veh_ped_dist(test_ind);
-    std_veh_ped_dist        = SVMTrainData_BootSrapped_WE.std_veh_ped_dist(test_ind);
-    mean_ped_speed          = SVMTrainData_BootSrapped_WE.mean_ped_speed(test_ind);
-    std_ped_speed           = SVMTrainData_BootSrapped_WE.std_ped_speed(test_ind);
-    mean_DTCurb             = SVMTrainData_BootSrapped_WE.mean_DTCurb(test_ind);
-    std_DTCurb              = SVMTrainData_BootSrapped_WE.std_DTCurb(test_ind);
-    mean_DTCW               = SVMTrainData_BootSrapped_WE.mean_DTCW(test_ind);
-    std_DTCW                = SVMTrainData_BootSrapped_WE.std_DTCW(test_ind);
-    duration_ego_vehicle    = SVMTrainData_BootSrapped_WE.duration_ego_vehicle(test_ind);
-    gaze_ratio              = SVMTrainData_BootSrapped_WE.gaze_ratio(test_ind);
+    mean_veh_speed          = SVMTrainData_BootSrapped_WOE.mean_veh_speed(test_ind);
+    std_veh_speed           = SVMTrainData_BootSrapped_WOE.std_veh_speed(test_ind);
+    mean_veh_acc            = SVMTrainData_BootSrapped_WOE.mean_veh_acc(test_ind);
+    std_veh_acc             = SVMTrainData_BootSrapped_WOE.std_veh_acc(test_ind);
+    mean_veh_ped_dist       = SVMTrainData_BootSrapped_WOE.mean_veh_ped_dist(test_ind);
+    std_veh_ped_dist        = SVMTrainData_BootSrapped_WOE.std_veh_ped_dist(test_ind);
+    mean_ped_speed          = SVMTrainData_BootSrapped_WOE.mean_ped_speed(test_ind);
+    std_ped_speed           = SVMTrainData_BootSrapped_WOE.std_ped_speed(test_ind);
+    mean_DTCurb             = SVMTrainData_BootSrapped_WOE.mean_DTCurb(test_ind);
+    std_DTCurb              = SVMTrainData_BootSrapped_WOE.std_DTCurb(test_ind);
+    mean_DTCW               = SVMTrainData_BootSrapped_WOE.mean_DTCW(test_ind);
+    std_DTCW                = SVMTrainData_BootSrapped_WOE.std_DTCW(test_ind);
+    duration_ego_vehicle    = SVMTrainData_BootSrapped_WOE.duration_ego_vehicle(test_ind);
+    gaze_ratio              = SVMTrainData_BootSrapped_WOE.gaze_ratio(test_ind);
     
     SVMFeatures = table(mean_veh_speed, std_veh_speed, mean_veh_acc, std_veh_acc,...
                         mean_veh_ped_dist, std_veh_ped_dist, mean_ped_speed, std_ped_speed,...
@@ -126,7 +126,7 @@ for test_ind = 1:size(SVMTrainData_BootSrapped_WE,1)
 
 
     [predicted_decision(test_ind)] = predict(SVMModel, SVMFeatures);  
-    actual_decision(test_ind) = SVMTrainData_BootSrapped_WE.cross_intent(test_ind);
+    actual_decision(test_ind) = SVMTrainData_BootSrapped_WOE.cross_intent(test_ind);
 end
 
 [Performance,Actual,Predicted] = classifierPerformance(actual_decision,predicted_decision,0.5);
@@ -134,7 +134,7 @@ end
 
 ind_correct_crossing_intent = find(predicted_decision==0 & actual_decision==0);
 
-cw_dist = SVMTrainData_BootSrapped_WE.mean_DTCW(ind_correct_crossing_intent);
+cw_dist = SVMTrainData_BootSrapped_WOE.mean_DTCW(ind_correct_crossing_intent);
 %%
 
 

@@ -1,6 +1,6 @@
 %% This script checks if a gap has started and calculates the gap features
 
-function [GapFeatures, currentPedMetaData, flag] = compileGapFeatures(PedData, currentTSPedEgoData, currentTSEgoCarData, currentPedMetaData, pedTrackTimeStep, Params, flag)
+function [GapFeatures, currentPedMetaData, flag] = compileGapFeatures(PedData, currentTSPedEgoData, currentTSEgoCarData, currentPedMetaData, pedTrackTimeStep, Params, flag, trackletNo)
 
 % parameters
 GapFeatures = [];
@@ -28,7 +28,7 @@ GapCond_2 = abs(PedData.longDispPedCw(end-1)) >= decZone && ...
 if ( GapCond_1 || GapCond_2 ) 
     % 2a) is this a new gap? i.e. a new car and not a previous car gap?  
     if isempty(intersect(PedData.closeCar_ind(end), currentPedMetaData.egoVehGapHist)) % this is an additional check; actually not necessary
-            flag.GapStart = true;
+            flag.GapStart(trackletNo) = true;
             currentPedMetaData.egoVehGapHist = [currentPedMetaData.egoVehGapHist, PedData.closeCar_ind(end)];
 
             % 3)Features for Gap Model
@@ -39,16 +39,6 @@ if ( GapCond_1 || GapCond_2 )
             % iii) longitudinal distance to vehicle - already calculated
             % iv) longitudinal distance to crosswalk - already calculated
             % v) cumulative waiting time
-%             if currentPedMetaData.waitStartFlag
-%                 if (strcmp(currentTSPedData.HybridState{end}, 'Wait'))
-%                     F_cumWait = (currentTSPedData.data.trackLifeTime(ped_track_time_step) - wait_start_time_step)*AdjustedSampFreq;
-%                 else
-%                     F_cumWait = 0;
-%                 end
-%             elseif ( strcmp(currentTSPedData.HybridState{end}, 'Wait') && strcmp(currentTSPedData.HybridState{end-1}, 'Approach') )
-%                 currentPedMetaData.waitStartFlag = true;
-%                 currentTSPedData.wait_start_time_step = [currentTSPedData.wait_start_time_step, scene_time_step];
-%             end
             F_cumWait = PedData.waitTimeSteps(end);
             % vi) current vehicle speed
             if ( PedData.closeCar_ind(end)~=inf)
@@ -59,12 +49,12 @@ if ( GapCond_1 || GapCond_2 )
                 F_vehAcc = inf;
             end
 
-            % vii) Gaze!!
+            % vii) Gaze!
             F_gazeRatio = sum(PedData.isLooking(end-N+1:end))/N;
             % viii) Ego-car Lane to pedestrian
-            % F_egoLane = (mean(PedData.isNearLane(end-N+1:end)) > 0.5);
+            F_isEgoNearLane = (mean(PedData.isNearLane(end-N+1:end)) > 0.5);
             % ix) Pedestrian direction
-            F_direction = (mean(PedData.isPedSameDirection(end-N+1:end)) > 0.5);
+            F_isSameDirection = (mean(PedData.isPedSameDirection(end-N+1:end)) > 0.5);
             
             % compile gap features
             gap_ind = 1;  %vector sent as output of the function for every gap
@@ -83,13 +73,13 @@ if ( GapCond_1 || GapCond_2 )
             GapFeatures.F_vehAcc(gap_ind,1) = F_vehAcc;
             GapFeatures.F_gazeRatio(gap_ind,1) = F_gazeRatio;
             
-%            GapFeatures.F_egoLane = F_egoLane;
-            GapFeatures.F_direction = F_direction;
+            GapFeatures.F_isEgoNearLane = F_isEgoNearLane;
+            GapFeatures.F_isSameDirection = F_isSameDirection;
     else
-         flag.GapStart = false; %reset gap start
+         flag.GapStart(trackletNo) = false; %reset gap start
     end
 else
-    flag.GapStart = false;
+    flag.GapStart(trackletNo) = false;
 end
 
 end

@@ -22,21 +22,23 @@ SVMModel = GapAcceptance_inD_7Features_FGaussianSVM_BootStrappedOnce.Classificat
 
 
 %% Split the data into test and train sets
+GapFeatures_SVM_NoOutliers = GapFeatures(ind_all_legal_gaps,:);
+
 TrainData_percent = 80;
 
-N_tracks = size(GapFeatures_SVM_legal,1);
+N_tracks = size(GapFeatures_SVM_NoOutliers,1);
 All_tracks = [1:N_tracks]';
 Train_tracks = randperm(N_tracks, int32(TrainData_percent/100*N_tracks))';
 Test_tracks = All_tracks;
 Test_tracks(Train_tracks) = [];
 
 % subset of gaps
-AcceptedGaps = find(GapFeatures_SVM_legal.CrossDecision==1);
-RejectedGaps = find(GapFeatures_SVM_legal.CrossDecision==0);
+AcceptedGaps = find(GapFeatures_SVM_NoOutliers.CrossDecision==1);
+RejectedGaps = find(GapFeatures_SVM_NoOutliers.CrossDecision==0);
 
 % SVM data
-SVMTrainData = GapFeatures_SVM_legal(Train_tracks,:);
-SVMTestData = GapFeatures_SVM_legal(Test_tracks,:);
+SVMTrainData = GapFeatures_SVM_NoOutliers(Train_tracks,:);
+SVMTestData = GapFeatures_SVM_NoOutliers(Test_tracks,:);
 
 % For bootstrapping
 AcceptedGaps_test = find(SVMTestData.CrossDecision==1);
@@ -78,8 +80,8 @@ end
 % SVMModel = GapAcceptance_inD_6Features_noGaze_noTimeGap_GaussianSVM.ClassificationSVM;
 
 
-load('GapAcceptance_inD_7Features_FGaussianSVM_BootStrappedTwice.mat');
-SVMModel = GapAcceptance_inD_7Features_FGaussianSVM_BootStrappedTwice.ClassificationSVM;
+load('GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.mat');
+SVMModel = GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.ClassificationSVM;
 
 
 for test_ind = 1:size(Test_tracks,1)
@@ -91,9 +93,12 @@ for test_ind = 1:size(Test_tracks,1)
     F_pedDistToVeh = SVMTestData.F_pedDistToVeh(test_ind);
     F_vehVel = SVMTestData.F_vehVel(test_ind);
     F_gazeRatio = SVMTestData.F_gazeRatio(test_ind);
+    F_isSameDirection = SVMTestData.F_isSameDirection(test_ind);
+    F_isEgoNearLane = SVMTestData.F_isEgoNearLane(test_ind);
     
     SVMFeatures = table(F_cumWait, F_pedDistToCW, F_pedDistToCurb,...
-                           F_pedDistToVeh, F_pedSpeed, F_vehVel, F_gazeRatio);
+                           F_pedDistToVeh, F_pedSpeed, F_vehVel, F_gazeRatio,...
+                           F_isSameDirection, F_isEgoNearLane);
             
 %     % feature order for inD model
 %     features = [SVMTestData.F_pedSpeed(test_ind), SVMTestData.F_pedDistToCW(test_ind), SVMTestData.F_cumWait(test_ind), ...

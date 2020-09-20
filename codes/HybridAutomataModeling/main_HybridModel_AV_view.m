@@ -2,7 +2,7 @@
 % pedestrians interacting with a single automated vehicle
 
 % 1) Discrete State Transitions - various probabilistic SVM models
-% 2) Contunous State Transitions - constant velocity with KF and Gaussian
+% 2) Continuous State Transitions - constant velocity with KF and Gaussian
 % Noise
 % 3) A Bayesian Inference framework is used for predicting and updating the
 % states of the hybrid model
@@ -18,8 +18,8 @@
 %% Updated: 08/25/20
 
 %% debug
-clearvars -except resetStates annotatedImageEnhanced formattedTracksData tracks tracksMetaData cw Prob_CrossIntentModel Prob_GapAcceptanceModel Params
-N_Scenes = 2;
+clearvars -except resetStates annotatedImageEnhanced formattedTracksData tracks tracksMetaData cw Prob_CrossIntentModelCar Prob_CrossIntentModelNoCar Prob_GapAcceptanceModel Params
+
 %% setup
 % a) addpath of necessary directories
 p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
@@ -27,15 +27,18 @@ p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
 addpath(p1)
 addpath(p2)
 
-% b)load models
-% %load the gap acceptance model
-% load('GapAcceptance_inD_6Features_noGaze_noTimeGap_FGaussianSVM_2300RejGaps_BootStrapped.mat', 'GapAcceptance_inD_6Features_noGaze_noTimeGap_GaussianSVM');
-% GapAcceptanceModel = GapAcceptance_inD_6Features_noGaze_noTimeGap_GaussianSVM.ClassificationSVM;
-% Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
-% % load the crossing intent model
-% load('CrossIntent_inD_6Features_onlyMean_noVehAcc_GaussianSVM_3s.mat');
-% CrossIntentModel = CrossIntent_inD_6Features_onlyMean_noVehAcc_GaussianSVM.ClassificationSVM;
-% Prob_CrossIntentModel = fitSVMPosterior(CrossIntentModel);
+% % b)load models
+% % load the gap acceptance model
+load('GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.mat', 'GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice');
+GapAcceptanceModel = GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.ClassificationSVM;
+Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
+% load the crossing intent model
+load('CrossIntent_inD_9Features_BS2_noDuration_MGaussianSVM_3s.mat');
+CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_MGaussianSVM_3s.ClassificationSVM;
+Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
+load('CrossIntent_NoCar_inD_9Features_BS1_noDuration_FGaussianSVM_3s.mat');
+CrossIntentModelNoCar = CrossIntent_NoCar_inD_9Features_BS1_noDuration_FGaussianSVM_3s.ClassificationSVM;
+Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
 
 %c) parameters
 dataset="inD";
@@ -48,42 +51,43 @@ flag.dataCompile = false;
 
 %% compile/data tracks data if flag.dataCompile
 %     % a) Run the following if compiling data for the first time, else
-%     run1b) [formattedTracksData, tracksMetaData, N_scenes,
-%     annotatedImage_enhanced, orthopxToMeter, cw] = inD_compile(Params,
-%     reset); [tracks, ~] = trackDescriptives(formattedTracksData,
-%     N_scenes);
-% 
-%     for scene_id = 1:N_scenes
-%         tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))
-%         = {zeros(20,1)};  % for inD dataset the maximum number of gaps
-%         for a pedestrian track is '13'
-%         tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))
-%         = inf;  % when pedestrians start to wait
-%     end
-% 
-%     % %check for ego-pedestrian and pedestrian gaze for the entire
-%     dataset egoPed_Gaze_HPed;
-% 
-%     % save the data file for later reuse
-%     save('tracksData_reSampled_correctDisCW_v2.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
-%     x = 1;
-%     
-% else
-%     
-%     % b) load already compiled tracks data
-%     load('tracksData_reSampled_correctDisCW_v4.mat')
-%     load('inD_trackDescriptives_removed_ped_tracks.mat') 
-%     tracks =  tracks_updated;
-% end
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%     run1b) 
+if flag.dataCompile
+    [formattedTracksData, allTracksMetaData, N_Scenes, annotatedImageEnhanced] = inD_compile(Params, reset);
+    [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
+
+    for scene_id = 1:N_scenes
+            tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
+            tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
+    end
+
+        % %check for ego-pedestrian and pedestrian gaze for the entire dataset
+        egoPed_Gaze_HPed;
+
+        % save the data file for later reuse
+        save('tracksData_reSampled_correctDisCW_v2.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
+        x = 1;
+    
+else
+    
+    % b) load already compiled tracks data
+    load('tracksData_reSampled_correctDisCW_v7.mat')
+    load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
+    tracks =  tracksUpdated;
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %% For every time step in a scene for every scene, run the prediction and update loops; 
 % the compiled tracks data serve as observations. This way the code can be
 % directly reused for any simulations with minimal changes
 
+%% debug
+N_Scenes = 1;
+
 % initialize variables
 GapFeaturesAllScenes = {};
+CrossFeaturesAllScenes = {};
 predPedIndex = 0;
 flag.pred = false; % this is to run the close CW function ('hybridState') w/o hybrid state update
 % loop starts
@@ -93,8 +97,8 @@ for sceneId = 1:N_Scenes
     trackTimeStep = 1;  % time loop of the scene  
     carMovingTracks = tracks{sceneId}.carMovingTracks;
     % assume every moving car track is an ego-AV
-    % for track_id = 1:length(car_moving_tracks)
-    for trackId = 1:5
+%     for trackId = 1:length(carMovingTracks)
+    for trackId = 6:20
         % initialize trak variables
         carTrackId = carMovingTracks(trackId);
         carData = formattedTracksData{sceneId}{carTrackId};
@@ -178,14 +182,15 @@ for sceneId = 1:N_Scenes
                         else
                             crossCarData = [];
                         end
-                        [pedPredictions, pedKFpredictions, pred_GapFeatures] = predictStates(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, crossCarData, AVStates, pedTrackTimeStep, ...
-                                                                           cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModel, 1, Params, flag);
-                        GapFeaturesAllScenes = [GapFeaturesAllScenes; pred_GapFeatures];
+                        [pedPredictions, pedKFpredictions, predGapFeatures, predCrossFeatures] = predictStates(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, crossCarData, AVStates, pedTrackTimeStep, ...
+                                                                           cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModelCar,Prob_CrossIntentModelNoCar, Params, flag);
+                        GapFeaturesAllScenes = [GapFeaturesAllScenes; predGapFeatures];
+                        CrossFeaturesAllScenes = [CrossFeaturesAllScenes; predCrossFeatures];
                     else
                         [pedPredictions, pedKFpredictions] = HPed_CV(kf, currentPedData, Params, pedTrackTimeStep);
                     end
                     
-                     % 5) Save the predictions
+                    % 5) Save the predictions
                     if pedTrackTimeStep >= Params.AdjustedSampFreq
                         predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
                         predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;

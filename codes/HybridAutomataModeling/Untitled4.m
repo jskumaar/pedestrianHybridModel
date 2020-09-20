@@ -287,8 +287,8 @@
 %     end
 % end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % for sceneId = 1:12
 %    tracks{sceneId}.pedCrossingTracks = tracks{sceneId}.ped_crossing_tracks;
 %    tracks{sceneId}.pedNotCrossingTracks = tracks{sceneId}.ped_not_crossing_tracks;  
@@ -318,7 +318,6 @@
 %    tracksUpdated{sceneId}.carParkedTracks = tracks_updated{sceneId}.car_parked_tracks;
 %    tracksUpdated{sceneId}.carMovingTracks = tracks_updated{sceneId}.car_moving_tracks;
 %    
-%    
 %    tracks_updated{sceneId}.ped_crossing_tracks = [];
 %    tracks_updated{sceneId}.ped_not_crossing_tracks = [];  
 %    tracks_updated{sceneId}.ped_jaywalking_tracks = [];
@@ -327,7 +326,5 @@
 %    tracks_updated{sceneId}.car_tracks = [];
 %    tracks_updated{sceneId}.car_parked_tracks = [];
 %    tracks_updated{sceneId}.car_moving_tracks = [];
-% 
-%     
 % end
 % 

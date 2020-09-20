@@ -16,7 +16,7 @@
 
 
 
-
+GapFeatures_SVM = GapFeatures;
 
 
 AcceptedGaps = find(GapFeatures_SVM.CrossDecision==1);
@@ -36,14 +36,14 @@ RejectedGaps_train_ss = find(SVMTrainData_subset.CrossDecision==0);
 % to find gap outliers
 Velocity_Gaps = GapFeatures_SVM.F_pedDistToVeh./GapFeatures_SVM.F_vehVel;
 Velocity_Gaps_range = Velocity_Gaps;
-Velocity_Gaps_range(GapFeatures_SVM.F_pedDistToVeh<=0 | GapFeatures_SVM.F_vehVel<0.5 | Velocity_Gaps>10.78) = [];
+Velocity_Gaps_range(GapFeatures_SVM.F_pedDistToVeh<=0 | GapFeatures_SVM.F_vehVel<0.5 | Velocity_Gaps>100) = [];
 
 figure()
 b1 = boxplot(Velocity_Gaps_range);
-% max outlier = 10.78; min outlier = 0.0;
+% max outlier = 10.84; min outlier = 0.0;
 
 % find indices of accept and reject gaps for non-outlying gaps
-ind_remove_velocity_dist = find(GapFeatures_SVM.F_pedDistToVeh<=0 | GapFeatures_SVM.F_vehVel<0.5 | Velocity_Gaps>10.78);
+ind_remove_velocity_dist = find(GapFeatures_SVM.F_pedDistToVeh<=0 | GapFeatures_SVM.F_vehVel<0.5 | Velocity_Gaps>10.84);
 ind_all_legal_gaps = [1:length(Velocity_Gaps)]';
 ind_all_legal_gaps(ind_remove_velocity_dist) = [];
 
@@ -54,6 +54,10 @@ ind_accepted_gaps(ind_rem) = [];
 ind_rejected_gaps = RejectedGaps;
 [~,ind_rem,~] = intersect(ind_rejected_gaps, ind_remove_velocity_dist);
 ind_rejected_gaps(ind_rem) = [];
+
+GapFeatures_SVM_NoOutliers = GapFeatures_SVM;
+
+
 
 % Gap acceptance parameter distribution
 typeOfGap = RejectedGaps_train;

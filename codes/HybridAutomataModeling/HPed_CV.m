@@ -7,14 +7,14 @@ pedPos = [currentPedData.xCenter(ped_track_time_step), currentPedData.yCenter(pe
 pedVel = [currentPedData.xVelocity(ped_track_time_step), currentPedData.yVelocity(ped_track_time_step)];
 
 pedPredictions{1}(1,1) = -1; % if end Node is -1, it represents that predictions were made using the constant velocity model
-pedPredictions{1}(1,1) = 1;  % probability of predicted path
+pedPredictions{1}(1,2) = 1;  % probability of predicted path
 
 % 1st prediction
 pedPredictions{1} = [pedPredictions{1}, pedPos + del_t*pedVel];
 kf = kalmanPredict(kf);
 kfPred = [kf.x', diag(kf.P)'];
 
-for pred_time_step = 2:Params.pred_horizon
+for pred_time_step = 2:Params.predHorizon
     pedPredictions{1}(end+1:end+2) = pedPredictions{1}(end-1:end) + del_t*pedVel;
     kf = kalmanPredict(kf);
     kfPred(end+1, :) = [kf.x', diag(kf.P)'];
