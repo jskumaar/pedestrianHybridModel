@@ -21,9 +21,11 @@
 clearvars -except resetStates annotatedImageEnhanced formattedTracksData tracks tracksMetaData cw Prob_CrossIntentModelCar Prob_CrossIntentModelNoCar Prob_GapAcceptanceModel Params
 
 %% setup
-% a) addpath of necessary directories
-p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
-p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+% % a) addpath of necessary directories
+% p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+% p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+p1 = genpath('E:\pedestrianHybridModel\codes');
+p2 = genpath('E:\pedestrianHybridModel\datasets');
 addpath(p1)
 addpath(p2)
 
@@ -97,8 +99,8 @@ for sceneId = 1:N_Scenes
     trackTimeStep = 1;  % time loop of the scene  
     carMovingTracks = tracks{sceneId}.carMovingTracks;
     % assume every moving car track is an ego-AV
-%     for trackId = 1:length(carMovingTracks)
-    for trackId = 6:20
+    for trackId = 1:length(carMovingTracks)
+%     for trackId = 6:20
         % initialize trak variables
         carTrackId = carMovingTracks(trackId);
         carData = formattedTracksData{sceneId}{carTrackId};
