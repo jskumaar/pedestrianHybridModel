@@ -3,34 +3,30 @@
 % this tracklet
 % Output: set of tracklets with additionally a new tracklet
 
-function [predTracklet, flag] = newTracklet(flag, predTracklet, node_no, prob_tracklet)
+function [predTracklet, newTrackletId, flag] = newTracklet(flag, predTracklet, node_no, prob_tracklet, newTrackletId)
     % current number of tracklets
-    N_tracklets = size(predTracklet.data,1);
+    % N_tracklets = size(predTracklet.data,1);  
+    newTrackletId = newTrackletId + 1;
+    
     % create a new tracklet and initialize it
-    predTracklet.data{N_tracklets+1,1} = predTracklet.data{N_tracklets}(end, :);
-    predTracklet.probability(N_tracklets+1,1) = prob_tracklet; 
-    predTracklet.startNode(N_tracklets+1,1) = node_no; 
-    predTracklet.isActive(N_tracklets+1,1) = true; 
-    predTracklet.eventFlag(N_tracklets+1,1) = false;
-    predTracklet.endNode(N_tracklets+1,1) = -1; 
-    predTracklet.Goal(N_tracklets+1,:) = 'NA';
-    
-    predTracklet.kfData{N_tracklets+1,1} = predTracklet.kfData{N_tracklets}(end, :);
-    
-    if N_tracklets>=3
-        x=1;
-    end
-    
+    predTracklet.data{newTrackletId,1} = predTracklet.data{newTrackletId-1}(end, :);
+    predTracklet.probability(newTrackletId,1) = prob_tracklet; 
+    predTracklet.startNode(newTrackletId,1) = node_no; 
+    predTracklet.isActive(newTrackletId,1) = true; 
+    predTracklet.eventFlag(newTrackletId,1) = false;
+    predTracklet.endNode(newTrackletId,1) = -1; 
+    predTracklet.Goal(newTrackletId,:) = 'NA';   
+    predTracklet.kfData{newTrackletId,1} = predTracklet.kfData{newTrackletId-1}(end, :);
+        
     % initialize all flags for the new tracklet
-    flag.dataCompile(N_tracklets+1) = false;
-    flag.pred(N_tracklets+1) = false;
-    flag.EgoCar(N_tracklets+1) = false;
-    flag.GapStart(N_tracklets+1) = false;
-    flag.sampleWaitTime(N_tracklets+1) = false;
-    flag.startCross(N_tracklets+1) = false;
-    flag.finishedCrossing(N_tracklets+1) = false;
-    flag.reachCrosswalk(N_tracklets+1) = false;    
-    flag.checkIntent(N_tracklets+1) = false;
-    flag.atCrosswalk(N_tracklets+1) = false;
-    
+    flag.dataCompile(newTrackletId) = false;
+    flag.pred(newTrackletId) = false;
+    flag.EgoCar(newTrackletId) = false;
+    flag.GapStart(newTrackletId) = false;
+    flag.sampleWaitTime(newTrackletId) = false;
+    flag.startCross(newTrackletId) = false;
+    flag.finishedCrossing(newTrackletId) = false;
+    flag.reachCrosswalk(newTrackletId) = false;    
+    flag.checkIntent(newTrackletId) = false;
+    flag.atCrosswalk(newTrackletId) = false;
 end

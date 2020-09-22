@@ -17,7 +17,6 @@ closeCar_ind = inf;
 cwCar = inf;
 longDispPedCwPixels = inf;
 isLooking = false;
-carHeading = inf;
 pedHeading = currentPedTrackData.calcHeading(end);
 isPedSameDirection = false;
 

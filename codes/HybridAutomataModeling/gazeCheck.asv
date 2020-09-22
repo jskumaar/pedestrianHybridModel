@@ -56,12 +56,12 @@ pedVisionPoints = pedPosPixels +  [[0, 0];
                                     (rot2*[gazeRadiiPixels, 0]')'];
                    
                                 
-% % create polygon objects for the car and gaze region and check intersection
-% carBox = polyshape([carEdgePoints(:,1), carEdgePoints(:,2)]);                        
-% pedVisionBox = polyshape(pedVisionPoints(:,1), pedVisionPoints(:,2));                                
-% intersectingRegion = intersect(pedVisionBox, carBox);          
+% create polygon objects for the car's box
+carBox = polyshape([carEdgePoints(:,1), carEdgePoints(:,2)]);                        
+pedVisionBox = polyshape(pedVisionPoints(:,1), pedVisionPoints(:,2));                                
+intersectingRegion = intersect(pedVisionBox, carBox);          
 
-% check intersection of points
+
 [in,on] = inpolygon(carEdgePoints(:,1),carEdgePoints(:,2),pedVisionPoints(:,1),pedVisionPoints(:,2));
 if ~isempty(in) || ~isempty(on)
     isLooking = true;

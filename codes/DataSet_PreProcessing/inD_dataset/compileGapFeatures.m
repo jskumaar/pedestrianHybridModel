@@ -1,6 +1,6 @@
 %% This script checks if a gap has started and calculates the gap features
 
-function [GapFeatures, currentPedMetaData, flag] = compileGapFeatures(PedData, currentTSPedEgoData, currentTSEgoCarData, currentPedMetaData, pedTrackTimeStep, Params, flag, trackletNo)
+function [GapFeatures, egoVehGapHist, flag] = compileGapFeatures(PedData, currentTSPedEgoData, currentTSEgoCarData, currentPedMetaData, pedTrackTimeStep, Params, flag, trackletNo)
 
 % parameters
 GapFeatures = [];
@@ -29,7 +29,7 @@ if ( GapCond_1 || GapCond_2 )
     % 2a) is this a new gap? i.e. a new car and not a previous car gap?  
     if isempty(intersect(PedData.closeCar_ind(end), currentPedMetaData.egoVehGapHist)) % this is an additional check; actually not necessary
             flag.GapStart(trackletNo) = true;
-            currentPedMetaData.egoVehGapHist = [currentPedMetaData.egoVehGapHist, PedData.closeCar_ind(end)];
+            egoVehGapHist = [egoVehGapHist, PedData.closeCar_ind(end)];
 
             % 3)Features for Gap Model
             % calculate the features for the hybrid system model

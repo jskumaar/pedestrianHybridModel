@@ -22,25 +22,25 @@ clearvars -except resetStates annotatedImageEnhanced formattedTracksData tracks 
 
 %% setup
 % % a) addpath of necessary directories
-% p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
-% p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
-p1 = genpath('E:\pedestrianHybridModel\codes');
-p2 = genpath('E:\pedestrianHybridModel\datasets');
+p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+% p1 = genpath('E:\pedestrianHybridModel\codes');
+% p2 = genpath('E:\pedestrianHybridModel\datasets');
 addpath(p1)
 addpath(p2)
 
-% % b)load models
-% % load the gap acceptance model
-% load('GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.mat', 'GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice');
-% GapAcceptanceModel = GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.ClassificationSVM;
-% Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
-% % load the crossing intent model
-% load('CrossIntent_inD_9Features_BS2_noDuration_MGaussianSVM_3s.mat');
-% CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_MGaussianSVM_3s.ClassificationSVM;
-% Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
-% load('CrossIntent_NoCar_inD_9Features_BS1_noDuration_FGaussianSVM_3s.mat');
-% CrossIntentModelNoCar = CrossIntent_NoCar_inD_9Features_BS1_noDuration_FGaussianSVM_3s.ClassificationSVM;
-% Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
+% b)load models
+% load the gap acceptance model
+load('GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.mat', 'GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice');
+GapAcceptanceModel = GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.ClassificationSVM;
+Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
+% load the crossing intent model
+load('CrossIntent_inD_9Features_BS2_noDuration_MGaussianSVM_3s.mat');
+CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_MGaussianSVM_3s.ClassificationSVM;
+Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
+load('CrossIntent_NoCar_inD_9Features_BS1_noDuration_FGaussianSVM_3s.mat');
+CrossIntentModelNoCar = CrossIntent_NoCar_inD_9Features_BS1_noDuration_FGaussianSVM_3s.ClassificationSVM;
+Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
 
 %c) parameters
 dataset="inD";
@@ -50,33 +50,33 @@ HPed_params;
 flag.dataCompile = false;
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% 
-% %% compile/data tracks data if flag.dataCompile
-% %     % a) Run the following if compiling data for the first time, else
-% %     run1b) 
-% if flag.dataCompile
-%     [formattedTracksData, allTracksMetaData, N_Scenes, annotatedImageEnhanced] = inD_compile(Params, reset);
-%     [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
-% 
-%     for scene_id = 1:N_scenes
-%             tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
-%             tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
-%     end
-% 
-%         % %check for ego-pedestrian and pedestrian gaze for the entire dataset
-%         egoPed_Gaze_HPed;
-% 
-%         % save the data file for later reuse
-%         save('tracksData_reSampled_correctDisCW_v2.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
-%         x = 1;
-%     
-% else
-%     
-%     % b) load already compiled tracks data
-%     load('tracksData_reSampled_correctDisCW_v7.mat')
-%     load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
-%     tracks =  tracksUpdated;
-% end
+
+%% compile/data tracks data if flag.dataCompile
+%     % a) Run the following if compiling data for the first time, else
+%     run1b) 
+if flag.dataCompile
+    [formattedTracksData, allTracksMetaData, N_Scenes, annotatedImageEnhanced] = inD_compile(Params, reset);
+    [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
+
+    for scene_id = 1:N_scenes
+            tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
+            tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
+    end
+
+        % %check for ego-pedestrian and pedestrian gaze for the entire dataset
+        egoPed_Gaze_HPed;
+
+        % save the data file for later reuse
+        save('tracksData_reSampled_correctDisCW_v2.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
+        x = 1;
+    
+else
+    
+    % b) load already compiled tracks data
+    load('tracksData_reSampled_correctDisCW_v7.mat')
+    load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
+    tracks =  tracksUpdated;
+end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
