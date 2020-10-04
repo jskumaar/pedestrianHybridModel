@@ -5,14 +5,13 @@ addpath(p1)
 addpath(p2)
 
 %load('tracksData_reSampled_correctDisCW_v6.mat')
-load('inD_trackDescriptives_removed_ped_tracks.mat') 
-tracks = tracks_updated;
+load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
+tracks = tracksUpdated;
 
 % parameters
-dec_zone = 5; % in m
+dec_zone = Params.decZone; % in m
 N_scenes=12;
-AdjustedSampFreq = 5;
-
+AdjustedSampFreq = Params.AdjustedSampFreq;
 %initialize
 gap_ind = 1;
 GapFeatures = table();
@@ -22,10 +21,10 @@ missedGapCounter = 0;
 for scene_id = 1:N_scenes
 
   
-    car_tracks = tracks{scene_id}.car_tracks;
-    car_parked_tracks = tracks{scene_id}.car_parked_tracks;
-    ped_crossing_tracks = tracks{scene_id}.ped_crossing_tracks;
-    ped_not_crossing_tracks = tracks{scene_id}.ped_not_crossing_tracks;
+    car_tracks = tracks{scene_id}.carTracks;
+    car_parked_tracks = tracks{scene_id}.carParkedTracks;
+    ped_crossing_tracks = tracks{scene_id}.pedCrossingTracks;
+    ped_not_crossing_tracks = tracks{scene_id}.pedNotCrossingTracks;
     car_moving_tracks = car_tracks;
     [~,ind] = intersect(car_tracks, car_parked_tracks);
     car_moving_tracks(ind) = [];
@@ -41,7 +40,7 @@ for scene_id = 1:N_scenes
         ped_vel = [pedData.xVelocity, pedData.yVelocity];
 
          % at every time step of the pedestrian trajectory
-        for time_step = 1:size(formattedTracksData{scene_id}{ped_track},1)
+        for time_step = 1:size(formattedTracksData{scene_id}{ped_track}.trackLifetime,1)
             pedFrame = pedData.frame(time_step);
             pedPosPixels = double([pedData.xCenterPix(time_step), pedData.yCenterPix(time_step)]);
             cw_ped = pedData.closestCW(time_step);
@@ -88,7 +87,7 @@ for scene_id = 1:N_scenes
                                 % 3) longitudinal distance to vehicle - already calculated
 
                                 % 4) cumulative waiting time
-                                if sum(ismember(pedData.Properties.VariableNames,'waitTimeSteps'))
+                                if isfield(pedData,'waitTimeSteps')
                                     F_cumWait = pedData.waitTimeSteps(end);
                                 else
                                     F_cumWait = pedData.wait_time_steps(end);
@@ -108,7 +107,7 @@ for scene_id = 1:N_scenes
                                 
 
                                 % compile gap features
-                                if sum(ismember(pedData.Properties.VariableNames,'isNearLane'))
+                                if isfield(pedData,'isNearLane')
                                 
                                     GapFeatures.recording(gap_ind,1) = pedData.recordingId(1);
                                     GapFeatures.frame(gap_ind,1) = pedFrame;
@@ -138,8 +137,8 @@ for scene_id = 1:N_scenes
                     end %end of inner gap checking loop
 
                     %has the pedestrian started crossing or started jaywalking?
-                    if ( strcmp(pedData.HybridState{time_step},'Crossing') && ~strcmp(pedData.HybridState{time_step-1},'Crossing')  || ...
-                         strcmp(pedData.HybridState{time_step},'Jaywalking') && ~strcmp(pedData.HybridState{time_step-1},'Jaywalking')   )
+                    if ( strcmp(pedData.HybridState(time_step,:),'Crossing') && ~strcmp(pedData.HybridState(time_step-1,:),'Crossing')  || ...
+                         strcmp(pedData.HybridState(time_step,:),'Jaywalking') && ~strcmp(pedData.HybridState(time_step-1,:),'Jaywalking')   )
 
                         % if the pedestrian crossed for the ego-vehicle
                         % (closeCar_ind), whose gap started sometime
@@ -155,7 +154,7 @@ for scene_id = 1:N_scenes
                             % check whether the pedestrian crossed
                             % the street or jaywalked during this
                             % particular gap
-                            if ( strcmp(pedData.HybridState{time_step},'Crossing') && ~strcmp(pedData.HybridState{time_step-1},'Crossing') )
+                            if ( strcmp(pedData.HybridState(time_step,:),'Crossing') && ~strcmp(pedData.HybridState(time_step-1,:),'Crossing') )
                                 GapFeatures.CrossDecision(GapFeatures_ind,1) = true;
                                 GapFeatures.JaywalkDecision(GapFeatures_ind,1) = false;
                             else

@@ -1,6 +1,6 @@
 %% This script initializes the H-Ped model parameters
 
-% %% dataset parameters
+%% dataset parameters
 if dataset=="inD"
     inD_params;
 end
@@ -16,7 +16,7 @@ Params.rollOverWindow = 1*Params.AdjustedSampFreq;  % in time steps; 1s
 Params.observationWindow = 3*Params.AdjustedSampFreq; % in time stepsl 3s
 
 % c) pedestrian parameters
-Params.headingThreshold = 90; %45 degrees
+Params.headingThreshold = 95; %45 degrees
 Params.stoppingThreshold = 0.5; %speed m/s
 Params.walkingThreshold = 0.1; %speed m/s 
 Params.movingThreshold = 0.2; % in m/s

@@ -6,12 +6,11 @@ function [Performance,Actual,Predicted] = classifierPerformance(ActualOutput,Pre
 Predicted.Output = PredictedOutput;
 Actual.Output = ActualOutput;
 
-
 Predicted.WaitInd = find(Predicted.Output<Threshold);
 Predicted.CrossInd = find(Predicted.Output>=Threshold);
 
-Actual.WaitInd = find(Actual.Output==0);
-Actual.CrossInd = find(Actual.Output==1);
+Actual.WaitInd = find(Actual.Output<Threshold);
+Actual.CrossInd = find(Actual.Output>=Threshold);
 
 ActualWaitPredWait = intersect(Actual.WaitInd,Predicted.WaitInd);
 ActualWaitPredCross = intersect(Actual.WaitInd,Predicted.CrossInd);

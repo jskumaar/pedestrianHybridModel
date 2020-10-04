@@ -196,14 +196,14 @@
 % 
 % 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% % % read tracks Meta Data
-% % 
-% % for jj=1:12
-% %     sceneId = 17+jj;
-% %     tracksMetaData{jj} = readtable(strcat(num2str(sceneId),'_tracksMeta.csv')) ;
-% % 
-% % end
+% read tracks Meta Data
+
+% for jj=1:12
+%     sceneId = 17+jj;
+%     tracksMetaData{jj} = readtable(strcat(num2str(sceneId),'_tracksMeta.csv')) ;
 % 
+% end
+% % 
 % 
 % %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % create a wait time 
@@ -328,3 +328,12 @@
 %    tracks_updated{sceneId}.car_moving_tracks = [];
 % end
 % 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for sceneId = 1:12
+    N_tracks = size(formattedTracksData{sceneId},1);
+    for track_id = 1:N_tracks
+        formattedTracksDataStruct{sceneId,1}{track_id,1} = table2struct(formattedTracksData{sceneId}{track_id}, 'ToScalar',true);
+        formattedTracksDataStruct{sceneId,1}{track_id,1}.class  = string( formattedTracksDataStruct{sceneId,1}{track_id,1}.class);
+    end
+end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

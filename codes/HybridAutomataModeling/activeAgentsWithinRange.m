@@ -2,8 +2,10 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % initialize
-activePedWithinRange = [];
-activeCarWithinRange = [];
+activePedWithinRange = zeros(100,1);
+activeCarWithinRange = zeros(100,1);
+pedId = 1;
+carId = 1;
 
 %% Find the active car and pedestrian tracks for this time step
 pedTracks = [tracks{sceneId}.pedCrossingTracks; tracks{sceneId}.pedNotCrossingTracks]; % exclude jaywalking pedestrian data
@@ -23,7 +25,8 @@ for id = 1: length(activePedTracks)
         
     distPedEgo = norm(double(tempPedPosPixels-carPosPixels));   
     if  ( distPedEgo < Params.sensingRange && abs(carHeading - tempPedCarHeading) < 90 )
-        activePedWithinRange = [activePedWithinRange; tempPedId];
+        activePedWithinRange(pedId) = tempPedId;
+        pedId = pedId + 1;
     end
 end
 
@@ -39,6 +42,11 @@ for id = 1: length(activeCarTracks)
     distCarEgo = norm(double(tempCarPosPixels - carPosPixels));  
 
     if  ( distCarEgo < Params.sensingRange && abs(carHeading - tempCarHeading) < 90 )
-        activeCarWithinRange = [activeCarWithinRange; tempCarId];
+        activeCarWithinRange(carId) = tempCarId;
+        carId = carId + 1;
     end
 end
+
+% remove
+activePedWithinRange(pedId:end) = [];
+activeCarWithinRange(carId:end) = [];

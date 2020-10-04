@@ -8,6 +8,7 @@ orthopxToMeter = Params.orthopxToMeter;
 movingThreshold =  Params.movingThreshold; % m/s
 headingThreshold =  Params.headingThreshold; %90 degrees
 theta = cw.theta;
+reSampleRate = 5;
 
 load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
 tracks = tracksUpdated;
@@ -21,7 +22,7 @@ for sceneId = 1:N_Scenes
        pedTrackId = allPedTracks(trackNo);
        
        pedData = formattedTracksData{sceneId}{pedTrackId};
-       N_TimeSteps = height(pedData);
+       N_TimeSteps = size(pedData.trackLifetime,1);
              
        for pedTimeStep  = 1:N_TimeSteps
            
@@ -33,14 +34,14 @@ for sceneId = 1:N_Scenes
               longDispCwPixels = inf;
               latDispCwPixels = inf;
               
-              %% Pedestrian wait time calculation
-              if strcmp(formattedTracksData{sceneId}{pedTrackId}.class(1), 'pedestrian')
-                    waitTimeSteps  = cumsum(formattedTracksData{sceneId}{pedTrackId}.ProbHybridState(:,2));
-                    formattedTracksData{sceneId}{pedTrackId}.waitTimeSteps = waitTimeSteps;
-                    if sum(ismember(formattedTracksData{sceneId}{pedTrackId}.Properties.VariableNames,'wait_time_steps')) 
-                        formattedTracksData{sceneId}{pedTrackId}.wait_time_steps = []; 
-                    end
-              end
+%               %% Pedestrian wait time calculation
+%               if strcmp(formattedTracksData{sceneId}{pedTrackId}.class(1), 'pedestrian')
+%                     waitTimeSteps  = cumsum(formattedTracksData{sceneId}{pedTrackId}.ProbHybridState(:,2)) * reSampleRate;
+%                     formattedTracksData{sceneId}{pedTrackId}.waitTimeSteps = waitTimeSteps;
+%                     if sum(ismember(formattedTracksData{sceneId}{pedTrackId}.Properties.VariableNames,'wait_time_steps')) 
+%                         formattedTracksData{sceneId}{pedTrackId}.wait_time_steps = []; 
+%                     end
+%               end
               
               %% Pedestrian distance calculation (earlier distance was calculated only when there was am ego-vehicle)
               %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,7 +82,20 @@ for sceneId = 1:N_Scenes
                     
                     pedData.latDispPedCw(pedTimeStep) = latDispCwPixels*(scaleDownFactor*orthopxToMeter);
                     pedData.longDispPedCw(pedTimeStep) = longDispPedCwPixels*(scaleDownFactor*orthopxToMeter);
-                                  
+                   
+                    if longDispPedCwPixels < 10 % less than a meter
+                        % plot
+                        figure()
+                        plot(cw.center_x, cw.center_y, 'b*', 'MarkerSize',10); hold on;
+                        plot(pedPos(1), pedPos(2), 'r*', 'MarkerSize',10); hold on;
+                        x=1;
+                    end
+                       
+              
+              
+              
+              
+              
               end
               
               %% Near lane calculation

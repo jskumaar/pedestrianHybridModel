@@ -118,7 +118,6 @@ for scene_id = 1:N_scenes
 
                                CrossIntentData.scene_id(obs_index) = scene_id;
                                CrossIntentData.track_id(obs_index) = ped_id;
-
                                CrossIntentData.cross_intent(obs_index) = cross_intent;
 
 
