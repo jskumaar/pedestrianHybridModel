@@ -16,13 +16,15 @@ Params.rollOverWindow = 1*Params.AdjustedSampFreq;  % in time steps; 1s
 Params.observationWindow = 3*Params.AdjustedSampFreq; % in time stepsl 3s
 
 % c) pedestrian parameters
-Params.headingThreshold = 95; %45 degrees
-Params.stoppingThreshold = 0.5; %speed m/s
+Params.cwHeadingThreshold = 95; % degrees
+Params.swHeadingThreshold = 30; % degrees
+Params.stoppingThreshold = 0.25; %speed m/s
 Params.walkingThreshold = 0.1; %speed m/s 
 Params.movingThreshold = 0.2; % in m/s
 Params.cwDistThreshold = 240; %in pixels
-Params.cwCrossThreshold = 50; % approximate width of a lane
+Params.cwCrossThreshold = 25; % in pixels (lower than approximate width of a lane)
 Params.decZone = 5; %5 m radius
+
 
 Params.turnThreshold = 0.7;
 Params.goalDistThreshold = 10; %(in pixels)

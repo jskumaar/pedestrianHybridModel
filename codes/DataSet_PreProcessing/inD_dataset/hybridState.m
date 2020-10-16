@@ -38,6 +38,9 @@ closestCW =  tracksData.closestCW;
 % N_instances = size(tracksData.xCenter,1);
 N_instances = 1;    % need to find only for the last time step
 Region = strings(N_instances,1);
+cwHeadingState = strings(4, 1); % to check if they are headed towards each of the four crosswalks
+cwHeadingState(1:4) = 'Not_Headed';
+cwHeadingCloseCW = 'Not_Headed';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2) Hybrid state loop    
 if ~flag.outOfPlay
@@ -52,17 +55,19 @@ if ~flag.outOfPlay
        % heading angle of pedestrians (to reduce noise in the estimation of
        % heading because of noisy position and velocity data)
         y_vel = tracksData.yVelocity(end);
+        y_vel_head = y_vel;
         if ( abs(y_vel) < walkingThreshold )
-            y_vel = 0;
+            y_vel_head = 0;
         end
         x_vel = tracksData.xVelocity(end);
+        x_vel_head = x_vel;
         if ( abs(x_vel) < walkingThreshold )
-            x_vel = 0;
+            x_vel_head = 0;
         end
         % when pedestrian is stopped, maintain the previous heading
         % instead of saying it as zero.
-        if x_vel~=0 && y_vel~=0
-            pedHead = atan2(y_vel, x_vel)*180/pi; 
+        if x_vel_head~=0 && y_vel_head~=0
+            pedHead = atan2(y_vel_head, x_vel_head)*180/pi; 
         end
         %%%%%%%%%%%%%%%%%%%%
        % angle between pedestrian and the crosswalks
@@ -78,39 +83,37 @@ if ~flag.outOfPlay
        dist_cw4 = sqrt(double(cw.center_x(4) - posPixels(1))^2 + double(cw.center_y(4) - posPixels(2))^2);
        %%%%%%%%%%%%%%%%%%%%%%%%
        % current region of pedestrian
-       Region(end) = strings;
+%        Region(end) = strings;
         if (annotatedImage_enhanced(-posPixels(2), posPixels(1))==200)
-           Region(end) = 'Crosswalk_Marked';
+           Region(end) = "Crosswalk_Marked";
            onRoad = true;
         elseif (annotatedImage_enhanced(-posPixels(2), posPixels(1))==100)
-           Region(end) = 'Crosswalk_UnMarked';
+           Region(end) = "Crosswalk_UnMarked";
            onRoad = true;
         elseif (annotatedImage_enhanced(-posPixels(2), posPixels(1))==50)
-           Region(end) = 'Road';
+           Region(end) = "Road";
            onRoad = true;
         elseif (annotatedImage_enhanced(-posPixels(2), posPixels(1))==150)
-           Region(end) = 'Sidewalk';  
+           Region(end) = "Sidewalk";  
            onRoad = false;
         end 
        %%%%%%%%%%%%%%%%%%%%
        % when the heading angle is within +/- heading_threshold and pedestrian is close to a crosswalk, 
-       % then pedestrian is approaching one of the crosswalks
-       
-       cwHeadingState = 'Not_Headed';
+       % then pedestrian is approaching one of the crosswalks   
        if  ( ( abs(ped_cw1_angle - pedHead) <= headingThreshold && dist_cw1 < cwDistThreshold ) || (dist_cw1 < cwCrossThreshold && onRoad))
-            cwHeadingState = 'Headed';
+            cwHeadingState(1) = 'Headed';
             dist_cw_temp(1) = dist_cw1;
        end
        if ( ( abs(ped_cw2_angle - pedHead) <= headingThreshold && dist_cw2 < cwDistThreshold ) || (dist_cw2 < cwCrossThreshold && onRoad))
-            cwHeadingState = 'Headed';
+            cwHeadingState(2) = 'Headed';
             dist_cw_temp(2) = dist_cw2;
        end
        if ( ( abs(ped_cw3_angle - pedHead) <= headingThreshold && dist_cw3 < cwDistThreshold ) || (dist_cw3 < cwCrossThreshold && onRoad))
-            cwHeadingState = 'Headed';
+            cwHeadingState(3) = 'Headed';
             dist_cw_temp(3) = dist_cw3;   
        end
        if ( ( abs(ped_cw4_angle - pedHead) <= headingThreshold && dist_cw4 < cwDistThreshold ) || (dist_cw4 < cwCrossThreshold && onRoad) )
-            cwHeadingState = 'Headed';
+            cwHeadingState(4) = 'Headed';
             dist_cw_temp(4) = dist_cw4;
        end
        %%%%%%%%%%%%%%%%%%%%
@@ -118,9 +121,24 @@ if ~flag.outOfPlay
        if ~onRoad       
            % distance to the closest crosswalk when headed towards that
            % crosswalk
+           %% debug
+           if cwInd==3 ==1&& min(dist_cw_temp)
+               x=1;
+           end
+           
+           
            [dist_cw, cwInd] = min(dist_cw_temp);
+           if dist_cw==inf
+               cwInd = inf;
+           end
        end
        %%%%%%%%%%%%%%%%%%%%
+       %% debug
+       if cwInd==inf
+           x=1;
+       end
+       
+       
        
        % longitudinal velocity (need to know closest CW to calculate this)
        if cwInd~=0 && cwInd~=inf
@@ -128,17 +146,10 @@ if ~flag.outOfPlay
            rot = [cosd(theta), -sind(theta); sind(theta), cosd(theta)];
            velRot = rot*[x_vel; y_vel];
            lonVelocity = velRot(1);
-       end
-       
-       %% debug
-       if cwInd==3
+           cwHeadingCloseCW = cwHeadingState(cwInd);
            x=1;
        end
-       
-       if (length(closestCW)>1 && cwInd~=closestCW(end-1))
-            x=1;
-       end
-       
+      
        
        %%%%%%%%%%%%%%%%%%%%
        % b) is pedestrian walking?
@@ -157,7 +168,7 @@ if ~flag.outOfPlay
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % conditions for Hybrid State of Pedestrians
         % (1) approach: if pedestrian is on sidewalk and headed towards a crosswalk
-            if ( strcmp(Region(end),'Sidewalk') && strcmp(cwHeadingState,'Headed') && strcmp(walk_state, 'Walking') )
+            if ( strcmp(Region(end),"Sidewalk") && strcmp(cwHeadingCloseCW,'Headed') && strcmp(walk_state, 'Walking') )
                hybrid_state = 'Approach';
 %                prob_hybrid_state = [1, 0, 0, 0, 0];
 %                annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 60;
@@ -165,7 +176,7 @@ if ~flag.outOfPlay
 
         % (2) wait: if pedestrian is on sidewalk near a crosswalk and is walking very slowly. 
         % Note: Using absolute distance to center of crosswalk for now.
-            if ( strcmp(Region(end),'Sidewalk') && strcmp(cwHeadingState,'Headed') && strcmp(walk_state, 'Stopping') && (dist_cw < decZone) )
+            if ( strcmp(Region(end),"Sidewalk") && strcmp(cwHeadingCloseCW,'Headed') && strcmp(walk_state, 'Stopping') && (dist_cw < decZone) )
                hybrid_state = 'Wait'; 
 %                prob_hybrid_state = [0, 1, 0, 0, 0];
 %                annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 0;
@@ -174,13 +185,13 @@ if ~flag.outOfPlay
 
         % (3) cross: if pedestrian is on the road (note if they are crossing or
         % jaywalking)
-            if (strcmp(Region(end),'Crosswalk_Marked') || strcmp(Region(end),'Crosswalk_UnMarked') )
+            if (strcmp(Region(end),"Crosswalk_Marked") || strcmp(Region(end),"Crosswalk_UnMarked") )
                hybrid_state = 'Crossing';
 %                prob_hybrid_state = [0, 0, 1, 0, 0];
 %                annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 255;
 %                isCrossing = true;
             end    
-            if (strcmp(Region(end),'Road') )
+            if (strcmp(Region(end),"Road") )
 %                hybrid_state = 'Jaywalking'; % neglect Jaywalking for now
                 hybrid_state = 'Crossing';
 %                prob_hybrid_state = [0, 0, 0, 1, 0];
@@ -190,7 +201,7 @@ if ~flag.outOfPlay
 
         % (4) walkaway: if pedestrian just crossed the street and is on the
         % sidewalk
-            if ( strcmp(Region(end),'Sidewalk') && strcmp(cwHeadingState,'Not_Headed') && strcmp(walk_state, 'Walking') )
+            if ( strcmp(Region(end),"Sidewalk") && strcmp(cwHeadingCloseCW,'Not_Headed') && strcmp(walk_state, 'Walking') )
                hybrid_state = 'Walk_away'; 
 %                prob_hybrid_state = [0, 0, 0, 0, 1];
 %                annotatedImage_enhanced_w_tracks(-pixel_pos(2), pixel_pos(1)) = 120;

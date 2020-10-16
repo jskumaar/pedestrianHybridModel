@@ -7,7 +7,7 @@ orthopxToMeter = Params.orthopxToMeter;
 del_t = Params.delta_T;
 reSampleRate = Params.reSampleRate;
 resetState = false;
-crosswalkThreshold = 30; %pixels
+crosswalkThreshold = Params.cwCrossThreshold; %pixels
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % initialize default update values for constant velocity model
@@ -38,6 +38,7 @@ if size(predData.HybridState,1)~=1
     predData.lonVelocity(end+1,1) = predData.lonVelocity(end);
     predData.long_disp_ped_car(end+1,1) = predData.long_disp_ped_car(end);
     predData.Lane(end+1,:) = predData.Lane(end,:);
+    predData.swInd(end+1,:) = predData.swInd(end,:);
     predData.goalPositionPixels(end+1,:) = predData.goalPositionPixels(end,:);
 end
 
@@ -434,7 +435,7 @@ if closestCW(end)==1
          % Approach
 %          if ( strcmp(HybridState(end), 'Approach') &&  ~strcmp(HybridState(end), 'Approach') )
          if  strcmp(HybridState(end), 'Approach')
-             if ( predTimeStep==1 || size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) )  )
+             if ( predTimeStep==1 || size(HybridState,1)==1 || size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) )  )
                  pedGoalPixels = reset.approach.goal(1,:);
                  pedGoalDispPixels = reset.approach.goal(1,:) - pedPosPixels;
                  calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
@@ -482,7 +483,7 @@ if closestCW(end)==1
          % Approach
 %          if ( strcmp(HybridState(end), 'Approach') &&  ~strcmp(HybridState(end), 'Approach') )
          if  strcmp(HybridState(end), 'Approach') 
-             if  ( predTimeStep==1 || size(HybridState,1)==2 ||  ( size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
+             if  ( predTimeStep==1 || size(HybridState,1)==1 || size(HybridState,1)==2 ||  ( size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
                  pedGoalPixels = reset.approach.goal(2,:);
                  pedGoalDispPixels = reset.approach.goal(2,:) - pedPosPixels;
                  calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
@@ -536,7 +537,7 @@ elseif closestCW(end)==2
          % Approach
 %          if ( strcmp(HybridState(end), 'Approach') &&  ~strcmp(HybridState(end), 'Approach') )
          if  strcmp(HybridState(end), 'Approach') 
-             if ( predTimeStep==1 ||  size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
+             if ( predTimeStep==1 || size(HybridState,1)==1 || size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
                  pedGoalPixels = reset.approach.goal(3,:);
                  pedGoalDispPixels = reset.approach.goal(3,:) - pedPosPixels;
                  calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
@@ -581,7 +582,7 @@ elseif closestCW(end)==2
          % Approach
          %if ( strcmp(HybridState(end), 'Approach') &&  ~strcmp(HybridState(end), 'Approach') )
          if  strcmp(HybridState(end), 'Approach') 
-             if ( predTimeStep==1 ||  size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
+             if ( predTimeStep==1 || size(HybridState,1)==1 || size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
                  pedGoalPixels = reset.approach.goal(4,:);
                  pedGoalDispPixels = reset.approach.goal(4,:) - pedPosPixels;
                  calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
@@ -630,7 +631,7 @@ elseif closestCW(end)==3
          % Approach
 %          if ( strcmp(HybridState(end), 'Approach') &&  ~strcmp(HybridState(end), 'Approach') )
          if  strcmp(HybridState(end), 'Approach') 
-             if ( predTimeStep==1 ||  size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
+             if ( predTimeStep==1 || size(HybridState,1)==1 || size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
                  pedGoalPixels = reset.approach.goal(5,:);
                  pedGoalDispPixels = reset.approach.goal(5,:) - pedPosPixels;
                  calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
@@ -674,7 +675,7 @@ elseif closestCW(end)==3
          % Approach
 %          if ( strcmp(HybridState(end), 'Approach') &&  ~strcmp(HybridState(end), 'Approach') )
          if  strcmp(HybridState(end), 'Approach') 
-             if ( predTimeStep==1 ||  size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ))
+             if ( predTimeStep==1 || size(HybridState,1)==1 || size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ))
                  pedGoalPixels = reset.approach.goal(6,:);
                  pedGoalDispPixels = reset.approach.goal(6,:) - pedPosPixels;
                  calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
@@ -723,7 +724,7 @@ elseif closestCW(end)==4
          % Approach
 %          if ( strcmp(HybridState(end), 'Approach') &&  ~strcmp(HybridState(end), 'Approach') )
          if  strcmp(HybridState(end), 'Approach') 
-             if ( predTimeStep==1 ||  size(HybridState,1)==2 || ( size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
+             if ( predTimeStep==1 || size(HybridState,1)==1 || size(HybridState,1)==2 || ( size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ) )
                  pedGoalPixels = reset.approach.goal(7,:);
                  pedGoalDispPixels = reset.approach.goal(7,:) - pedPosPixels;
                  calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
@@ -767,7 +768,7 @@ elseif closestCW(end)==4
          % Approach
 %          if ( strcmp(HybridState(end), 'Approach') &&  ~strcmp(HybridState(end), 'Approach') )
          if  strcmp(HybridState(end), 'Approach') 
-             if ( predTimeStep==1 ||  size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ))
+             if ( predTimeStep==1 || size(HybridState,1)==1 || size(HybridState,1)==2 || (size(HybridState,1)>1 && (closestCW(end)~=closestCW(end-1)) ))
                  pedGoalPixels = reset.approach.goal(8,:);
                  pedGoalDispPixels = reset.approach.goal(8,:) - pedPosPixels;
                  calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
@@ -810,14 +811,13 @@ elseif closestCW(end)==4
    end
 end
 
-if ~resetState
-% when there is no close CW, retain the previous goal location
+if ~resetState && pedGoalPixels(1)~=0 && pedGoalPixels(2)~=0
+% when there is no close CW and when the previous goal is not origin (default value), retain the previous goal location
     pedGoalDispPixels = pedGoalPixels - pedPosPixels;
     calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
     vel = norm( [xVelocity(end), yVelocity(end)]);
     xVelocity(end) = vel*cosd(calcHeading(end));
-    yVelocity(end) = vel*sind(calcHeading(end)); 
-    
+    yVelocity(end) = vel*sind(calcHeading(end));     
 end   % end of all four crosswalk conditions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % end
@@ -835,6 +835,10 @@ updated_X = [xCenter(end);
              yVelocity(end)];
 kf.x = updated_X;   % in case there is a discrete transition triggering state reset, the states get updated based on the rest while the covariance remains the same as if it were a constant velocity propagation            
 %%%%%%%%%%%%%%%%%%%%%%%          
+
+
+
+
 %updatedPredData
 predData.trackLifetime = trackLifetime;
 predData.xCenter = xCenter;
@@ -847,8 +851,6 @@ predData.waitTimeSteps = waitTimeSteps;
 predData.goalDisp(end) = norm(pedGoalDispPixels)*(orthopxToMeter*scaleFactor);
 predData.goalPositionPixels(end, :) = pedGoalPixels;
 
-if pedGoalDispPixels(1)==inf
-    x=1;
-end
+
 
 end

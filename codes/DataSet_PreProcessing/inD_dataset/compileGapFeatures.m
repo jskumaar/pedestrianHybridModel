@@ -23,15 +23,22 @@ N = min(N_ts, AdjustedSampFreq);
 %% 2) is this a gap? 
 % A vehicle has just passed the pedestrian when the pedestrian is within
 % the decision zone and is either approaching or waiting
-GapCond_1 = closeCar_ind(end) ~= closeCar_ind(end-1) && ...
-            abs(longDispPedCw(end)) < decZone && closeCar_ind(end) ~= inf && ...
-            ( strcmp(HybridState{end},'Approach') || strcmp(HybridState{end},'Wait') );
-% There is an ego-vehicle and pedestrian has just entered the decision zone
-GapCond_2 = abs(longDispPedCw(end-1)) >= decZone && ...
-            abs(longDispPedCw(end)) < decZone && ...
-            closeCar_ind(end) ~= inf && ( strcmp(HybridState{end},'Approach') || strcmp(HybridState{end},'Wait') );
+if N_ts>1
+    GapCond_1 = closeCar_ind(end) ~= closeCar_ind(end-1) && ...
+                abs(longDispPedCw(end)) < decZone && closeCar_ind(end) ~= inf && closeCar_ind(end) ~=0 && ...
+                ( strcmp(HybridState{end},'Approach') || strcmp(HybridState{end},'Wait') );
+    % There is an ego-vehicle and pedestrian has just entered the decision zone
+    GapCond_2 = abs(longDispPedCw(end-1)) >= decZone && ...
+                abs(longDispPedCw(end)) < decZone && ...
+                closeCar_ind(end) ~= inf && ( strcmp(HybridState{end},'Approach') || strcmp(HybridState{end},'Wait') );
+else
+    GapCond_1 = false;
+    GapCond_2 = false;
+    GapCond_3 = flag.startingFromWait(trackletNo);
+end
 
-if ( GapCond_1 || GapCond_2 ) 
+
+if ( GapCond_1 || GapCond_2 || GapCond_3 ) 
     % 2a) is this a new gap? i.e. a new car and not a previous car gap?  
     if isempty(intersect(closeCar_ind(end), egoVehGapHist)) % this is an additional check; actually not necessary
             flag.GapStart(trackletNo) = true;

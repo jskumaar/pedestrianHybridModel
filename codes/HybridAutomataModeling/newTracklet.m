@@ -29,6 +29,9 @@ function [data, kfData, probability, startNode, endNode, isActive, eventFlag, Go
     data{newTrackletId,1}.lonVelocity(1) =  data{parentTrackletId,1}.lonVelocity(end);
     data{newTrackletId,1}.Lane(1) =  data{parentTrackletId,1}.Lane(end);
     data{newTrackletId,1}.goalPositionPixels(1,:) =  data{parentTrackletId,1}.goalPositionPixels(end,:);
+    data{newTrackletId,1}.swInd(1) =  data{parentTrackletId,1}.swInd(end);
+    data{newTrackletId}.probGapAccept = 0;
+    data{newTrackletId}.probCrossingIntent = 0;
       
     
     kfData{newTrackletId,1} = kfData{parentTrackletId}(end, :);

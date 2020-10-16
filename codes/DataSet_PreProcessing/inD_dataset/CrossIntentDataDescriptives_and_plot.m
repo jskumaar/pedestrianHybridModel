@@ -7,26 +7,28 @@ addpath(p1)
 addpath(p2)
 
 %load('CrossIntentData.mat')
-AllIndices = [1:height(CrossIntentData)];
 
-IntentDataIndices = find(CrossIntentData.cross_intent==1);
-NoIntentDataIndices = find(CrossIntentData.cross_intent==0);
+% Data = CrossIntentData_withOutEgoCar;
+Data = CrossIntentData_withEgoCar;
 
+AllIndices = [1:height(Data)];
 
+IntentDataIndices = find(Data.cross_intent==1);
+NoIntentDataIndices = find(Data.cross_intent==0);
 
 
 
 % plot
-typeOfGap = NoIntentDataIndices;
+typeOfGap = IntentDataIndices;
 
-VehSpeed = CrossIntentData.mean_veh_speed(typeOfGap);
-VehAcc = CrossIntentData.mean_veh_acc(typeOfGap);
-VehPedDist = CrossIntentData.mean_veh_ped_dist(typeOfGap);
-DTCurb = CrossIntentData.mean_DTCurb(typeOfGap);
-DTCW = CrossIntentData.mean_DTCW(typeOfGap);
-duration = CrossIntentData.duration_ego_vehicle(typeOfGap);
-gazeRatio = CrossIntentData.gaze_ratio(typeOfGap);
-direction = CrossIntentData.direction(typeOfGap);
+VehSpeed = Data.mean_veh_speed(typeOfGap);
+VehAcc = Data.mean_veh_acc(typeOfGap);
+VehPedDist = Data.mean_veh_ped_dist(typeOfGap);
+DTCurb = Data.mean_DTCurb(typeOfGap);
+DTCW = Data.mean_DTCW(typeOfGap);
+duration = Data.duration_ego_vehicle(typeOfGap);
+gazeRatio = Data.gaze_ratio(typeOfGap);
+isSamedirection = Data.isSamedirection(typeOfGap);
 
 %% Histograms
 figure()
@@ -90,7 +92,7 @@ set(gca,'fontsize', 11)
 subplot(2,4,8)
 %BinWidth = 0.5;
 NumberOfBins = 2;
-h=histogram(direction,NumberOfBins,'Normalization','probability');   %to plot probability densityh=histogram(Data,NumberOfBins,'Normalization','probability');   %to plot probability density
+h=histogram(isSamedirection,NumberOfBins,'Normalization','probability');   %to plot probability densityh=histogram(Data,NumberOfBins,'Normalization','probability');   %to plot probability density
 %h.FaceColor = 'none';       %adjust colour of the bin
 title('direction')
 set(gca,'fontsize', 11)

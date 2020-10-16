@@ -10,7 +10,7 @@
 % scenes
 % 2) N_scenes: The no. of the individual scenes
 
-function [tracks, trackDescriptivesData] = trackDescriptives(formattedTracksData, N_scenes)
+% function [tracks, trackDescriptivesData] = trackDescriptives(formattedTracksData, N_scenes)
 
 
     for image_id = 1:N_scenes
@@ -23,46 +23,46 @@ function [tracks, trackDescriptivesData] = trackDescriptives(formattedTracksData
         trackDescriptivesData.walkawaySpeed = zeros(N_tracks,1);
         trackDescriptivesData.waitDuration = zeros(N_tracks,1);
         trackDescriptivesData.crossDuration = zeros(N_tracks,1);
-        track_id = 1;
+        
 
         %note the indices of pedestrians, crossing or waiting
-        ped_crossing_tracks = [];
-        ped_not_crossing_tracks = [];
-        ped_waiting_tracks = [];
-        ped_tracks = [];
-        car_tracks = [];
-        car_parked_tracks = [];
-        car_moving_tracks = [];
-        ped_jaywalking_tracks = [];
+        pedCrossingTracks = [];
+        pedNotCrossingTracks = [];
+        pedWaitingTracks = [];
+        pedTracks = [];
+        carTracks = [];
+        carParkedTracks = [];
+        carMovingTracks = [];
+        pedJaywalkingTracks = [];
 
         % track loop starts
         for ii=1:N_tracks
             if ( strcmp(formattedTracksData{image_id}{ii,1}.class(1,:),'pedestrian'))       
-                ped_tracks = [ped_tracks; ii];
+                pedTracks = [pedTracks; ii];
 
                 if ( sum(formattedTracksData{image_id}{ii,1}.isCrossing) > 0 ) 
 
                     jaywalk_ind_temp = find(strcmp(formattedTracksData{image_id}{ii,1}.HybridState, 'Jaywalking') == 1);
                     crossing_ind_temp = find(strcmp(formattedTracksData{image_id}{ii,1}.HybridState, 'Crossing') == 1);
                     if ~isempty(crossing_ind_temp)
-                        ped_crossing_tracks = [ped_crossing_tracks; ii];
+                        pedCrossingTracks = [pedCrossingTracks; ii];
                     else
-                        ped_jaywalking_tracks = [ped_jaywalking_tracks; ii];
+                        pedJaywalkingTracks = [pedJaywalkingTracks; ii];
                     end
                 else
-                    ped_not_crossing_tracks = [ped_not_crossing_tracks; ii];
+                    pedNotCrossingTracks = [pedNotCrossingTracks; ii];
                 end
 
                 if ( find(strcmp(formattedTracksData{image_id}{ii,1}.HybridState, 'Wait') ==1 ) ) 
-                    ped_waiting_tracks = [ped_waiting_tracks; ii];
+                    pedWaitingTracks = [pedWaitingTracks; ii];
                 end       
             elseif( strcmp(formattedTracksData{image_id}{ii,1}.class(1,:),'car'))
-                car_tracks = [car_tracks; ii];
+                carTracks = [carTracks; ii];
 
                 if (mean(formattedTracksData{image_id}{ii,1}.lonVelocity) < 0.1 )
-                    car_parked_tracks = [car_parked_tracks; ii];
+                    carParkedTracks = [carParkedTracks; ii];
                 else
-                    car_moving_tracks = [car_moving_tracks; ii];
+                    carMovingTracks = [carMovingTracks; ii];
                 end       
             end
 
@@ -73,8 +73,8 @@ function [tracks, trackDescriptivesData] = trackDescriptives(formattedTracksData
         end %track loop ends
 
         % pedestrians' loop starts
-        for ii=1:length(ped_tracks)
-            ind = ped_tracks(ii);
+        for ii=1:length(pedTracks)
+            ind = pedTracks(ii);
 
             % time indices for the various hybrid states
             cross_time_ind = find(strcmp(formattedTracksData{image_id}{ind,1}.HybridState, 'Crossing') == 1);
@@ -106,14 +106,14 @@ function [tracks, trackDescriptivesData] = trackDescriptives(formattedTracksData
 
         % save the tracks data for this scene
         trackDescriptivesComplete{image_id} = trackDescriptivesData;
-        tracks{image_id}.ped_crossing_tracks = ped_crossing_tracks;
-        tracks{image_id}.ped_not_crossing_tracks = ped_not_crossing_tracks;
-        tracks{image_id}.ped_jaywalking_tracks = ped_jaywalking_tracks;
-        tracks{image_id}.ped_waiting_tracks = ped_waiting_tracks;
-        tracks{image_id}.ped_tracks = ped_tracks;
-        tracks{image_id}.car_tracks = car_tracks;
-        tracks{image_id}.car_parked_tracks = car_parked_tracks;
-        tracks{image_id}.car_moving_tracks = car_moving_tracks;
+        tracks{image_id}.pedCrossingTracks = pedCrossingTracks;
+        tracks{image_id}.pedNotCrossingTracks = pedNotCrossingTracks;
+        tracks{image_id}.pedJaywalkingTracks = pedJaywalkingTracks;
+        tracks{image_id}.pedWaitingTracks = pedWaitingTracks;
+        tracks{image_id}.pedTracks = pedTracks;
+        tracks{image_id}.carTracks = carTracks;
+        tracks{image_id}.carParkedTracks = carParkedTracks;
+        tracks{image_id}.carMovingTracks = carMovingTracks;
 
     end
 
@@ -128,14 +128,14 @@ compiledDescriptives.waitDuration = [];
 
 for ii=1:length(tracks)
     
-    ped_tracks = tracks{ii}.ped_tracks;
-    ped_waiting_tracks = tracks{ii}.ped_waiting_tracks;
+    pedTracks = tracks{ii}.pedTracks;
+    pedWaitingTracks = tracks{ii}.pedWaitingTracks;
     trackDescriptivesData  = trackDescriptivesComplete{ii};
     
-    compiledDescriptives.pedApproachSpeed = [compiledDescriptives.pedApproachSpeed; trackDescriptivesData.approachSpeed(ped_tracks)];
-    compiledDescriptives.pedCrossSpeed   = [compiledDescriptives.pedCrossSpeed; trackDescriptivesData.crossSpeed(ped_tracks)];
-    compiledDescriptives.pedWalkAwaySpeed = [compiledDescriptives.pedWalkAwaySpeed; trackDescriptivesData.walkawaySpeed(ped_tracks)];
-    compiledDescriptives.waitDuration = [compiledDescriptives.waitDuration; trackDescriptivesData.waitDuration(ped_waiting_tracks)/25];
+    compiledDescriptives.pedApproachSpeed = [compiledDescriptives.pedApproachSpeed; trackDescriptivesData.approachSpeed(pedTracks)];
+    compiledDescriptives.pedCrossSpeed   = [compiledDescriptives.pedCrossSpeed; trackDescriptivesData.crossSpeed(pedTracks)];
+    compiledDescriptives.pedWalkAwaySpeed = [compiledDescriptives.pedWalkAwaySpeed; trackDescriptivesData.walkawaySpeed(pedTracks)];
+    compiledDescriptives.waitDuration = [compiledDescriptives.waitDuration; trackDescriptivesData.waitDuration(pedWaitingTracks)/25];
     
 end
 
@@ -151,15 +151,15 @@ NoOfTracks.N_car = 0;
 NoOfTracks.N_parked_cars = 0;
 
 for ii=1:length(tracks)
-    NoOfTracks.N_ped = NoOfTracks.N_ped + size(tracks{ii}.ped_tracks,1);
-    NoOfTracks.N_ped_jaywalk = NoOfTracks.N_ped_jaywalk + size(tracks{ii}.ped_jaywalking_tracks,1);
-    NoOfTracks.N_ped_cross = NoOfTracks.N_ped_cross + size(tracks{ii}.ped_crossing_tracks,1);
+    NoOfTracks.N_ped = NoOfTracks.N_ped + size(tracks{ii}.pedTracks,1);
+    NoOfTracks.N_ped_jaywalk = NoOfTracks.N_ped_jaywalk + size(tracks{ii}.pedJaywalkingTracks,1);
+    NoOfTracks.N_ped_cross = NoOfTracks.N_ped_cross + size(tracks{ii}.pedCrossingTracks,1);
     
-    NoOfTracks.N_ped_wait_jaywalk = NoOfTracks.N_ped_wait_jaywalk + size(intersect(tracks{ii}.ped_waiting_tracks, tracks{ii}.ped_jaywalking_tracks),1);
-    NoOfTracks.N_ped_wait_cross = NoOfTracks.N_ped_wait_cross + size(intersect(tracks{ii}.ped_waiting_tracks, tracks{ii}.ped_crossing_tracks),1);
+    NoOfTracks.N_ped_wait_jaywalk = NoOfTracks.N_ped_wait_jaywalk + size(intersect(tracks{ii}.pedWaitingTracks, tracks{ii}.pedJaywalkingTracks),1);
+    NoOfTracks.N_ped_wait_cross = NoOfTracks.N_ped_wait_cross + size(intersect(tracks{ii}.pedWaitingTracks, tracks{ii}.pedCrossingTracks),1);
 
-    NoOfTracks.N_car = NoOfTracks.N_car + size(tracks{ii}.car_tracks,1);
-    NoOfTracks.N_parked_cars = NoOfTracks.N_parked_cars + size(tracks{ii}.car_parked_tracks,1);
+    NoOfTracks.N_car = NoOfTracks.N_car + size(tracks{ii}.carTracks,1);
+    NoOfTracks.N_parked_cars = NoOfTracks.N_parked_cars + size(tracks{ii}.carParkedTracks,1);
     
     
 end
@@ -172,8 +172,8 @@ NoOfTracks.N_ped_no_crossing_intent = NoOfTracks.N_ped - NoOfTracks.N_ped_crossi
 
 %% save necessary variables
 % check the name of the file
-save('inD_trackDescriptives_removed_ped_tracks.mat','NoOfTracks','tracks','tracks_updated','trackDescriptivesComplete','compiledDescriptives')
+save('inD_trackDescriptives_v3.mat','NoOfTracks','tracks','trackDescriptivesComplete','compiledDescriptives')
 
     
 
-end
+% end

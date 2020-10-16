@@ -82,7 +82,7 @@ end
 
 
 % load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice.mat');
-SVMModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice.ClassificationSVM;
+SVMModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
 
 
 for test_ind = 1:size(Test_tracks,1)
@@ -98,7 +98,7 @@ for test_ind = 1:size(Test_tracks,1)
     F_isEgoNearLane = SVMTestData.F_isEgoNearLane(test_ind);
     
     SVMFeatures = table(F_cumWait, F_pedDistToCW, F_pedDistToCurb,...
-                           F_pedDistToVeh, F_pedSpeed, F_vehVel, F_gazeRatio,...
+                           F_pedDistToVeh, F_pedSpeed, F_vehVel,...
                            F_isSameDirection, F_isEgoNearLane);
             
 %     % feature order for inD model

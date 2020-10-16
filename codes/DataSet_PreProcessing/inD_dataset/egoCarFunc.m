@@ -5,7 +5,7 @@ function currentPedTrackData = egoCarFunc(currentPedTrackData, activeCarTracksDa
 %% 1) setup
 %parameters
 movingThreshold =  Params.movingThreshold; % m/s
-headingThreshold =  Params.headingThreshold; %90 degrees
+headingThreshold =  Params.cwHeadingThreshold; %90 degrees
 scaleFactor = Params.scaleFactor;
 orthopxToMeter = Params.orthopxToMeter;
 % initialize variables
@@ -20,7 +20,7 @@ cwCar = inf;
 longDispPedCwPixels = inf;
 % isLooking = false;
 pedHeading = currentPedTrackData.calcHeading(end);
-isPedSameDirection = false;
+isSameDirection = false;
 cwPed = currentPedTrackData.closestCW(end);
 pedPos = [currentPedTrackData.xCenter(end), currentPedTrackData.yCenter(end)];  
 pedPosPixels = pedPos/(orthopxToMeter*scaleFactor);  
@@ -46,35 +46,36 @@ if (cwPed~=0 && cwPed~=inf)
     lonVelocity = velRot(1);
     %%%%%%%%%%%%%%%%%%%%%%%%
     
-    % longitudinal displacement to cw center 
-    if cwPed==1 || cwPed==2 
-        if  ( abs(pedCwAngle - pedHeading) <= headingThreshold )
-            longDispPedCwPixels = abs(dispPedCwPixels(1));
-        else
-            longDispPedCwPixels = -abs(dispPedCwPixels(1));
-        end
-    else
-        if  ( abs(pedCwAngle - pedHeading) <= headingThreshold )
-            longDispPedCwPixels = abs(dispPedCwPixels(2));
-        else
-            longDispPedCwPixels = -abs(dispPedCwPixels(2));
-        end
-    end
-    %%%%%%%%%%%%%%%%%%%%%%%%
-    % lateral displacement to cw center 
-    if cwPed==1
-        latDispCwPixels  = abs(dispPedCwPixels(2)) - cw.centerLatOffset(1);
-    elseif cwPed==2
-        latDispCwPixels  = abs(dispPedCwPixels(2)) - cw.centerLatOffset(2);
-    elseif cwPed==3
-        latDispCwPixels  = abs(dispPedCwPixels(1)) - cw.centerLatOffset(3);
-    else
-        latDispCwPixels  = abs(dispPedCwPixels(1)) - cw.centerLatOffset(4);
-    end
+%     % longitudinal displacement to cw center 
+%     if cwPed==1 || cwPed==2 
+%         if  ( abs(pedCwAngle - pedHeading) <= headingThreshold )
+%             longDispPedCwPixels = abs(dispPedCwPixels(1));
+%         else
+%             longDispPedCwPixels = -abs(dispPedCwPixels(1));
+%         end
+%     else
+%         if  ( abs(pedCwAngle - pedHeading) <= headingThreshold )
+%             longDispPedCwPixels = abs(dispPedCwPixels(2));
+%         else
+%             longDispPedCwPixels = -abs(dispPedCwPixels(2));
+%         end
+%     end
+%     %%%%%%%%%%%%%%%%%%%%%%%%
+%     % lateral displacement to cw center 
+%     if cwPed==1
+%         latDispCwPixels  = abs(dispPedCwPixels(2)) - cw.centerLatOffset(1);
+%     elseif cwPed==2
+%         latDispCwPixels  = abs(dispPedCwPixels(2)) - cw.centerLatOffset(2);
+%     elseif cwPed==3
+%         latDispCwPixels  = abs(dispPedCwPixels(1)) - cw.centerLatOffset(3);
+%     else
+%         latDispCwPixels  = abs(dispPedCwPixels(1)) - cw.centerLatOffset(4);
+%     end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% 3) for every car that is interacting with the pedestrian at this time step find states    
+if ~isempty(activeCarTracksData)
 for carInd = 1:size(activeCarTracksData,1)
     cwCar = activeCarTracksData{carInd}.closestCW(carPredTimeStep(carInd));
     carPosPixels = [activeCarTracksData{carInd}.xCenter(carPredTimeStep(carInd)), activeCarTracksData{carInd}.yCenter(carPredTimeStep(carInd))]/(orthopxToMeter*scaleFactor);    
@@ -103,9 +104,9 @@ for carInd = 1:size(activeCarTracksData,1)
     %%%%%%%%%%%%%%%%%%%%%%%%
     % check if the pedestrian is heading in the same direction as the ego-vehicle or the opposite direction
     if abs(pedHeading - carHeading) < 45    
-        isPedSameDirection = true;
+        isSameDirection = true;
     else
-        isPedSameDirection = false;
+        isSameDirection = false;
     end
     %%%%%%%%%%%%%%%%%%%%%%%%   
     % if the vehicle is close to crosswalk; % find the distance between the car and pedestrian based on the CW, the car is approaching
@@ -166,27 +167,21 @@ for carInd = 1:size(activeCarTracksData,1)
     end % end of loop for car aproaching a crosswalk
 
 end  % end of loop for all active cars interacting with the pedestrian at this time step
+end
 %%%%%%%%%%%%%%%%%%%%%%
 %% save the variables
-% pedData.long_disp_ped_car = longDispCarPixels*(scaleFactor*orthopxToMeter);
-% pedData.latDispPedCw = latDispCwPixels*(scaleFactor*orthopxToMeter);
-% pedData.longDispPedCw = longDispPedCwPixels*(scaleFactor*orthopxToMeter);
-% pedData.closeCar_ind = closeCar_ind;
-% pedData.activeCar_ind = activeCar_ind;
-% pedData.cw_car = cwCar;
-% pedData.cw_ped = cwPed;
-% % pedData.isLooking = isLooking;
-% pedData.isPedSameDirection = isPedSameDirection;
-% pedData.lonVelocity = lonVelocity;
-
 currentPedTrackData.long_disp_ped_car(end) = longDispCarPixels*(scaleFactor*orthopxToMeter);
-currentPedTrackData.latDispPedCw(end) = latDispCwPixels*(scaleFactor*orthopxToMeter);
-currentPedTrackData.longDispPedCw(end) = longDispPedCwPixels*(scaleFactor*orthopxToMeter);
+% currentPedTrackData.latDispPedCw(end) = latDispCwPixels*(scaleFactor*orthopxToMeter);
+% currentPedTrackData.longDispPedCw(end) = longDispPedCwPixels*(scaleFactor*orthopxToMeter);
 currentPedTrackData.closeCar_ind(end) = closeCar_ind;
 currentPedTrackData.activeCar_ind(end) = activeCar_ind;
-currentPedTrackData.isPedSameDirection(end) = isPedSameDirection;
+currentPedTrackData.isPedSameDirection(end) = isSameDirection;
 currentPedTrackData.lonVelocity(end) = lonVelocity;
 
+%% debug
+if closeCar_ind~=inf && activeCar_ind==inf
+    x=1;
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%
 % update if the ego-vehicle is in near lane or not

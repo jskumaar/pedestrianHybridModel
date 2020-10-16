@@ -329,11 +329,112 @@
 % end
 % 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% for sceneId = 1:12
+%     N_tracks = size(formattedTracksData{sceneId},1);
+%     for track_id = 1:N_tracks
+%         formattedTracksDataStruct{sceneId,1}{track_id,1} = table2struct(formattedTracksData{sceneId}{track_id}, 'ToScalar',true);
+%         formattedTracksDataStruct{sceneId,1}{track_id,1}.class  = string( formattedTracksDataStruct{sceneId,1}{track_id,1}.class);
+%     end
+% end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% load('tracksData_reSampled_correctDisCW_v8.mat')
+
+% for sceneId = 1:12
+%     N_tracks = size(formattedTracksData{sceneId},1);
+%     for track_id = 1:N_tracks
+%         formattedTracksData{sceneId,1}{track_id,1}.trackId = formattedTracksData{sceneId,1}{track_id,1}.trackId+1;
+%     end
+% end
+
+% 
+% % load('tracksData_v10.mat')
+% tic
+% zenoCW.sceneId =[];
+% zenoCW.trackId = [];
+% zenoCW.N_instances = [];
+% 
+% zenoHybrid.sceneId =[];
+% zenoHybrid.trackId = [];
+% zenoHybrid.N_instances = [];
+% 
+% flag.hybridStatePred = false;
+% for sceneId = 1:12
+%     N_tracks = size(formattedTracksData{sceneId},1);
+%     for track_id = 1:N_tracks
+%            
+%            if strcmp(formattedTracksData{sceneId}{track_id,1}.class{1}, 'pedestrian') 
+%                if track_id==5
+%                    x=1;
+%                end
+%                 [formattedTracksData{sceneId}{track_id,1}] = ....
+%                         hybridStateCopy_v3(formattedTracksData{sceneId}{track_id,1}, cw, flag, annotatedImageEnhanced, Params, 1, resetStates);    
+%                                    
+% %                   [formattedTracksData{sceneId}{track_id,1}] = ....
+% %                         hybridStateCopy(formattedTracksData{sceneId}{track_id,1}, cw, flag, annotatedImageEnhanced, Params);    
+% %                          
+%                % check for anomalies in close CW calculation
+%                pedData = formattedTracksData{sceneId}{track_id,1};
+%                diff_closeCw = diff(pedData.closestCW);
+%                ind = find(diff_closeCw~=0);
+%                diff_ind = diff(ind);
+%                diff_ind_2 = diff_ind;
+%                diff_ind_2(diff_ind_2 > 5) = [];
+%                if ~isempty(diff_ind_2)
+%                    zenoCW.sceneId = [zenoCW.sceneId;sceneId];
+%                    zenoCW.trackId = [zenoCW.trackId;track_id];
+%                    zenoCW.N_instances = [zenoCW.N_instances; length(diff_ind_2)];
+%                end
+%                
+%                % check for anomalies in hybrid state calculation
+%                pedData = formattedTracksData{sceneId}{track_id,1};
+%                
+%                diff_hybrid = [];
+%                for ii = 2:length(pedData.frame)
+%                    if (~strcmp(pedData.HybridState(ii), pedData.HybridState(ii-1)) && ii>5 && ~(strcmp(pedData.HybridState(ii-1),'Wait')) )
+%                        diff_hybrid = [diff_hybrid; ii];
+%                    end
+%                end
+%                diff_ind_hybrid = diff(diff_hybrid);
+%                diff_ind_hybrid_2 = diff_ind_hybrid;
+%                diff_ind_hybrid_2(diff_ind_hybrid_2 > 5) = [];
+%                if ~isempty(diff_ind_hybrid_2)
+%                    zenoHybrid.sceneId = [zenoHybrid.sceneId;sceneId];
+%                    zenoHybrid.trackId = [zenoHybrid.trackId;track_id];
+%                    zenoHybrid.N_instances = [zenoHybrid.N_instances; length(diff_ind_hybrid_2)];
+%                end
+%                x=1;
+%                     
+%            end
+%     end
+% end
+% toc
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 for sceneId = 1:12
     N_tracks = size(formattedTracksData{sceneId},1);
-    for track_id = 1:N_tracks
-        formattedTracksDataStruct{sceneId,1}{track_id,1} = table2struct(formattedTracksData{sceneId}{track_id}, 'ToScalar',true);
-        formattedTracksDataStruct{sceneId,1}{track_id,1}.class  = string( formattedTracksDataStruct{sceneId,1}{track_id,1}.class);
+    for trackId = 1:N_tracks
+        trackData = formattedTracksData{sceneId}{trackId};
+        fn = fieldnames(trackData);
+        x=1;
+        clear variable_new
+        for fieldId = 1:length(fn)
+            fni = string(fn(fieldId));
+            if ( strcmp(fni, 'latDispPedCw') || strcmp(fni, 'longDispPedCw') || strcmp(fni, 'long_disp_ped_car') || strcmp(fni, 'isPedSameDirection') ||....
+                 strcmp(fni, 'isLooking') || strcmp(fni, 'closeCar_ind')  ) 
+                variable = trackData.(fni);
+                if size(variable,1)==1
+                    variable_new(:,1) = variable(1,1:end);
+                else
+                    variable_new(:,1) = variable(1:end,1);
+                end
+                trackData.(fni) = variable_new; 
+            end
+            x=1;
+        end
+    
+        formattedTracksData{sceneId}{trackId} = trackData;
     end
+    
+    
 end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

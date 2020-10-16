@@ -2,6 +2,10 @@
 % prediction is somewhere after the 1st time step, the actual observations are
 % augmented with the predictions made so far.
 
+% Note: We assume that the No. of tracklets is not going to go above 5 for
+% a given prediction horizon!
+
+
 function CrossFeatures =  compileCrossFeatures(currentPedData, trackletData, trackletNo, pedTrackTimeStep, predTimeStep, Params, varargin)
 
 %% 1) setup
@@ -51,7 +55,7 @@ for Id = 1:N_tracklets
     
     if ( (Id==4 || Id==5) && Id==trackletNo)
         
-        if length(trackletData{2}.tracKLifetime) < length(trackletData{3}.tracKLifetime)
+        if length(trackletData{2}.trackLifetime) < length(trackletData{3}.tracKLifetime)
             predPedData = trackletData{2};
             DTCurb = [DTCurb; predPedData.latDispPedCw(2:end)];
             DTCW = [DTCW; predPedData.longDispPedCw(2:end)];
@@ -86,12 +90,16 @@ if N_tracklets>5
 end
 
 % use only the last observation window data
-DTCurb = DTCurb(end-observationWindow+1 : end);
-DTCW = DTCW(end-observationWindow+1 : end);
-ped_speed = ped_speed(end-observationWindow+1 : end);       
-veh_ped_dist = veh_ped_dist(end-observationWindow+1 : end);
-isSamedirection = isSamedirection(end-observationWindow+1 : end);
-closeCar_ind = closeCar_ind(end-observationWindow+1 : end);
+N = size(DTCurb,1);
+startIndex = max(N-observationWindow+1, 1);
+
+
+DTCurb = DTCurb(startIndex: end);
+DTCW = DTCW(startIndex : end);
+ped_speed = ped_speed(startIndex : end);       
+veh_ped_dist = veh_ped_dist(startIndex : end);
+isSamedirection = isSamedirection(startIndex : end);
+closeCar_ind = closeCar_ind(startIndex: end);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2) compile vehicle data (if available)
@@ -143,7 +151,7 @@ if size(varargin)~=0
     CrossFeatures.mean_veh_acc = mean(veh_acc);
 %     CrossFeatures.std_veh_acc = std(veh_acc); 
 
-    CrossFeatures.gaze_ratio = sum(gaze(close_car_ind))/length(close_car_ind);
+    CrossFeatures.gaze_ratio = sum(gaze)/length(gaze);
     CrossFeatures.isSameDirection = mean(isSamedirection)>0.5;
     CrossFeatures.isNearLane = mean(isNearLane)>0.5;
 
@@ -171,4 +179,12 @@ CrossFeatures.mean_DTCurb = mean(DTCurb(ped_ind));
 CrossFeatures.mean_DTCW = mean(DTCW(ped_ind));
 % CrossFeatures.std_DTCW = std(DTCW(ped_ind));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% debug
+if mean(ped_speed(ped_ind))==inf || mean(DTCurb(ped_ind))==inf || mean(DTCW(ped_ind))==inf
+    x=1;
+end
+ 
+
+
 end

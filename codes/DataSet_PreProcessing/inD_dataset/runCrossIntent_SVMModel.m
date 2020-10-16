@@ -13,7 +13,7 @@
 % 
 
 
-CrossFeatures_SVM_withOutEgo = CrossIntentData_withOutEgoCar;
+CrossFeatures_SVM_withOutEgo = CrossIntentData_withEgoCar;
 
 %% Step 3: Split the data into test and train sets
 TrainData_percent = 80;
@@ -65,7 +65,7 @@ end
 % SVMModel = CrossIntent_inD_6Features_onlyMean_noVehAcc_GaussianSVM_3s.ClassificationSVM;
 % SVMModel = CrossIntent_inD_6Features_onlyMean_noVehAcc_GaussianSVM_4s.ClassificationSVM;
 
-SVMModel =CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v2.ClassificationSVM;
+SVMModel =CrossIntent_inD_9Features_BS2_noDuration_EnsembleBagged_3s.ClassificationEnsemble;
 
 
 predicted_decision = [];
@@ -76,32 +76,32 @@ for test_ind = 1:size(SVMTestData,1)
     % features = [SVMTestData.F_cumWait(test_ind), SVMTestData.F_pedSpeed(test_ind), SVMTestData.F_pedDistToCurb(test_ind),...
     %            SVMTestData.F_pedDistToCW(test_ind), SVMTestData.F_pedDistToVeh(test_ind),  SVMTestData.F_vehVel(test_ind), ];
     
-%     mean_veh_speed          = SVMTestData.mean_veh_speed(test_ind);
-% %     std_veh_speed           = SVMTestData.std_veh_speed(test_ind);
-%     mean_veh_acc            = SVMTestData.mean_veh_acc(test_ind);
-% %     std_veh_acc             = SVMTestData.std_veh_acc(test_ind);
-%     mean_veh_ped_dist       = SVMTestData.mean_veh_ped_dist(test_ind);
-%     std_veh_ped_dist        = SVMTestData.std_veh_ped_dist(test_ind);
+    mean_veh_speed          = SVMTestData.mean_veh_speed(test_ind);
+%     std_veh_speed           = SVMTestData.std_veh_speed(test_ind);
+    mean_veh_acc            = SVMTestData.mean_veh_acc(test_ind);
+%     std_veh_acc             = SVMTestData.std_veh_acc(test_ind);
+    mean_veh_ped_dist       = SVMTestData.mean_veh_ped_dist(test_ind);
+    std_veh_ped_dist        = SVMTestData.std_veh_ped_dist(test_ind);
     mean_ped_speed          = SVMTestData.mean_ped_speed(test_ind);
-%     std_ped_speed           = SVMTestData.std_ped_speed(test_ind);
+    std_ped_speed           = SVMTestData.std_ped_speed(test_ind);
     mean_DTCurb             = SVMTestData.mean_DTCurb(test_ind);
-%     std_DTCurb              = SVMTestData.std_DTCurb(test_ind);
+    std_DTCurb              = SVMTestData.std_DTCurb(test_ind);
     mean_DTCW               = SVMTestData.mean_DTCW(test_ind);
-%     std_DTCW                = SVMTestData.std_DTCW(test_ind);
-%     duration_ego_vehicle    = SVMTestData.duration_ego_vehicle(test_ind);
-%     gaze_ratio              = SVMTestData.gaze_ratio(test_ind);
-%     isNearLane              = SVMTestData.isNearLane(test_ind);
-%     isSamedirection              = SVMTestData.isSamedirection(test_ind);
+    std_DTCW                = SVMTestData.std_DTCW(test_ind);
+    duration_ego_vehicle    = SVMTestData.duration_ego_vehicle(test_ind);
+    gaze_ratio              = SVMTestData.gaze_ratio(test_ind);
+    isNearLane              = SVMTestData.isNearLane(test_ind);
+    isSamedirection              = SVMTestData.isSamedirection(test_ind);
     
 %     SVMFeatures = table(mean_veh_speed, std_veh_speed, mean_veh_acc, std_veh_acc,...
 %                         mean_veh_ped_dist, std_veh_ped_dist, mean_ped_speed, std_ped_speed,...
 %                         mean_DTCurb, std_DTCurb, mean_DTCW, gaze_ratio);
              
-%    SVMFeatures = table(mean_veh_speed, mean_veh_acc, mean_veh_ped_dist, mean_ped_speed,...
-%                        mean_DTCurb, mean_DTCW, gaze_ratio, isNearLane, isSamedirection);
+   SVMFeatures = table(mean_veh_speed, mean_veh_acc, mean_veh_ped_dist, mean_ped_speed,...
+                       mean_DTCurb, mean_DTCW, gaze_ratio, isNearLane, isSamedirection);
 % %        
 %     
-     SVMFeatures = table(mean_ped_speed, mean_DTCurb, mean_DTCW);
+%      SVMFeatures = table(mean_ped_speed, mean_DTCurb, mean_DTCW);
 %       
     [predicted_decision(test_ind)] = predict(SVMModel, SVMFeatures);  
     actual_decision(test_ind) = SVMTestData.cross_intent(test_ind);

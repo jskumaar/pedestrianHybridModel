@@ -59,6 +59,7 @@ end
 % annotatedImageEnhanced(-int32(roadCenter(2)), int32(roadCenter(1))) = 255;
 % annotatedImageEnhanced_w_Tracks = annotatedImageEnhanced;
 Params.imgSize = imgSize;
+Params.roadOrientation = [10, -166, -67, 140];
 %identify the centers of the crosswalks; use the knowledge of the
 %scene; we know that there are two crosswalks and they are on the
 %opposite ends of the intersection; use x = 500 as the mid-point for x to

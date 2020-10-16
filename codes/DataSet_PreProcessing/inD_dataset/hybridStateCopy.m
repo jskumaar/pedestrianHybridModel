@@ -10,12 +10,12 @@ function [tracksData] = hybridStateCopy(tracksData, cw, flag, annotatedImage_enh
     %flag.pred = false; %temporarily fixing this parameter
 
     % parameters
-    heading_threshold = Params.heading_threshold; %45 degrees
-    stopping_threshold = Params.stopping_threshold; %speed m/s
-    walking_threshold = Params.walking_threshold; %speed m/s 
-    cw_dist_threshold = Params.cw_dist_threshold; %in pixels
-    cw_cross_threshold = Params.cw_cross_threshold; % approximate width of a lane
-    dec_zone = Params.dec_zone; %8 m radius (in pixels)
+    heading_threshold = Params.cwHeadingThreshold; %45 degrees
+    stopping_threshold = Params.stoppingThreshold; %speed m/s
+    walking_threshold = Params.walkingThreshold; %speed m/s 
+    cw_dist_threshold = Params.cwDistThreshold; %in pixels
+    cw_cross_threshold = Params.cwCrossThreshold; % approximate width of a lane
+    dec_zone = Params.decZone; %8 m radius (in pixels)
 
     % initialize variables
     isCrossing = false;
@@ -109,7 +109,7 @@ function [tracksData] = hybridStateCopy(tracksData, cw, flag, annotatedImage_enh
         %% Hybrid state update    
         % run the hybrid state update only during the update stage and not
         % during the prediction stage
-        if ~flag.pred
+        if ~flag.hybridStatePred
             % 1) position of pedestrians (make sure the values match with the
             % enhanced values in annotated_plot.m)
             % initialize

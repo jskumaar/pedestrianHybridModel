@@ -2,7 +2,29 @@
 
 % time = 926.972 s
 
-% load the models
+
+% % a) addpath of necessary directories
+p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+% p1 = genpath('E:\pedestrianHybridModel\codes');
+% p2 = genpath('E:\pedestrianHybridModel\datasets');
+addpath(p1)
+addpath(p2)
+
+load('trial_1_oneScene.mat')
+
+% b)load models
+% load the gap acceptance model
+load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
+GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
+Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
+% load the crossing intent model
+load('CrossIntent_inD_9Features_BS1_noDuration_FGaussianSVM_3s_v2.mat');
+CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_FGaussianSVM_3s_v2.ClassificationSVM;
+Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
+load('CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.mat');
+CrossIntentModelNoCar = CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.ClassificationSVM;
+Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
 
 
 % compile the actual gap results

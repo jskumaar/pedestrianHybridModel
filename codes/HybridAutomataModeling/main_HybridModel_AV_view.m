@@ -27,17 +27,17 @@ p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
 addpath(p1)
 addpath(p2)
 
-% % % b)load models
+% % b)load models
 % % load the gap acceptance model
-% load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice');
-% GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice.ClassificationSVM;
+% load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
+% GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
 % Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
 % % load the crossing intent model
 % load('CrossIntent_inD_9Features_BS1_noDuration_FGaussianSVM_3s_v2.mat');
 % CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_FGaussianSVM_3s_v2.ClassificationSVM;
 % Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
-% load('CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v2.mat');
-% CrossIntentModelNoCar = CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v2.ClassificationSVM;
+% load('CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.mat');
+% CrossIntentModelNoCar = CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.ClassificationSVM;
 % Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
 % % read tracks MetaData
 % for jj=1:12
@@ -49,37 +49,46 @@ addpath(p2)
 dataset="inD";
 HPed_params;
 % 
-% d) Read data or compile data?
-flag.dataCompile = false;
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% % compile/data tracks data if flag.dataCompile
-%     % a) Run the following if compiling data for the first time, else
+% % d) Read data or compile data?
+% % flag.dataCompile = false;
+% % flag.dataCompile = true;
+% % %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % compile/data tracks data if flag.dataCompile is set to true
+% % a) Run the following if compiling data for the first time, else
 % %     run1b) 
 % if flag.dataCompile
-%     [formattedTracksData, allTracksMetaData, N_Scenes, annotatedImageEnhanced] = inD_compile(Params, reset);
-%     [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
-% 
-%     for scene_id = 1:N_scenes
-%         tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
-%         tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
-%     end
-% 
-%         % %check for ego-pedestrian and pedestrian gaze for the entire dataset
-%         egoPed_Gaze_HPed;
-% 
-%         % save the data file for later reuse
-%         save('tracksData_reSampled_correctDisCW_v2.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
-%         x = 1;
+% %     % for full data compilation
+% %     [formattedTracksData, allTracksMetaData, N_Scenes] = inD_compile(Params, resetStates);
+% %     [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
+% %     %%%%%%%%%%%%%%%%
+%     % for recompiling the data from earlier resampled data
+%     load('tracksData_reSampled_v11.mat')     
+%     load('inD_trackDescriptives_v3.mat') 
+%     %%%%%%%%%%%%%%%%%
+%     % hybrid state
+%     inD_compile_resampled;
+%     %check for ego-pedestrian and pedestrian gaze for the entire dataset
+%     egoPed_Gaze_HPed_v2;
+%     %check pedestrian lane
+%     tmp_nearLaneCalc;
 %     
+% %     for scene_id = 1:N_scenes
+% %         tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
+% %         tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
+% %     end
+% 
+%     % save the data file for later reuse
+%     save('tracksData_reSampled_v11.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
+%     x = 1;
+% 
 % else
 %     
 %     % b) load already compiled tracks data
-%     load('tracksData_reSampled_correctDisCW_v8.mat')
-%     load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
-%     tracks =  tracksUpdated;
+%     load('tracksData_reSampled_v11.mat')
+%     load('inD_trackDescriptives_v3.mat') 
+% %     tracks =  tracksUpdated;
 % end
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 % For every time step in a scene for every scene, run the prediction and update loops; 
@@ -147,12 +156,6 @@ for sceneId = 1:N_Scenes
                 
                 actCarNos =  length(activeCarWithinRange);
                 tempCarTrackCurrentTimeStep = zeros(1,actCarNos);
-                
-                %% debug
-                if actCarNos==3
-                    x=1;
-                end
-                
                
                 % compile all cars' states within the sensing range (for M-1 time steps before the current time step, where M is the observation window and for next N time steps after the current time step, where N is the prediction horizon)
                 for carLoopId = 1: actCarNos
@@ -202,12 +205,6 @@ for sceneId = 1:N_Scenes
                     currentTSActiveCarData{carLoopId}.reachGoal = false;
                 end
                 
-                %% debug
-                if actCarNos==3
-                    if carTrackCurrentTimeStepInPredictionData(1)~=carTrackCurrentTimeStepInPredictionData(2)
-                        x=1;
-                    end
-                end
 
                 %%%%%%%%%%%%%%%%%%%%%%%
                 % For every active pedestrian run the trajectory prediction        

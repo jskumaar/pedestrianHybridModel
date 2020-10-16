@@ -294,17 +294,13 @@ for scene_id = 1:N_scenes
 %                         pedData.lat_disp_ped_cw_pixels(ped_time_step) = lat_disp_cw_pixels;
 %                         pedData.long_disp_ped_cw_pixels(ped_time_step) = long_disp_ped_cw_pixels;
                         pedData.long_disp_ped_car(ped_time_step) = double(long_disp_car_pixels)*orthopxToMeter*scaleFactor;
-                        pedData.lat_disp_ped_cw(ped_time_step) = double(lat_disp_cw_pixels)*orthopxToMeter*scaleFactor;
-                        pedData.long_disp_ped_cw(ped_time_step) = double(long_disp_ped_cw_pixels)*orthopxToMeter*scaleFactor;
+                        pedData.latDispPedCw(ped_time_step) = double(lat_disp_cw_pixels)*orthopxToMeter*scaleFactor;
+                        pedData.longDispPedCw(ped_time_step) = double(long_disp_ped_cw_pixels)*orthopxToMeter*scaleFactor;
                         pedData.isLooking(ped_time_step) = isLooking;
                         pedData.isPedSameDirection(ped_time_step) = isPedSameDirection;
                         pedData.calcPedHeading(ped_time_step) = ped_heading;
                         pedData.calcCarHeading(ped_time_step) = car_heading;    
-                        
-                        
-                        
-                        
-                        
+                         
 
                 end  %end of car loop for one car
       

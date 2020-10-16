@@ -5,8 +5,8 @@ addpath(p1)
 addpath(p2)
 
 %load('tracksData_reSampled_correctDisCW_v6.mat')
-load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
-tracks = tracksUpdated;
+load('inD_trackDescriptives_v3.mat') 
+% tracks = tracksUpdated;
 
 % parameters
 dec_zone = Params.decZone; % in m

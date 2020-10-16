@@ -6,7 +6,7 @@ function carTrackData = carState(carTrackData, cw, reset, Params)
 % parameters
 orthopxToMeter = Params.orthopxToMeter;
 scale_down_factor = Params.scaleFactor;
-moving_threshold = Params.moving_threshold;
+moving_threshold = Params.movingThreshold;
 %initialize variables
 car_heading = 0;
 carTrackData.xCenterPix = int32(carTrackData.xCenter/(scale_down_factor*orthopxToMeter)); % in pixels

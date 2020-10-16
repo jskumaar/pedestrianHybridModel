@@ -20,8 +20,8 @@ p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
 addpath(p1)
 addpath(p2)
 
-load('inD_trackDescriptives_removed_ped_tracks.mat') 
-tracks = tracks_updated;
+% load('inD_trackDescriptives_removed_ped_tracks.mat') 
+% tracks = tracks_updated;
 
 
 %% parameters
@@ -36,15 +36,14 @@ scale_down_factor = 12;
 alpha = orthopxToMeter*scale_down_factor;
 
 
-veh_speed = [];
-veh_acc = [];
-N_scenes = size(formattedTracksData,2);
+
+N_scenes = length(formattedTracksData);
 obs_index = 1;
 CrossIntentData = table();
 
 for scene_id = 1:N_scenes
     % pedestrian tracks
-    all_ped_tracks = [tracks{scene_id}.ped_crossing_tracks; tracks{scene_id}.ped_not_crossing_tracks];   
+    all_ped_tracks = [tracks{scene_id}.pedCrossingTracks; tracks{scene_id}.pedNotCrossingTracks];   
     N_ped_tracks = size(all_ped_tracks, 1);
     
     % for all pedestrian tracks
@@ -52,26 +51,29 @@ for scene_id = 1:N_scenes
         ped_id = all_ped_tracks(track_index);
         
         % identify ground truth crossing intent
-        if intersect(tracks{scene_id}.ped_crossing_tracks, ped_id)
+        if intersect(tracks{scene_id}.pedCrossingTracks, ped_id)
             cross_intent = true;
         else
             cross_intent = false;
         end
                   
-        N_instances = size(formattedTracksData{scene_id}{ped_id}, 1);      
+        N_instances = size(formattedTracksData{scene_id}{ped_id}.frame, 1);      
         
+        % initialize
+        veh_speed = [];
+        veh_acc = [];       
         for time_step = 1:N_instances
                car_id = formattedTracksData{scene_id}{ped_id}.closeCar_ind(time_step); 
                % if there is a car closeby
                if car_id ~=0 && car_id ~=inf
-                   ped_ts = formattedTracksData{scene_id}{ped_id}.frame(time_step);
-                   car_ts = find(formattedTracksData{scene_id}{car_id}.frame == ped_ts);
+                   current_time = formattedTracksData{scene_id}{ped_id}.frame(time_step);
+                   car_timeStep = find(formattedTracksData{scene_id}{car_id}.frame == current_time);
                end
                
                % when there is a vehicle
-               if ~isempty(car_ts)           
-                    veh_speed =  [veh_speed; formattedTracksData{scene_id}{car_id}.lonVelocity(car_ts) ];
-                    veh_acc = [veh_acc; formattedTracksData{scene_id}{car_id}.lonAcceleration(car_ts) ];
+               if ~isempty(car_timeStep)           
+                    veh_speed =  [veh_speed; formattedTracksData{scene_id}{car_id}.lonVelocity(car_timeStep) ];
+                    veh_acc = [veh_acc; formattedTracksData{scene_id}{car_id}.lonAcceleration(car_timeStep) ];
                else
                     veh_speed =  [veh_speed; inf ];
                     veh_acc =  [veh_acc; inf ];
@@ -88,12 +90,12 @@ for scene_id = 1:N_scenes
                        if (formattedTracksData{scene_id}{ped_id}.closestCW(time_step)~=0 &&  formattedTracksData{scene_id}{ped_id}.closestCW(time_step)~=inf)
 
                                gaze = formattedTracksData{scene_id}{ped_id}.isLooking(time_step-observationWindow+1 :time_step);
-                               if sum(ismember(formattedTracksData{scene_id}{ped_id}.Properties.VariableNames,'latDispPedCw'))
+                               if (isfield(formattedTracksData{scene_id}{ped_id},'latDispPedCw'))
                                     DTCurb = alpha*double(formattedTracksData{scene_id}{ped_id}.latDispPedCw(time_step-observationWindow+1 :time_step));
-                               elseif sum(ismember(formattedTracksData{scene_id}{ped_id}.Properties.VariableNames,'lat_disp_ped_cw'))        
+                               elseif (isfield(formattedTracksData{scene_id}{ped_id},'lat_disp_ped_cw'))        
                                     DTCurb = alpha*double(formattedTracksData{scene_id}{ped_id}.lat_disp_ped_cw(time_step-observationWindow+1 :time_step));
                                end
-                               if sum(ismember(formattedTracksData{scene_id}{ped_id}.Properties.VariableNames,'longDispPedCw'))
+                               if (isfield(formattedTracksData{scene_id}{ped_id},'longDispPedCw'))
                                     DTCW = alpha*double(formattedTracksData{scene_id}{ped_id}.longDispPedCw(time_step-observationWindow+1 :time_step));
                                else
                                     DTCW = alpha*double(formattedTracksData{scene_id}{ped_id}.long_disp_ped_cw(time_step-observationWindow+1 :time_step));
@@ -162,8 +164,8 @@ for scene_id = 1:N_scenes
                
             
               % reset
-               ped_ts = [];
-               car_ts = [];
+               current_time = [];
+               car_timeStep = [];
         end
          % reset
            
