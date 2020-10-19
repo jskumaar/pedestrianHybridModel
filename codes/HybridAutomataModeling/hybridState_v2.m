@@ -144,7 +144,6 @@ if ~flag.outOfPlay
        distPedLane(7,1) = norm(dispPedSW(4,1:2));
        distPedLane(8,1) = norm(dispPedSW(4,3:4));
        % check closest SW
-       % b) alternate
        [sortedSWdist, sortedSWindex] = sort(distPedLane);
        swInd_temp = sortedSWindex(1);
        swInd = ceil(swInd_temp/2);
@@ -152,9 +151,11 @@ if ~flag.outOfPlay
            swInd=4;
        end
        if mod(swInd_temp,2) ~= 0
-           Lane = 'Right';
+           Lane = "Right";
        else
-           Lane = 'Left';
+           Lane = "Left";
+%        elseif ii>1
+%            Lane(ii) = Lane(ii-1);
        end
        
        % check if this is a feasible SW lane
@@ -164,36 +165,31 @@ if ~flag.outOfPlay
            % initialize
            sw_sort_ind = sw_sort_ind + 1;
            swInd_temp = sortedSWindex(sw_sort_ind);
-           swInd = mod(swInd_temp,4);
-           % sidewalk
-           if swInd==0
-               swInd=4;
-           end
+           swInd = ceil(swInd_temp/2);
+
            % sidewalk lane calculation
-           if swInd_temp <= 4 && ~onRoad
-               Lane = 'Right';
+           if  mod(swInd_temp,2) ~= 0
+               Lane = "Right";
            elseif ~onRoad
-               Lane = 'Left';
-           else
-               Lane = prevLane;
+               Lane = "Left";
            end
 
            % check
-            if ( (prevSwInd==1 && strcmp(prevLane,'Right')) && ( (swInd==1 && strcmp(Lane,'Right')) || (swInd==1 && strcmp(Lane,'Left')) || (swInd==4 && strcmp(Lane,'Left')) ) )
+            if ( (prevSwInd==1 && strcmp(prevLane,"Right")) && ( (swInd==1 && strcmp(Lane,"Right")) || (swInd==1 && strcmp(Lane,"Left")) || (swInd==4 && strcmp(Lane,"Left")) ) )
                    isSWTransPossible = true;
-            elseif ( (prevSwInd==1 && strcmp(prevLane,'Left') ) && ( (swInd==1 && strcmp(Lane,'Left')) || (swInd==1 && strcmp(Lane,'Right')) || (swInd==3 && strcmp(Lane,'Right')) ) )
+            elseif ( (prevSwInd==1 && strcmp(prevLane,"Left") ) && ( (swInd==1 && strcmp(Lane,"Left")) || (swInd==1 && strcmp(Lane,"Right")) || (swInd==3 && strcmp(Lane,"Right")) ) )
                    isSWTransPossible = true;   
-            elseif ( (prevSwInd==2 && strcmp(prevLane,'Right') ) && ( (swInd==2 && strcmp(Lane,'Right')) || (swInd==2 && strcmp(Lane,'Left')) || (swInd==3 && strcmp(Lane,'Left')) ) )
+            elseif ( (prevSwInd==2 && strcmp(prevLane,"Right") ) && ( (swInd==2 && strcmp(Lane,"Right")) || (swInd==2 && strcmp(Lane,"Left")) || (swInd==3 && strcmp(Lane,"Left")) ) )
                    isSWTransPossible = true; 
-            elseif ( (prevSwInd==2 && strcmp(prevLane,'Left') ) && ( (swInd==2 && strcmp(Lane,'Left')) || (swInd==2 && strcmp(Lane,'Right')) || (swInd==4 && strcmp(Lane,'Right')) ) )
+            elseif ( (prevSwInd==2 && strcmp(prevLane,"Left") ) && ( (swInd==2 && strcmp(Lane,"Left")) || (swInd==2 && strcmp(Lane,"Right")) || (swInd==4 && strcmp(Lane,"Right")) ) )
                    isSWTransPossible = true; 
-            elseif ( (prevSwInd==3 && strcmp(prevLane,'Right') ) && ( (swInd==3 && strcmp(Lane,'Right')) || (swInd==3 && strcmp(Lane,'Left')) || (swInd==1 && strcmp(Lane,'Left')) ) )
+            elseif ( (prevSwInd==3 && strcmp(prevLane,"Right") ) && ( (swInd==3 && strcmp(Lane,"Right")) || (swInd==3 && strcmp(Lane,"Left")) || (swInd==1 && strcmp(Lane,"Left")) ) )
                    isSWTransPossible = true;
-            elseif ( (prevSwInd==3 && strcmp(prevLane,'Left') ) && ( (swInd==3 && strcmp(Lane,'Left')) || (swInd==3 && strcmp(Lane,'Right')) || (swInd==2 && strcmp(Lane,'Right')) ) )
+            elseif ( (prevSwInd==3 && strcmp(prevLane,"Left") ) && ( (swInd==3 && strcmp(Lane,"Left")) || (swInd==3 && strcmp(Lane,"Right")) || (swInd==2 && strcmp(Lane,"Right")) ) )
                    isSWTransPossible = true; 
-            elseif ( (prevSwInd==4 && strcmp(prevLane,'Right') ) && ( (swInd==4 && strcmp(Lane,'Right')) || (swInd==4 && strcmp(Lane,'Left')) || (swInd==2 && strcmp(Lane,'Left')) ) )
+            elseif ( (prevSwInd==4 && strcmp(prevLane,"Right") ) && ( (swInd==4 && strcmp(Lane,"Right")) || (swInd==4 && strcmp(Lane,"Left")) || (swInd==2 && strcmp(Lane,"Left")) ) )
                    isSWTransPossible = true; 
-            elseif ( (prevSwInd==4 && strcmp(prevLane,'Left') ) && ( (swInd==4 && strcmp(Lane,'Left')) || (swInd==4 && strcmp(Lane,'Right')) || (swInd==1 && strcmp(Lane,'Right')) ) )
+            elseif ( (prevSwInd==4 && strcmp(prevLane,"Left") ) && ( (swInd==4 && strcmp(Lane,"Left")) || (swInd==4 && strcmp(Lane,"Right")) || (swInd==1 && strcmp(Lane,"Right")) ) )
                    isSWTransPossible = true; 
 % %                 elseif strcmp(Lane, '')
 %                      swInd = 0; % Not on any sidewalk 
@@ -257,21 +253,21 @@ if ~flag.outOfPlay
                % feasibilty check we use the sidewalk the pedestrian is
                % close to.
                if prevCwInd~=cwInd && swInd~=inf
-                    if ( (swInd==1 && strcmp(Lane,'Right')) && (cwInd==1 || cwInd==4) )
+                    if ( (swInd==1 && strcmp(Lane,"Right")) && (cwInd==1 || cwInd==4) )
                            isTransitionPossible = true;
-                    elseif ( (swInd==1 && strcmp(Lane,'Left') ) && ( cwInd==1 || cwInd==3) )
+                    elseif ( (swInd==1 && strcmp(Lane,"Left") ) && ( cwInd==1 || cwInd==3) )
                            isTransitionPossible = true;   
-                    elseif ( (swInd==2 && strcmp(Lane,'Right') ) && ( cwInd==2 || cwInd==3) )
+                    elseif ( (swInd==2 && strcmp(Lane,"Right") ) && ( cwInd==2 || cwInd==3) )
                            isTransitionPossible = true; 
-                    elseif ( (swInd==2 && strcmp(Lane,'Left') ) && ( cwInd==2 || cwInd==4) )
+                    elseif ( (swInd==2 && strcmp(Lane,"Left") ) && ( cwInd==2 || cwInd==4) )
                            isTransitionPossible = true; 
-                    elseif ( (swInd==3 && strcmp(Lane,'Right') ) && ( cwInd==3 || cwInd==1) )
+                    elseif ( (swInd==3 && strcmp(Lane,"Right") ) && ( cwInd==3 || cwInd==1) )
                            isTransitionPossible = true;
-                    elseif ( (swInd==3 && strcmp(Lane,'Left') ) && ( cwInd==3 || cwInd==2) )
+                    elseif ( (swInd==3 && strcmp(Lane,"Left") ) && ( cwInd==3 || cwInd==2) )
                            isTransitionPossible = true; 
-                    elseif ( (swInd==4 && strcmp(Lane,'Right') ) && ( cwInd==4 || cwInd==2) )
+                    elseif ( (swInd==4 && strcmp(Lane,"Right") ) && ( cwInd==4 || cwInd==2) )
                            isTransitionPossible = true; 
-                    elseif ( (swInd==4 && strcmp(Lane,'Left') ) && ( cwInd==4 || cwInd==1) )
+                    elseif ( (swInd==4 && strcmp(Lane,"Left") ) && ( cwInd==4 || cwInd==1) )
                            isTransitionPossible = true; 
                     else
                          isTransitionPossible = false; 
@@ -469,10 +465,6 @@ if ~flag.outOfPlay
             %tracksData.distCW(end) = dist_cw;
 
     end % end of hybrid update (not prediction) loop
-    %% debug
-    if (strcmp(hybrid_state, 'Approach') && strcmp(approachHeadingState,'Not_Headed') && strcmp(cwHeadingCloseCW,'Not_Headed'))
-        x=1;
-    end
     
     
     

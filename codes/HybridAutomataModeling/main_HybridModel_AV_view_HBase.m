@@ -29,67 +29,67 @@ addpath(p1)
 addpath(p2)
 addpath(p3)
 
-% % b)load models
-% load the gap acceptance model
-load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
-GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
-Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
-% load the crossing intent model
-load('CrossIntent_inD_9Features_BS1_noDuration_FGaussianSVM_3s_v2.mat');
-CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_FGaussianSVM_3s_v2.ClassificationSVM;
-Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
-load('CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.mat');
-CrossIntentModelNoCar = CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.ClassificationSVM;
-Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
-% read tracks MetaData
-for jj=1:12
-    sceneId = 17+jj;
-    tracksMetaData{jj} = readtable(strcat(num2str(sceneId),'_tracksMeta.csv')) ;
-end
+% % % b)load models
+% % load the gap acceptance model
+% load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
+% GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
+% Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
+% % load the crossing intent model
+% % load('CrossIntent_inD_9Features_BS1_noDuration_FGaussianSVM_3s_v2.mat');
+% % CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_FGaussianSVM_3s_v2.ClassificationSVM;
+% % Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
+% % load('CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.mat');
+% % CrossIntentModelNoCar = CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.ClassificationSVM;
+% % Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
+% % read tracks MetaData
+% for jj=1:12
+%     sceneId = 17+jj;
+%     tracksMetaData{jj} = readtable(strcat(num2str(sceneId),'_tracksMeta.csv')) ;
+% end
 
 %c) parameters
 dataset="inD";
 HPed_params;
-% 
-% d) Read data or compile data?
-flag.dataCompile = false;
-% flag.dataCompile = true;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % 
+% % % d) Read data or compile data?
+% flag.dataCompile = false;
+% % % flag.dataCompile = true;
+% % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % % compile/data tracks data if flag.dataCompile is set to true
 % % a) Run the following if compiling data for the first time, else
 % %     run1b) 
-if flag.dataCompile
-%     % for full data compilation
-%     [formattedTracksData, allTracksMetaData, N_Scenes] = inD_compile(Params, resetStates);
-%     [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
-%     %%%%%%%%%%%%%%%%
-    % for recompiling the data from earlier resampled data
-    load('tracksData_reSampled_v11.mat')     
-    load('inD_trackDescriptives_v3.mat') 
-    %%%%%%%%%%%%%%%%%
-    % hybrid state
-    inD_compile_resampled;
-    %check for ego-pedestrian and pedestrian gaze for the entire dataset
-    egoPed_Gaze_HPed_v2;
-    %check pedestrian lane
-    tmp_nearLaneCalc;
-    
-%     for scene_id = 1:N_scenes
-%         tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
-%         tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
-%     end
-
-    % save the data file for later reuse
-    save('tracksData_reSampled_v11.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
-    x = 1;
-
-else
-    
-    % b) load already compiled tracks data
-    load('tracksData_reSampled_v11.mat')
-    load('inD_trackDescriptives_v3.mat') 
-%     tracks =  tracksUpdated;
-end
+% if flag.dataCompile
+% %     % for full data compilation
+% %     [formattedTracksData, allTracksMetaData, N_Scenes] = inD_compile(Params, resetStates);
+% %     [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
+% %     %%%%%%%%%%%%%%%%
+%     % for recompiling the data from earlier resampled data
+%     load('tracksData_reSampled_v11.mat')     
+%     load('inD_trackDescriptives_v3.mat') 
+%     %%%%%%%%%%%%%%%%%
+%     % hybrid state
+%     inD_compile_resampled;
+%     %check for ego-pedestrian and pedestrian gaze for the entire dataset
+%     egoPed_Gaze_HPed_v2;
+%     %check pedestrian lane
+%     tmp_nearLaneCalc;
+%     
+% %     for scene_id = 1:N_scenes
+% %         tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
+% %         tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
+% %     end
+% 
+%     % save the data file for later reuse
+%     save('tracksData_reSampled_v11.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
+%     x = 1;
+% 
+% else
+%     
+%     % b) load already compiled tracks data
+%     load('tracksData_reSampled_v11.mat')
+%     load('inD_trackDescriptives_v3.mat') 
+% %     tracks =  tracksUpdated;
+% end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -100,13 +100,13 @@ end
 %% debug
 N_Scenes = 12;
 % initialize variables
-GapFeaturesAllScenes = struct('recordingId',[],'pedcarTrackId',[],'pedTrackTimeStep',[],'egoCarTrack',[],'pedCloseCw',[],'F_pedSpeed',[],'F_pedDistToCW',[],...
+GapFeaturesAllScenes_HBase = struct('recordingId',[],'pedTrackId',[],'pedTrackTimeStep',[],'egoCarTrack',[],'pedCloseCw',[],'F_pedSpeed',[],'F_pedDistToCW',[],...
                               'F_cumWait',[],'F_pedDistToVeh',[],'F_vehVel',[],'F_pedDistToCurb',[],'F_vehAcc',[],'F_isEgoNearLane',[],...
                               'F_isSameDirection',[],'predDecision',[],'timeStepInHorizon',[]);
-CrossFeaturesAllScenes = struct('recordingId',[],'pedcarTrackId',[],'pedTrackTimeStep',[],'timeStepInHorizon',[],'mean_ped_speed',[],...
+CrossFeaturesAllScenes = struct('recordingId',[],'pedTrackId',[],'pedTrackTimeStep',[],'timeStepInHorizon',[],'mean_ped_speed',[],...
                                 'mean_DTCurb',[],'mean_DTCW',[],'mean_veh_speed',[],'mean_veh_acc',[],'mean_veh_ped_dist',[],...
                                 'gaze_ratio',[],'isSameDirection',[], 'isNearLane',[], 'duration_ego_vehicle',[],'closestCW',[]);
-predictedPedTraj = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
+predictedPedTraj_HBase = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
 predPedIndex = 0;
 GapFeatureId = 1;
 CrossFeatureId = 1;
@@ -120,7 +120,7 @@ for sceneId = 1:N_Scenes
     N_tracks = size(formattedTracksData{sceneId},1);
     % assume every moving car track is an ego-AV
     for track_index = 1:length(carMovingTracks)
-%     for carTrackId = 6:20
+%     for trackId = 6:20
         % initialize track variables
         carTrackId = carMovingTracks(track_index);
         carData = formattedTracksData{sceneId}{carTrackId};
@@ -186,7 +186,7 @@ for sceneId = 1:N_Scenes
 %                     currentTSActiveCarData.closestCW(carLoopId) = formattedTracksData{sceneId}{carIndex}.closestCW(carTrackTimeStep);
 %                     currentTSActiveCarData.calcHeading(carLoopId) = formattedTracksData{sceneId}{carIndex}.calcHeading(carTrackTimeStep);
 %                     currentTSActiveCarData.car_lane(carLoopId) = formattedTracksData{sceneId}{carIndex}.car_lane(carTrackTimeStep);
-%                     currentTSActiveCarData.carTrackId(carLoopId) = formattedTracksData{sceneId}{carIndex}.carTrackId(carTrackTimeStep);
+%                     currentTSActiveCarData.carTrackId(carLoopId) = formattedTracksData{sceneId}{carIndex}.trackId(carTrackTimeStep);
                     
                     % copy variables 
                     currentTSActiveCarData{carLoopId}.xCenter = formattedTracksData{sceneId}{carIndex}.xCenter(carTrackTimeStep);
@@ -201,7 +201,7 @@ for sceneId = 1:N_Scenes
                     currentTSActiveCarData{carLoopId}.closestCW = formattedTracksData{sceneId}{carIndex}.closestCW(carTrackTimeStep);
                     currentTSActiveCarData{carLoopId}.calcHeading = formattedTracksData{sceneId}{carIndex}.calcHeading(carTrackTimeStep);
                     currentTSActiveCarData{carLoopId}.car_lane = formattedTracksData{sceneId}{carIndex}.car_lane(carTrackTimeStep);
-                    currentTSActiveCarData{carLoopId}.carTrackId = formattedTracksData{sceneId}{carIndex}.carTrackId(carTrackTimeStep);
+                    currentTSActiveCarData{carLoopId}.carTrackId = formattedTracksData{sceneId}{carIndex}.trackId(carTrackTimeStep);
                     
                     currentTSActiveCarData{carLoopId}.turn = false;
                     currentTSActiveCarData{carLoopId}.changeLane = false;
@@ -217,6 +217,8 @@ for sceneId = 1:N_Scenes
                     currentPedData = formattedTracksData{sceneId}{pedIndexWithinScene};
                     currentPedMetaData = tracksMetaData{sceneId}(pedIndexWithinScene, :);            
                     pedTrackTimeStep = (trackTime - currentPedData.frame(1))/Params.reSampleRate + 1;
+                   
+                    
                     %%%%%%%%%%%%%%%%%%%%%%%
                     % check if it is an existing pedestrian or a new pedestrian           
                     if ~ismember(pedIndexWithinScene, pedIndexInTrackHistory)
@@ -224,12 +226,12 @@ for sceneId = 1:N_Scenes
                         pedInSceneId = pedInSceneId + 1;   % this index keeps track of all pedestrians in a scene
                         predPedIndex = predPedIndex + 1;  % this index keeps track of all pedestrians from all scenes               
                         % initialize the pedestrian
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.sceneId = sceneId;
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.carTrackId = carTrackId;
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.pedcarTrackId = pedIndexWithinScene;  
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.timeStep(1) = inf;
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.data{1} = inf;
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.kfData{1} = inf;
+                        predictedPedTraj_HBase{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.sceneId = sceneId;
+                        predictedPedTraj_HBase{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.carTrackId = carTrackId;
+                        predictedPedTraj_HBase{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.pedTrackId = pedIndexWithinScene;  
+                        predictedPedTraj_HBase{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.timeStep(1) = inf;
+                        predictedPedTraj_HBase{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.data{1} = inf;
+                        predictedPedTraj_HBase{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.kfData{1} = inf;
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%                    
                     % initialize the kalman filter
@@ -266,39 +268,41 @@ for sceneId = 1:N_Scenes
 %                         else
 %                             crossCarData = [];
 %                         end
-if sceneId==1 && carTrackId==2 && trackTimeStep==96
-    x=1;
-end
-
-
-
-                        [pedPredictions, pedKFpredictions, predGapFeatures, predCrossFeatures] = predictStates(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, carTrackCurrentTimeStepInPredictionData, AVStates, pedTrackTimeStep, ...
-                                                                           cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModelCar,Prob_CrossIntentModelNoCar, Params, flag);
+                        [pedPredictions, pedKFpredictions, predGapFeatures] = predictStates_baseHybrid(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, carTrackCurrentTimeStepInPredictionData, AVStates, pedTrackTimeStep, ...
+                                                                           cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Params, flag);
                         % Gap features
                         N_gaps = size(predGapFeatures,1);
                         if N_gaps >=1
                             predGapFeatures.recordingId = sceneId;
-                            predGapFeatures.pedcarTrackId = pedIndexWithinScene;
-                            GapFeaturesAllScenes(GapFeatureId:GapFeatureId+N_gaps-1) =  predGapFeatures;
+                            predGapFeatures.pedTrackId = pedIndexWithinScene;
+                            GapFeaturesAllScenes_HBase(GapFeatureId:GapFeatureId+N_gaps-1) =  predGapFeatures;
                             GapFeatureId = GapFeatureId + N_gaps;
                         end
-                        % Cross intent features
-                        N_cross = size(predCrossFeatures,1);
-                        if N_cross >=1
-                            predCrossFeatures.recordingId = sceneId;
-                            predCrossFeatures.pedcarTrackId = pedIndexWithinScene;
-                            CrossFeaturesAllScenes(CrossFeatureId:CrossFeatureId+N_cross-1) = predCrossFeatures;
-                            CrossFeatureId = CrossFeatureId + N_cross;
-                        end
+%                         % Cross intent features
+%                         N_cross = size(predCrossFeatures,1);
+%                         if N_cross >=1
+%                             predCrossFeatures.recordingId = sceneId;
+%                             predCrossFeatures.pedTrackId = pedIndexWithinScene;
+%                             CrossFeaturesAllScenes(CrossFeatureId:CrossFeatureId+N_cross-1) = predCrossFeatures;
+%                             CrossFeatureId = CrossFeatureId + N_cross;
+%                         end
                     else
                         [pedPredictions, pedKFpredictions] = HPed_CV(kf, currentPedData, Params, pedTrackTimeStep);
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%
                     % Save the predictions
                     if pedTrackTimeStep >= Params.AdjustedSampFreq 
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
-                        predictedPedTraj{sceneId}{carTrackId,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
+                        predictedPedTraj_HBase{sceneId}{carTrackId}{pedIndexWithinScene}.timeStep(end+1,1) = pedTrackTimeStep;
+                        predictedPedTraj_HBase{sceneId}{carTrackId}{pedIndexWithinScene}.data{end+1,1} = pedPredictions;
+                        predictedPedTraj_HBase{sceneId}{carTrackId}{pedIndexWithinScene}.kfData{end+1,1} = pedKFpredictions;
+                        
+                        %% debug
+                        prevTimeStep = predictedPedTraj_HBase{sceneId}{carTrackId}{pedIndexWithinScene}.timeStep(end-1,1);
+                        if pedTrackTimeStep-prevTimeStep~=1 && prevTimeStep~=inf
+                            x=1;
+                        end
+                        
+                        
                     end
                 end % end of all pedestrians
                      
@@ -311,5 +315,5 @@ end % end of all scenes
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % remove initialized empty data
-GapFeaturesAllScenes(GapFeatureId:end,:) =  [];
-CrossFeaturesAllScenes(CrossFeatureId:end, :) = [];
+GapFeaturesAllScenes_HBase(GapFeatureId:end,:) =  [];
+

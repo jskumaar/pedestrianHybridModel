@@ -1,4 +1,4 @@
-function [predData, kf] = approachReset(predData, kf, Params, cw, reset)
+function [predData, kf] = approachReset(predData, kf, Params, cw, reset, flag_reachCrosswalk)
 
 %% 1) setup
 % parameters
@@ -7,6 +7,7 @@ orthopxToMeter = Params.orthopxToMeter;
 del_t = Params.delta_T;
 reSampleRate = Params.reSampleRate;
 % initialize
+N = length(predData.trackLifetime);
 pedPosPixels = [predData.xCenter, predData.yCenter]/(orthopxToMeter*scaleFactor);
 % calculate angle between pedestrian and approaching crosswalk
 pedCwAngle = [ atan2((cw.center_y(1) - pedPosPixels(2)), (cw.center_x(1) - pedPosPixels(1)))*180/pi;
@@ -22,10 +23,11 @@ calcHeading = predData.calcHeading;
 xVelocity = predData.xVelocity;
 yVelocity = predData.yVelocity;
 closestCW = predData.closestCW;
+Lane = predData.Lane;
 trackLifetime = predData.trackLifetime;
 pedGoalDisp =  [inf, inf];
 lonVelocity = inf;
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% 2) tracklet for crossing intent   
 % if crosswalk 1
@@ -193,7 +195,53 @@ updated_X = [xCenter;
              yVelocity];
 kf.x = updated_X; 
 
-%%%%%%%%%%%%%%%%%%%%%%%          
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+%% reset close CW if it is a new tracklet and CW has been reached
+
+if flag_reachCrosswalk && N==1
+    if closestCW==1 && strcmp(Lane,'Right')
+        closestCW = 4;
+        swInd = 4;
+        Lane= 'Left';
+    elseif closestCW==1 && strcmp(Lane,'Left')
+        closestCW = 3;
+        swInd = 3;
+        Lane = 'Right';
+    elseif closestCW==2 && strcmp(Lane,'Right')
+        closestCW = 3;
+        swInd = 3;
+        Lane= 'Left';
+    elseif closestCW==2 && strcmp(Lane,'Left')
+        closestCW = 4;
+        swInd = 4;
+        Lane = 'Right';
+    elseif closestCW==3 && strcmp(Lane,'Right')
+        closestCW = 1;
+        swInd = 1;
+        Lane= 'Left';
+    elseif closestCW==3 && strcmp(Lane,'Left')
+        closestCW = 2;
+        swInd = 2;
+        Lane = 'Right';
+    elseif closestCW==4 && strcmp(Lane,'Right')
+        closestCW = 2;
+        swInd = 2;
+        Lane= 'Left';
+    elseif closestCW==4 && strcmp(Lane,'Left')
+        closestCW = 1;
+        swInd = 1;
+        Lane = 'Right';
+    end
+end
+    
+
+
+
+
+
+
+
 %updatedPredData
 predData.trackLifetime = trackLifetime;
 predData.xCenter = xCenter;
@@ -203,6 +251,9 @@ predData.yVelocity = yVelocity;
 predData.calcHeading = calcHeading;
 predData.goalDisp = norm(pedGoalDisp)*(orthopxToMeter*scaleFactor);
 predData.lonVelocity = lonVelocity;
+predData.closestCW = closestCW;
+predData.swInd = swInd;
+predData.Lane = Lane;
 
 
 

@@ -20,9 +20,10 @@ gaze_start_ind = max(pedTrackTimeStep-observationWindow+1, 1);
 % copy the data based on the prediction tracklets
 N_tracklets = size(trackletData,1);
 % initialize trajectory
-predictionTrajectory{1,1}(1,1) = trackletEndNode(1);
+predictionTrajectory{1,1}(1,1) = trackletData{1}(1,1);
+predictionTrajectory{1,1}(1,2) = trackletData{1}(1,2);
 
-tempTraj = [trackletData{1}.xCenter(end-predTimeStep+1:end), trackletData{1}.yCenter(end-predTimeStep+1:end)]';
+tempTraj = [trackletData{1}.xCenter(N_obsTimeSteps+1:end), trackletData{1}.yCenter(N_obsTimeSteps+1:end)]';
 predictionTrajectory{1,1} = [predictionTrajectory{1,1}, tempTraj(:)'];
 
 % initialize variables with actual observed data till the time step

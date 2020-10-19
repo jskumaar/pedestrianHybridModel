@@ -6,7 +6,7 @@ distPedRightLane = norm(reset.carCW.goal(1,:) - pedPos);
 distPedLeftLane = norm(reset.carCW.goal(2,:) - pedPos);
 
     if distPedRightLane < distPedLeftLane
-        currentPedTrackData.Lane(end, :) = "Right";
+        Lane = "Right";
 
         if currentPedTrackData.closeCar_ind(end) ~=0 && currentPedTrackData.closeCar_ind(end) ~=inf
             if (strcmp(egoCarData.car_lane(egoCarTimeStep), 'East_Right') ||...
@@ -18,7 +18,7 @@ distPedLeftLane = norm(reset.carCW.goal(2,:) - pedPos);
             end
         end
     else
-        currentPedTrackData.Lane(end, :) = "Left";
+        Lane = "Left";
 
         if currentPedTrackData.closeCar_ind(end) ~=0 && currentPedTrackData.closeCar_ind(end) ~=inf
             if (strcmp(egoCarData.car_lane(egoCarTimeStep), 'East_Left') ||...
@@ -38,7 +38,7 @@ elseif currentPedTrackData.closestCW(end) == 2
     distPedLeftLane = norm(reset.carCW.goal(4,:) - pedPos);
 
     if distPedRightLane < distPedLeftLane
-        currentPedTrackData.Lane(end, :) = "Right";
+        Lane = "Right";
         if currentPedTrackData.closeCar_ind(end) ~=0 && currentPedTrackData.closeCar_ind(end) ~=inf
             if (strcmp(egoCarData.car_lane(egoCarTimeStep), 'East_Left') ||...
                 strcmp(egoCarData.car_lane(egoCarTimeStep), 'West_Right') ||...
@@ -49,7 +49,7 @@ elseif currentPedTrackData.closestCW(end) == 2
             end
         end
     else
-        currentPedTrackData.Lane(end, :) = "Left";
+        Lane = "Left";
         if currentPedTrackData.closeCar_ind(end) ~=0 && currentPedTrackData.closeCar_ind(end) ~=inf
             if (strcmp(egoCarData.car_lane(egoCarTimeStep), 'East_Right') ||...
                 strcmp(egoCarData.car_lane(egoCarTimeStep), 'West_Left') ||...
@@ -70,7 +70,7 @@ elseif currentPedTrackData.closestCW(end) == 3
     distPedLeftLane = norm(reset.carCW.goal(6,:) - pedPos);
 
     if distPedRightLane < distPedLeftLane
-        currentPedTrackData.Lane(end, :) = "Right";
+        Lane = "Right";
         if currentPedTrackData.closeCar_ind(end) ~=0 && currentPedTrackData.closeCar_ind(end) ~=inf
             if (strcmp(egoCarData.car_lane(egoCarTimeStep), 'East_Left') ||...
                 strcmp(egoCarData.car_lane(egoCarTimeStep), 'West_Right') ||...
@@ -81,7 +81,7 @@ elseif currentPedTrackData.closestCW(end) == 3
             end
         end
     else
-        currentPedTrackData.Lane(end, :) = "Left";
+        Lane = "Left";
         if currentPedTrackData.closeCar_ind(end) ~=0 && currentPedTrackData.closeCar_ind(end) ~=inf
             if (strcmp(egoCarData.car_lane(egoCarTimeStep), 'East_Right') ||...
                 strcmp(egoCarData.car_lane(egoCarTimeStep), 'West_Right') ||...
@@ -101,7 +101,7 @@ elseif currentPedTrackData.closestCW(end) == 4
     distPedLeftLane = norm(reset.carCW.goal(8,:) - pedPos);
 
     if distPedRightLane < distPedLeftLane
-        currentPedTrackData.Lane(end, :) = "Right";
+        Lane = "Right";
         if currentPedTrackData.closeCar_ind(end) ~=0 && currentPedTrackData.closeCar_ind(end) ~=inf
             if (strcmp(egoCarData.car_lane(egoCarTimeStep), 'East_Right') ||...
                 strcmp(egoCarData.car_lane(egoCarTimeStep), 'West_Left') ||...
@@ -112,7 +112,7 @@ elseif currentPedTrackData.closestCW(end) == 4
             end
         end
     else
-        currentPedTrackData.Lane(end, :) = "Left";
+        Lane = "Left";
         if currentPedTrackData.closeCar_ind(end) ~=0 && currentPedTrackData.closeCar_ind(end) ~=inf
             if (strcmp(egoCarData.car_lane(egoCarTimeStep), 'East_Right') ||...
                 strcmp(egoCarData.car_lane(egoCarTimeStep), 'West_Right') ||...
@@ -127,3 +127,6 @@ elseif currentPedTrackData.closestCW(end) == 4
 
 
 end
+
+% update lane
+currentPedTrackData.Lane = Lane;

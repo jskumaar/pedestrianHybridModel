@@ -2,7 +2,7 @@
 % pedestrians interacting with a single automated vehicle
 
 % 1) Discrete State Transitions - various probabilistic SVM models
-% 2) Contunous State Transitions - constant velocity with KF and Gaussian
+% 2) Continuous State Transitions - constant velocity with KF and Gaussian
 % Noise
 % 3) A Bayesian Inference framework is used for predicting and updating the
 % states of the hybrid model
@@ -15,84 +15,101 @@
 % 3d) For the continuous states, the update occurs the trajectory
 % observations provided through the dataset
 
-%% Updated: 08/25/20
-
 %% debug
-clearvars -except resetStates annotatedImageEnhanced formattedTracksData tracks tracksMetaData cw Prob_CrossIntentModel Prob_GapAcceptanceModel Params
+clearvars -except resetStates annotatedImageEnhanced formattedTracksData tracks tracksMetaData cw Prob_CrossIntentModelCar Prob_CrossIntentModelNoCar Prob_GapAcceptanceModel Params
 
 %% setup
-% a) addpath of necessary directories
+% % a) addpath of necessary directories
 p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
 p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
+% p1 = genpath('E:\pedestrianHybridModel\codes');
+% p2 = genpath('E:\pedestrianHybridModel\datasets');
 addpath(p1)
 addpath(p2)
+addpath(p3)
 
-% % % b)load models
-% %load the gap acceptance model
-% load('GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.mat', 'GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice');
-% GapAcceptanceModel = GapAcceptance_inD_9Features_FGaussianSVM_BootStrappedTwice.ClassificationSVM;
+% % b)load models
+% load the gap acceptance model
+% load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
+% GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
 % Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
-% % % load the crossing intent model
-% load('CrossIntent_inD_9Features_BS2_noDuration_MGaussianSVM_3s.mat');
-% CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_MGaussianSVM_3s.ClassificationSVM;
+% load the crossing intent model
+% load('CrossIntent_inD_9Features_BS1_noDuration_FGaussianSVM_3s_v2.mat');
+% CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_FGaussianSVM_3s_v2.ClassificationSVM;
 % Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
-% load('CrossIntent_NoCar_inD_9Features_BS1_noDuration_FGaussianSVM_3s.mat');
-% CrossIntentModelNoCar = CrossIntent_NoCar_inD_9Features_BS1_noDuration_FGaussianSVM_3s.ClassificationSVM;
-% Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCarcl);
+% load('CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.mat');
+% CrossIntentModelNoCar = CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.ClassificationSVM;
+% Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
+% read tracks MetaData
+for jj=1:12
+    sceneId = 17+jj;
+    tracksMetaData{jj} = readtable(strcat(num2str(sceneId),'_tracksMeta.csv')) ;
+end
 
 %c) parameters
 dataset="inD";
 HPed_params;
-
-% d) Read data or compile data?
-flag.dataCompile = false;
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-% %% compile/data tracks data if flag.dataCompile
-% %     % a) Run the following if compiling data for the first time, else
+% 
+% % d) Read data or compile data?
+% flag.dataCompile = false;
+% % % flag.dataCompile = true;
+% % % %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% % compile/data tracks data if flag.dataCompile is set to true
+% % a) Run the following if compiling data for the first time, else
 % %     run1b) 
 % if flag.dataCompile
-%     [formattedTracksData, allTracksMetaData, N_Scenes, annotatedImageEnhanced] = inD_compile(Params, reset);
-%     [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
-% 
-%     for scene_id = 1:N_scenes
-%             tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
-%             tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
-%     end
-% 
-%         % %check for ego-pedestrian and pedestrian gaze for the entire dataset
-%         egoPed_Gaze_HPed;
-% 
-%         % save the data file for later reuse
-%         save('tracksData_reSampled_correctDisCW_v2.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
-%         x = 1;
+% %     % for full data compilation
+% %     [formattedTracksData, allTracksMetaData, N_Scenes] = inD_compile(Params, resetStates);
+% %     [tracks, ~] = trackDescriptives(formattedTracksData, N_scenes);
+% %     %%%%%%%%%%%%%%%%
+%     % for recompiling the data from earlier resampled data
+%     load('tracksData_reSampled_v11.mat')     
+%     load('inD_trackDescriptives_v3.mat') 
+%     %%%%%%%%%%%%%%%%%
+%     % hybrid state
+%     inD_compile_resampled;
+%     %check for ego-pedestrian and pedestrian gaze for the entire dataset
+%     egoPed_Gaze_HPed_v2;
+%     %check pedestrian lane
+%     tmp_nearLaneCalc;
 %     
+% %     for scene_id = 1:N_scenes
+% %         tracksMetaData{scene_id}.ego_veh_gap_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)};  % for inD dataset the maximum number of gaps
+% %         tracksMetaData{scene_id}.wait_start_hist(1:size(tracksMetaData{scene_id},1))  = {zeros(20,1)}; 
+% %     end
+% 
+%     % save the data file for later reuse
+%     save('tracksData_reSampled_v11.mat','formattedTracksData','tracksMetaData','-v7.3','-nocompression')
+%     x = 1;
+% 
 % else
 %     
 %     % b) load already compiled tracks data
-%     load('tracksData_reSampled_correctDisCW_v6.mat')
-%     load('inD_trackDescriptives_removed_ped_tracks.mat') 
-%     tracks =  tracks_updated;
+%     load('tracksData_reSampled_v11.mat')
+%     load('inD_trackDescriptives_v3.mat') 
+% %     tracks =  tracksUpdated;
 % end
-% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    load('tracksData_reSampled_correctDisCW_v7.mat')
-    load('inD_trackDescriptives_removed_ped_tracks_v2.mat') 
-    load('tracksMetaData.mat')
-    tracks =  tracksUpdated;
 
-%% For every time step in a scene for every scene, run the prediction and update loops; 
+% For every time step in a scene for every scene, run the prediction and update loops; 
 % the compiled tracks data serve as observations. This way the code can be
 % directly reused for any simulations with minimal changes
 
 %% debug
-N_Scenes = 1;
-
+N_Scenes = 12;
 % initialize variables
-GapFeaturesAllScenes = {};
-CrossFeaturesAllScenes = {};
+GapFeaturesAllScenes = struct('recordingId',[],'pedcarTrackId',[],'pedTrackTimeStep',[],'egoCarTrack',[],'pedCloseCw',[],'F_pedSpeed',[],'F_pedDistToCW',[],...
+                              'F_cumWait',[],'F_pedDistToVeh',[],'F_vehVel',[],'F_pedDistToCurb',[],'F_vehAcc',[],'F_isEgoNearLane',[],...
+                              'F_isSameDirection',[],'predDecision',[],'timeStepInHorizon',[]);
+CrossFeaturesAllScenes = struct('recordingId',[],'pedcarTrackId',[],'pedTrackTimeStep',[],'timeStepInHorizon',[],'mean_ped_speed',[],...
+                                'mean_DTCurb',[],'mean_DTCW',[],'mean_veh_speed',[],'mean_veh_acc',[],'mean_veh_ped_dist',[],...
+                                'gaze_ratio',[],'isSameDirection',[], 'isNearLane',[], 'duration_ego_vehicle',[],'closestCW',[]);
+predictedPedTraj = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
 predPedIndex = 0;
+GapFeatureId = 1;
+CrossFeatureId = 1;
 flag.pred = false; % this is to run the close CW function ('hybridState') w/o hybrid state update
 % loop starts
 for sceneId = 1:N_Scenes
@@ -100,78 +117,70 @@ for sceneId = 1:N_Scenes
     pedIndexWithinSceneHistory = [];
     trackTimeStep = 1;  % time loop of the scene  
     carMovingTracks = tracks{sceneId}.carMovingTracks;
+    N_tracks = size(formattedTracksData{sceneId},1);
     % assume every moving car track is an ego-AV
-    for trackId = 1:length(carMovingTracks)
-%     for trackId = 1:5
-        % initialize trak variables
-        carTrackId = carMovingTracks(trackId);
+    for track_index = 1:length(carMovingTracks)
+%     for carTrackId = 6:20
+        % initialize track variables
+        carTrackId = carMovingTracks(track_index);
         carData = formattedTracksData{sceneId}{carTrackId};
         carHeading = 0;
-        pedIndexInTrackHistory = inf;
-
+        pedIndexInTrackHistory = -1*ones(N_tracks,1);
+        pedInSceneId = 1;
+        %%%%%%%%%%%%%%%%%%%%%%%
         % track time loop starts
-        for trackTimeStep = 1:height(carData)
+        for trackTimeStep = 1:size(carData.recordingId,1)
             tic   % start timer here; before this data reading, from here the process is similar to how an AV would process its information
-            trackTime = carData.frame(trackTimeStep);
+            cartrackTime = carData.frame(trackTimeStep);
             carPosPixels = double([carData.xCenterPix(trackTimeStep), carData.yCenterPix(trackTimeStep)]);
             carHeading = carData.calcHeading(trackTimeStep);
             AVStates.carPosPixels = carPosPixels;
             AVStates.carHeading = carHeading;
-            
-            %% run prediction of the ego-car is approaching a crosswalk, else run constant velocity predictions
+            carTrackCurrentTimeStepInPredictionData = [];
+            %%%%%%%%%%%%%%%%%%%%%%%
+            % run prediction of the ego-car is approaching a crosswalk, else run constant velocity predictions
             if (carData.closestCW(trackTimeStep)~=0 || carData.closestCW(trackTimeStep)~=inf)
                flag.EgoCar = true;
             else
                flag.EgoCar = false;
             end
-            
-            %% find the agents withing the sensing range of the AV
+            %%%%%%%%%%%%%%%%%%%%%%%
+            % find the agents withing the sensing range of the AV
             activeAgentsWithinRange;
-            
-            %% run the prediction if there is a pedestrian within the range
+            %%%%%%%%%%%%%%%%%%%%%%%
+            % run the prediction if there is a pedestrian within the range
             if ~isempty(activePedWithinRange)
-                % Update the current data of all active cars
-                % 10 - xVelocity, 11- yVelocity, 12- xAcceleration, 13 - yAcceleration, 14-lonVelocity, 16-lonAcceleration, 17 - latAcceleration, 
-                % 18 - xCenterPix, 19 - yCenterPix, 21- closestCW,4 23-
-                % calcHeading, 24 - car lane
-                currentTSActiveCarData = table();
-                variablesToCopy = [10, 11, 12, 13, 14, 16, 17, 18, 19, 21, 23, 24];
-                % compile all cars' states within the sensing range
-                for carLoopId = 1: length(activeCarWithinRange)
-                    carIndex = activeCarWithinRange(carLoopId);
-                    carTrackTimeStep = (trackTime - formattedTracksData{sceneId}{carIndex}.frame(1))/Params.reSampleRate + 1;                 
-                    currentTSActiveCarData(carLoopId, :) = formattedTracksData{sceneId}{carIndex}(carTrackTimeStep, variablesToCopy);
-                end
-                currentTSActiveCarData.turn(1:length(activeCarWithinRange)) = false;
-                currentTSActiveCarData.changeLane(1:length(activeCarWithinRange)) = false;
-                currentTSActiveCarData.reachGoal(1:length(activeCarWithinRange)) = false;
-                
+
+                %%%%%%%%%%%%%%%%%%%%%%%
                 % For every active pedestrian run the trajectory prediction        
                 for pedLoopId = 1: length(activePedWithinRange)  % for every active pedestrian during this time step
-
                     % initialize pedestrian variables and time step
                     pedIndexWithinScene = activePedWithinRange(pedLoopId);
                     currentPedData = formattedTracksData{sceneId}{pedIndexWithinScene};
                     currentPedMetaData = tracksMetaData{sceneId}(pedIndexWithinScene, :);            
-                    pedTrackTimeStep = (trackTime - currentPedData.frame(1))/Params.reSampleRate + 1;
-
+                    pedTrackTimeStep = (cartrackTime - currentPedData.frame(1))/Params.reSampleRate + 1;
+                    
+                    if trackTimeStep>1 && prevPedTrackTimeStep-prevPedTrackTimeStep~=1
+                        x=1;
+                    end
+                    
+                    prevPedTrackTimeStep = pedTrackTimeStep;
+                    
+                    %%%%%%%%%%%%%%%%%%%%%%%
                     % check if it is an existing pedestrian or a new pedestrian           
                     if ~ismember(pedIndexWithinScene, pedIndexInTrackHistory)
-                        pedIndexInTrackHistory = [pedIndexInTrackHistory; pedIndexWithinScene];
+                        pedIndexInTrackHistory(pedInSceneId) = pedIndexWithinScene;
+                        pedInSceneId = pedInSceneId + 1;   % this index keeps track of all pedestrians in a scene
                         predPedIndex = predPedIndex + 1;  % this index keeps track of all pedestrians from all scenes               
                         % initialize the pedestrian
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.sceneId = sceneId;
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.carTrackId = carTrackId;
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.pedTrackId = pedIndexWithinScene;  
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.timeStep(1) = inf;
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.data{1} = inf;
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.kfData{1} = inf;
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.sceneId = sceneId;
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.carTrackId = carTrackId;
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.pedcarTrackId = pedIndexWithinScene;  
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.timeStep(1) = inf;
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.data{1} = inf;
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.kfData{1} = inf;
                     end
-
-                    % 4) Run the H-Ped prediction framework if there is an ego
-                    % car for the pedestrian, else run a constant velocity
-                    % model
-                    
+                    %%%%%%%%%%%%%%%%%%%%%%%                    
                     % initialize the kalman filter
                     kf.x = [currentPedData.xCenter(pedTrackTimeStep);
                             currentPedData.yCenter(pedTrackTimeStep);
@@ -179,28 +188,25 @@ for sceneId = 1:N_Scenes
                             currentPedData.yVelocity(pedTrackTimeStep)];                        
                     kf.P = eye(4)*R(1,1);
                     kf.detP = det(kf.P); % Let's keep track of the noise by detP
+                    %%%%%%%%%%%%%%%%%%%%%%%
                     
-                    % cv predictions
                     [pedPredictions, pedKFpredictions] = HPed_CV(kf, currentPedData, Params, pedTrackTimeStep);
-
                     
-                    % 5) Save the predictions
-                    if pedTrackTimeStep >= Params.AdjustedSampFreq
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
-                        predictedPedTraj{sceneId}{trackId,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
+                    %%%%%%%%%%%%%%%%%%%%%%%
+                    % Save the predictions
+                    if pedTrackTimeStep >= Params.AdjustedSampFreq 
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.timeStep(end+1,1) = pedTrackTimeStep;
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.data{end+1,1} = pedPredictions;
+                        predictedPedTraj{sceneId}{carTrackId}{pedIndexWithinScene}.kfData{end+1,1} = pedKFpredictions;
                     end
-                    
-                    x=1;
                 end % end of all pedestrians
                      
-            end  
-
-            
+            end  % if there are active pedestrians   
         end  % end of time loop for this scene
     
-    
-    end  
-
-    
+    end  % end of all cars
+  
 end % end of all scenes
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+

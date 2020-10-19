@@ -178,11 +178,6 @@ currentPedTrackData.activeCar_ind(end) = activeCar_ind;
 currentPedTrackData.isPedSameDirection(end) = isSameDirection;
 currentPedTrackData.lonVelocity(end) = lonVelocity;
 
-%% debug
-if closeCar_ind~=inf && activeCar_ind==inf
-    x=1;
-end
-
 %%%%%%%%%%%%%%%%%%%%%%%%
 % update if the ego-vehicle is in near lane or not
 if activeCar_ind~=inf && activeCar_ind>0 

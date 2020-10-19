@@ -1,9 +1,9 @@
 %% This script initializes the H-Ped model parameters
 
 %% dataset parameters
-if dataset=="inD"
+% if dataset=="inD"
     inD_params;
-end
+% end
 
 %% H-Ped model variables
 
