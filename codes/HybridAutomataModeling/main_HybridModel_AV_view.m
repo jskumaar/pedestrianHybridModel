@@ -200,7 +200,7 @@ for sceneId = 1:N_Scenes
                     pedTrackTimeStep = (trackTime - currentPedData.frame(1))/Params.reSampleRate + 1;
                     
                     %% debug
-                    if sceneId==1 && track_index==2 && pedIndexWithinScene==5 && pedTrackTimeStep==115
+                    if sceneId==1 && track_index==2 && pedIndexWithinScene==5 && pedTrackTimeStep==57
                         x=1;
                     end
                     

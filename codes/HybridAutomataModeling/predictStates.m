@@ -256,12 +256,10 @@ for timeStep = 1:predHorizon
                    %time_start_cross = int32(exprnd(crossDelayExpDist.mu)/dt);
                    timeStartCross = 0.4*AdjustedSampFreq;                 % 0.4 s second fixed delay; mean value is 0.4741 s
                    flag.sampleWaitTime(trackletNo) = true;   
-                else
-                   flag.sampleWaitTime(trackletNo) = false;  
                 end
                 %%%%%%%%%%%%%%%%%%%%%%%%%
                 % Check if sampled wait time is reached
-                if flag.sampleWaitTime(trackletNo)
+                if flag.sampleWaitTime(trackletNo) && ~flag.startCross(trackletNo)
                     % >= to allow for the pedestrian to reach the crosswalk
                     % if they are still approaching
                     if timeStep >= GapCheckTimeInHorizon(gapId-1) + timeStartCross

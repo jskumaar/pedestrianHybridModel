@@ -16,14 +16,14 @@ HybridState = PedData.HybridState;
 waitTimeSteps = PedData.waitTimeSteps;
 carTimeStep = carTrackCurrentTimeStep + predTimeStep - 1; 
 % data sizes
-N_ts = size(PedData,2);
+N_ts = size(PedData.trackLifetime,1);
 N = min(N_ts, AdjustedSampFreq);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% 2) is this a gap? 
 % A vehicle has just passed the pedestrian when the pedestrian is within
 % the decision zone and is either approaching or waiting
-if N_ts>1
+if N>1
     GapCond_1 = closeCar_ind(end) ~= closeCar_ind(end-1) && ...
                 abs(longDispPedCw(end)) < decZone && closeCar_ind(end) ~= inf && closeCar_ind(end) ~=0 && ...
                 ( strcmp(HybridState{end},'Approach') || strcmp(HybridState{end},'Wait') );
@@ -34,9 +34,8 @@ if N_ts>1
 else
     GapCond_1 = false;
     GapCond_2 = false;
-    GapCond_3 = flag.startingFromWait(trackletNo);
 end
-
+GapCond_3 = flag.startingFromWait(trackletNo);
 
 if ( GapCond_1 || GapCond_2 || GapCond_3 ) 
     % 2a) is this a new gap? i.e. a new car and not a previous car gap?  
