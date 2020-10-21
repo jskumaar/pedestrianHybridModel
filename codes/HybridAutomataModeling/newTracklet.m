@@ -57,4 +57,5 @@ function [data, kfData, probability, startNode, endNode, isActive, eventFlag, Go
     flag.startingFromWait(newTrackletId) = false;
     flag.predHorizonEnd(newTrackletId) = false;
     flag.checkIntentWOEgo(newTrackletId) = false;
+    flag.reachGoal(newTrackletId) = false;
 end

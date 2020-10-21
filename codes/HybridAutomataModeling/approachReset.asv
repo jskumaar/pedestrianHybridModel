@@ -62,7 +62,6 @@ if closestCW==1
              xVelocity = vel*cosd(calcHeading);
              yVelocity = vel*sind(calcHeading); 
         else
-             pedGoalPixels = reset.approach.goal(8,1:2);
              pedGoalDisp = reset.approach.goal(8,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
@@ -72,14 +71,12 @@ if closestCW==1
          
     else        % EAst Left Lane (lane 2)
         if abs(calcHeading) < 90 
-             pedGoalPixels = reset.walkaway.goal(2,1:2);
              pedGoalDisp = reset.walkaway.goal(2,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
              xVelocity = vel*cosd(calcHeading);
              yVelocity = vel*sind(calcHeading); 
         else
-             pedGoalPixels = reset.approach.goal(5,1:2);
              pedGoalDisp = reset.approach.goal(5,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
@@ -95,14 +92,12 @@ elseif closestCW==2
 
     if pedCwAngle(2) > 0  % West right lane (Lane 3)
         if abs(calcHeading) > 90 
-             pedGoalPixels = reset.walkaway.goal(3,1:2);
              pedGoalDisp = reset.walkaway.goal(3,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
              xVelocity = vel*cosd(calcHeading);
              yVelocity = vel*sind(calcHeading);             
         else
-             pedGoalPixels = reset.approach.goal(6,1:2);
              pedGoalDisp = reset.approach.goal(6,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
@@ -110,15 +105,13 @@ elseif closestCW==2
              yVelocity = vel*sind(calcHeading); 
         end
     else        % West Left Lane (Lane 4)
-        if abs(calcHeading) > 90
-             pedGoalPixels = reset.walkaway.goal(3,1:2);
+        if abs(calcHeading) > 90 
              pedGoalDisp = reset.walkaway.goal(3,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
              xVelocity = vel*cosd(calcHeading);
              yVelocity = vel*sind(calcHeading); 
         else
-             pedGoalPixels = reset.approach.goal(7,1:2);
              pedGoalDisp = reset.approach.goal(7,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
@@ -134,14 +127,12 @@ elseif closestCW==2
 elseif closestCW==3
    if abs(pedCwAngle(3)) > 90  % South right lane (lane 5)
        if (calcHeading) < 0 
-             pedGoalPixels = reset.walkaway.goal(5,1:2);
              pedGoalDisp = reset.walkaway.goal(5,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
              xVelocity = vel*cosd(calcHeading);
              yVelocity = vel*sind(calcHeading); 
        else
-             pedGoalPixels = reset.approach.goal(2,1:2);
              pedGoalDisp = reset.approach.goal(2,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
@@ -150,15 +141,13 @@ elseif closestCW==3
        end
     else        % South Left Lane (Lane 6)
        if (calcHeading) < 0 
-             pedGoalPixels = reset.walkaway.goal(6,1:2) ;
              pedGoalDisp = reset.walkaway.goal(6,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
              xVelocity = vel*cosd(calcHeading);
              yVelocity = vel*sind(calcHeading); 
        else
-            pedGoalPixels = reset.approach.goal(3,1:2);
-            pedGoalDisp = reset.approach.goal(3,1:2) - pedPosPixels;
+             pedGoalDisp = reset.approach.goal(3,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
              xVelocity = vel*cosd(calcHeading);
@@ -174,14 +163,12 @@ elseif closestCW==3
 elseif closestCW==4
    if abs(pedCwAngle(4)) < 90  % North right lane (Lane 7)
           if (calcHeading) > 0 
-              pedGoalPixels = reset.walkaway.goal(7,1:2) ;
              pedGoalDisp = reset.walkaway.goal(7,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
              xVelocity = vel*cosd(calcHeading);
              yVelocity = vel*sind(calcHeading); 
           else
-             pedGoalPixels = reset.approach.goal(4,1:2);
              pedGoalDisp = reset.approach.goal(4,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
@@ -190,14 +177,12 @@ elseif closestCW==4
           end
     else        % North Left Lane (Lane 8)
           if (calcHeading) < 0 
-             pedGoalPixels = reset.walkaway.goal(8,1:2);
              pedGoalDisp = reset.walkaway.goal(8,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
              xVelocity = vel*cosd(calcHeading);
              yVelocity = vel*sind(calcHeading); 
           else
-             pedGoalPixels = reset.approach.goal(1,1:2);
              pedGoalDisp = reset.approach.goal(1,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
@@ -285,7 +270,6 @@ predData.yCenter = yCenter;
 predData.xVelocity = xVelocity;
 predData.yVelocity = yVelocity;
 predData.calcHeading = calcHeading;
-predData.goalPositionPixels = pedGoalPixels;
 predData.goalDisp = norm(pedGoalDisp)*(orthopxToMeter*scaleFactor);
 predData.lonVelocity = lonVelocity;
 predData.closestCW = closestCW;

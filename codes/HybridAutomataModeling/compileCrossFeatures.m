@@ -22,7 +22,7 @@ N_tracklets = size(trackletData,1);
 % initialize trajectory
 predictionTrajectory{1,1}(1,1) = trackletEndNode(1);
 
-tempTraj = [trackletData{1}.xCenter(end-predTimeStep+1:end), trackletData{1}.yCenter(end-predTimeStep+1:end)]';
+tempTraj = [trackletData{1}.xCenter, trackletData{1}.yCenter]';
 predictionTrajectory{1,1} = [predictionTrajectory{1,1}, tempTraj(:)'];
 
 % initialize variables with actual observed data till the time step
@@ -66,9 +66,9 @@ if trackletNo > 1
                        trackletId = nextTracklet(jj);
                        if jj~=1
                             N_new = N_new + 1;                                                       
-                            temp_predcopying(N_new) = 1;
                             predictionTrajectory{N_new,1} = predictionTrajectory{ii};
-                            tempTraj = [trackletData{trackletId}.xCenter(1:end), trackletData{trackletId}.yCenter(1:end)]';
+                            predictionTrajectory{N_new}(1,1) = trackletEndNode(trackletId);
+                            tempTraj = [trackletData{trackletId}.xCenter, trackletData{trackletId}.yCenter]';
                             predictionTrajectory{N_new} = [predictionTrajectory{N_new}, tempTraj(:)']; %the first entry i
                             
                             DTCurb{N_new} = [DTCurb{ii}; trackletData{trackletId}.latDispPedCw];
@@ -81,6 +81,7 @@ if trackletNo > 1
                        else
                             tempTraj = [trackletData{trackletId}.xCenter(1:end), trackletData{trackletId}.yCenter(1:end)]';
                             predictionTrajectory{ii} = [predictionTrajectory{ii}, tempTraj(:)'];
+                            predictionTrajectory{ii}(1,1) = trackletEndNode(trackletId);
                            
                             DTCurb{ii} = [DTCurb{ii}; trackletData{trackletId}.latDispPedCw];
                             DTCW{ii} = [DTCW{ii}; trackletData{trackletId}.longDispPedCw];

@@ -1,4 +1,4 @@
-function [predData, kf] = waitReset(predData, kf, trackletNo, Params, cw, reset)
+function [predData, kf] = waitReset(predData, kf, Params, cw, reset)
 
 %% 1) setup
 % parameters
@@ -99,12 +99,12 @@ lonVelocity = inf;
 
 check_goal = false;
 sample_goal = true;
-[~, pedGoalPixels] = check_sample_goal(predData, trackletNo, reset, Params, flag, check_goal, sample_goal);
+[~, pedGoalPixels] = check_sample_goal(predData, trackletNo, resetStates, Params, flag, check_goal, sample_goal);
 pedGoalDisp = pedGoalPixels - pedPosPixels;
 calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
 xVelocity = 0;
 yVelocity = 0;
-waitTimeSteps = reSampleRate;
+wait
  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% update states for 1st time step of new tracklet
@@ -132,7 +132,6 @@ predData.xVelocity = xVelocity;
 predData.yVelocity = yVelocity;
 predData.calcHeading = calcHeading;
 % predData.goalDisp = (pedGoalDisp);
-predData.goalPositionPixels = pedGoalPixels;
 predData.waitTimeSteps = waitTimeSteps;
 predData.lonVelocity = lonVelocity;
 end

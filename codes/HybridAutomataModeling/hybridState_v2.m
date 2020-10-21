@@ -126,14 +126,14 @@ if ~flag.outOfPlay
        %% Pedestrian lane calculation
        %%%%%%%%%%%%%%%%%
        % Displacement to the sidewalk (near the crosswalk)
-       dispPedSW(1,1:2) = (resetStates.approach.goal(1,:) - double(posPixels));
-       dispPedSW(1,3:4) = (resetStates.approach.goal(2,:) - double(posPixels));
-       dispPedSW(2,1:2) = (resetStates.approach.goal(3,:) - double(posPixels));
-       dispPedSW(2,3:4) = (resetStates.approach.goal(4,:) - double(posPixels));
-       dispPedSW(3,1:2) = (resetStates.approach.goal(5,:) - double(posPixels));
-       dispPedSW(3,3:4) = (resetStates.approach.goal(6,:) - double(posPixels));
-       dispPedSW(4,1:2) = (resetStates.approach.goal(7,:) - double(posPixels));
-       dispPedSW(4,3:4) = (resetStates.approach.goal(8,:) - double(posPixels));      
+       dispPedSW(1,1:2) = (resetStates.approach.goal(1,1:2) - double(posPixels));
+       dispPedSW(1,3:4) = (resetStates.approach.goal(2,1:2) - double(posPixels));
+       dispPedSW(2,1:2) = (resetStates.approach.goal(3,1:2) - double(posPixels));
+       dispPedSW(2,3:4) = (resetStates.approach.goal(4,1:2) - double(posPixels));
+       dispPedSW(3,1:2) = (resetStates.approach.goal(5,1:2) - double(posPixels));
+       dispPedSW(3,3:4) = (resetStates.approach.goal(6,1:2) - double(posPixels));
+       dispPedSW(4,1:2) = (resetStates.approach.goal(7,1:2) - double(posPixels));
+       dispPedSW(4,3:4) = (resetStates.approach.goal(8,1:2) - double(posPixels));      
        % distance to the sidewalk
        distPedLane(1,1) = norm(dispPedSW(1,1:2));
        distPedLane(2,1) = norm(dispPedSW(1,3:4));

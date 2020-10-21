@@ -32,6 +32,7 @@ flag.outOfPlay = false;
 flag.outOfRange = false;
 flag.startingFromWait = false;
 flag.checkIntentWOEgo = false;
+flag.reachGoal = false;
 gapId = 1;
 crossId = 1;
 newTrackletId = 1;
@@ -397,7 +398,7 @@ for timeStep = 1:predHorizon
                             % update states and other parameters of
                             % pedestrian for the tracklet's last step
                             kf = predictionKFtracklet{trackletNo};
-                            [tempData, kf] = updatePedContStates(kf, trackletData{trackletNo}, AVStates, cw, Params, reset, trackletGoal(trackletNo,:), timeStep);
+                            [tempData, kf] = updatePedContStates(kf, trackletData{trackletNo}, trackletNo, AVStates, cw, Params, reset, trackletGoal(trackletNo,:), timeStep, flag);
                             trackletData{trackletNo} = tempData; 
                             trackletKfData{trackletNo}(end+1, :) = [kf.x', diag(kf.P)']; 
                             predictionKFtracklet{trackletNo} = kf;
@@ -431,7 +432,7 @@ for timeStep = 1:predHorizon
 %                                 % update states and other parameters of
 %                                 % pedestrian for the first tracklet time step
                                 kf = predictionKFtracklet{newTrackletId};
-                                [tempData, kf] = waitReset(trackletData{newTrackletId}, kf, Params, cw, reset); 
+                                [tempData, kf] = waitReset(trackletData{newTrackletId}, kf, trackletNo, Params, cw, reset); 
                                 tempData.waitTimeSteps(end) = tempData.waitTimeSteps(end) + reSampleRate;
                                 trackletData{newTrackletId} = tempData; 
                                 trackletKfData{newTrackletId}(1, :) = [kf.x', diag(kf.P)']; 
@@ -458,7 +459,7 @@ for timeStep = 1:predHorizon
                                 % update states and other parameters of
                                 % pedestrian for the first tracklet time step
                                 kf = predictionKFtracklet{newTrackletId};
-                                [tempData, kf] = updatePedContStates(kf, trackletData{newTrackletId}, AVStates, cw, Params, reset, trackletGoal(newTrackletId,:), timeStep);
+                                [tempData, kf] = updatePedContStates(kf, trackletData{newTrackletId}, trackletNo, AVStates, cw, Params, reset, trackletGoal(newTrackletId,:), timeStep, flag);
                                 trackletData{end} = tempData; 
                                 trackletData{newTrackletId}.trackLifetime(end,:) = trackletData{newTrackletId-1}.trackLifetime(end,:) ; % reset track life time (otherwise 5 frames gets added)
                                 trackletKfData{newTrackletId}(1, :) = [kf.x', diag(kf.P)']; 
@@ -532,7 +533,7 @@ for timeStep = 1:predHorizon
                                 % tracklet based on the next goal
                                 % location
                                 kf = predictionKFtracklet{newTrackletId};
-                                [tempData, kf] = waitReset(trackletData{newTrackletId}, kf, Params, cw, reset); 
+                                [tempData, kf] = waitReset(trackletData{newTrackletId}, kf, trackletNo, Params, cw, reset); 
                             %                             [tempData, kf] = updatePedContStates(kf, trackletData{end}, AVStates, cw, Params, reset, trackletGoal(end,:), timeStep);
                                 tempData.waitTimeSteps(end) =  tempData.waitTimeSteps(end) + reSampleRate;
                                 trackletData{newTrackletId} = tempData; 
@@ -570,7 +571,7 @@ for timeStep = 1:predHorizon
                             % update states and other parameters of
                             % pedestrian for the first tracklet time step
                             kf = predictionKFtracklet{newTrackletId};
-                            [tempData, kf] = updatePedContStates(kf, trackletData{end}, AVStates, cw, Params, reset, trackletGoal(end,:), timeStep);
+                            [tempData, kf] = updatePedContStates(kf, trackletData{end}, trackletNo, AVStates, cw, Params, reset, trackletGoal(end,:), timeStep, flag);
                             trackletData{newTrackletId} = tempData; 
                             trackletKfData{newTrackletId}(1, :) = [kf.x', diag(kf.P)']; 
                             predictionKFtracklet{newTrackletId} = kf;
@@ -603,7 +604,7 @@ for timeStep = 1:predHorizon
                             % pedestrian for the first tracklet time step
                             predictionKFtracklet{newTrackletId} = predictionKFtracklet{newTrackletId-1};
                             kf = predictionKFtracklet{newTrackletId};
-                            [tempData, kf] = updatePedContStates(kf, trackletData{end}, AVStates, cw, Params, reset, trackletGoal(end,:), timeStep);
+                            [tempData, kf] = updatePedContStates(kf, trackletData{end}, trackletNo, AVStates, cw, Params, reset, trackletGoal(end,:), timeStep, flag);
                             trackletData{end} = tempData; 
                             trackletKfData{newTrackletId}(1, :) = [kf.x', diag(kf.P)']; 
                             predictionKFtracklet{newTrackletId} = kf;
@@ -648,7 +649,7 @@ for timeStep = 1:predHorizon
 %                     trackletData{trackletNo}(end,:) = tempData2;
                     % continuous state updates
                     kf = predictionKFtracklet{trackletNo};
-                    [tempData, kf] = updatePedContStates(kf, trackletData{trackletNo}, AVStates, cw, Params, reset, trackletGoal(trackletNo,:), timeStep);
+                    [tempData, kf] = updatePedContStates(kf, trackletData{trackletNo}, trackletNo, AVStates, cw, Params, reset, trackletGoal(trackletNo,:), timeStep, flag);
                     trackletData{trackletNo} = tempData; 
                     trackletKfData{trackletNo}(end+1, :) = [kf.x', diag(kf.P)']; 
                     predictionKFtracklet{trackletNo} = kf;
@@ -670,18 +671,18 @@ for timeStep = 1:predHorizon
 %         currentTSActiveCarData = updateCarState(currentTSActiveCarData, AVStates, Params, reset, cw);
 %     end  
     %%%%%%%%%%%%%%%%%%%%%%%%%
-    % plot predicted vehicle and pedestrian states
-%     if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
-%         for ii=1:size(currentTSActiveCarData,1)
-%             carPosPixels = int32([currentTSActiveCarData{ii}.xCenter(timeStep), currentTSActiveCarData{ii}.yCenter(timeStep)]/(orthopxToMeter*scaleFactor));
-%             annotatedImageEnhanced(-carPosPixels(2), carPosPixels(1)) = 150;
-%         end
-%         
-%         for jj=1:size(trackletData,1)
-%             annotatedImageEnhanced(int32(-trackletData{jj}.yCenter(end)/(orthopxToMeter*scaleFactor)), int32(trackletData{jj}.xCenter(end)/(orthopxToMeter*scaleFactor))) = 75;
-%         end
-%     end
-%     imshow(annotatedImageEnhanced);
+%     plot predicted vehicle and pedestrian states
+    if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
+        for ii=1:size(currentTSActiveCarData,1)
+            carPosPixels = int32([currentTSActiveCarData{ii}.xCenter(timeStep), currentTSActiveCarData{ii}.yCenter(timeStep)]/(orthopxToMeter*scaleFactor));
+            annotatedImageEnhanced(-carPosPixels(2), carPosPixels(1)) = 150;
+        end
+        
+        for jj=1:size(trackletData,1)
+            annotatedImageEnhanced(int32(-trackletData{jj}.yCenter(end)/(orthopxToMeter*scaleFactor)), int32(trackletData{jj}.xCenter(end)/(orthopxToMeter*scaleFactor))) = 75;
+        end
+    end
+    imshow(annotatedImageEnhanced);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
      
@@ -747,39 +748,6 @@ while(predCopying)
                 predCopying = false;
             end
       end 
-end
-%%%%%%%%%%%%%%%%%%%%%%%%%
-% %% debug
-% N_futures = size(predictionTrajectory,1);
-% if N_futures>1
-%     for ii=1:N_futures
-%         futures_ts(ii) = size(predictionTrajectory{ii},2);
-%     end
-% 
-%     % check sizes of all futures
-%     ind = 1;
-%     while(1)
-%         other_ind = (1:N_futures);
-%         other_ind(ind) = [];
-%         for jj = 1:N_futures-1
-%             future_other = futures_ts(other_ind(jj));
-%             if  futures_ts(ind)~=future_other
-%                 x = 1;
-%             end
-%         end
-%         ind = ind+1;
-%         if ind > N_futures
-%             break
-%         end
-%     end
-% end
-%%%%%%%%%%%%%%%%%%%%%%%%%
-
-for ii=1:size(predictionTrajectory,1)
-    N(ii) = length(predictionTrajectory{ii});
-    if ii>1 && N(ii)~=N(ii-1)
-        x=1;
-    end        
 end
 
 

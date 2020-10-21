@@ -106,7 +106,7 @@ GapFeaturesAllScenes_HBase = struct('recordingId',[],'pedTrackId',[],'pedTrackTi
 CrossFeaturesAllScenes = struct('recordingId',[],'pedTrackId',[],'pedTrackTimeStep',[],'timeStepInHorizon',[],'mean_ped_speed',[],...
                                 'mean_DTCurb',[],'mean_DTCW',[],'mean_veh_speed',[],'mean_veh_acc',[],'mean_veh_ped_dist',[],...
                                 'gaze_ratio',[],'isSameDirection',[], 'isNearLane',[], 'duration_ego_vehicle',[],'closestCW',[]);
-predictedPedTraj_HBase = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
+predictedPedTraj_HBase = cell(12, 613, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
 predPedIndex = 0;
 GapFeatureId = 1;
 CrossFeatureId = 1;

@@ -90,17 +90,17 @@ cw_x = cw.center_x*orthopxToMeter*scaleDownFactor;
 cw_y = cw.center_y*orthopxToMeter*scaleDownFactor;
 shift = 0.5;
 figure()
-for id = 1:N_tracklets
-   xCenter =  trackletData{id}.xCenter;
-   yCenter =  trackletData{id}.yCenter;
+for id = 1:1
+%    xCenter =  trackletData{id}.xCenter;
+%    yCenter =  trackletData{id}.yCenter;
    
-   goal_x =  trackletData{id}.goalPositionPixels(:,1)*orthopxToMeter*scaleDownFactor;
-   goal_y =  trackletData{id}.goalPositionPixels(:,2)*orthopxToMeter*scaleDownFactor;
+   goal_x =  [resetStates.approach.goal(:,1), resetStates.walkaway.goal(:,1)]*orthopxToMeter*scaleDownFactor;
+   goal_y =  [resetStates.approach.goal(:,2), resetStates.walkaway.goal(:,2)]*orthopxToMeter*scaleDownFactor;
    
-    plot(xCenter, yCenter, '*', 'MarkerSize', 8); hold on;
+%     plot(xCenter, yCenter, '*', 'MarkerSize', 8); hold on;
     plot(cw_x, cw_y, 'r*','MarkerSize', 8);hold on;
     axis equal
-    text(xCenter(1), yCenter(1)-shift,strcat(num2str(id)));
+%     text(xCenter(1), yCenter(1)-shift,strcat(num2str(id)));
     plot(goal_x, goal_y, 'g*','MarkerSize', 8);hold on;
     text(goal_x(1), goal_y(1)-shift,strcat('G-',num2str(id)));
 end
