@@ -71,20 +71,13 @@ if resetFlag.check_goal(trackletNo)
 %                insideBB(ii) = 0;
 %            end
 %         end
+        if pedPosPixels(1)<max(goal_bounding_box(:,1)) && 
 
-%         if sum(insideBB)==0 || sum(insideBB)==4
-%             flag.reachGoal(trackletNo) = true;
-%         else
-%             flag.reachGoal(trackletNo) = false;
-%         end
-
-        if ( pedPosPixels(1)<max(goal_bounding_box(:,1)) && pedPosPixels(1)>min(goal_bounding_box(:,1)) && ...
-             pedPosPixels(2)<max(goal_bounding_box(:,2)) && pedPosPixels(2)>min(goal_bounding_box(:,2)) )
+        if sum(insideBB)==0 || sum(insideBB)==4
             flag.reachGoal(trackletNo) = true;
         else
             flag.reachGoal(trackletNo) = false;
         end
-
     else
         flag.reachGoal(trackletNo) = false;
     end

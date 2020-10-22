@@ -78,7 +78,6 @@ cw.theta = [-14, -10, -23, -50];  % this was calculated manually
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-
 %% goals and resetStatess for discrete states
 
 % all these were manually calculated from the figure; pixel values in global
@@ -121,25 +120,6 @@ resetStates.walkaway.goal =   [620, -185;
                                440, -110];                   
 
 resetStates.walkaway.erCw1Final = [920, -120];                  
-
-resetStates.carCW.goal = [625, -275;
-                    630, -295;
-                    400, -340;
-                    385, -315;
-                    505, -385;
-                    480, -395;
-                    425, -175;
-                    445, -165];
-
-                
-resetStates.carLane.goal  = [980, -205;
-                       995, -235;
-                       110, -420;
-                       100, -390;
-                       575, -565;
-                       545, -575;
-                       375, -130;
-                       415, -120];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %bounding box (calcualed using temp_test_rotation.m)
@@ -151,7 +131,6 @@ bb_approach  = [617.567740324617,-265.912566740758,627.270697587377,-263.4933477
                 442.748607107922,-413.509835552155,438.841295823029,-404.304787017631,451.953655642446,-409.602524267262,448.046344357554,-400.397475732738;
                 397.402346118730,-195.874382479622,389.741901687540,-189.446506382757,403.830222215595,-188.213938048433,396.169777784405,-181.786061951567;
                 452.402346118730,-145.874382479623,444.741901687540,-139.446506382757,458.830222215595,-138.213938048433,451.169777784405,-131.786061951567];
-
 
 bb_walkaway = [617.567740324617,-195.912566740758,627.270697587377,-193.493347784762,615.148521368620,-186.209609477998,624.851478631380,-183.790390522002;
                947.567740324617,-280.912566740758,957.270697587377,-278.493347784762,945.148521368620,-271.209609477998,954.851478631380,-268.790390522002;
@@ -169,6 +148,11 @@ resetStates.approach.goal = [resetStates.approach.goal, bb_approach];
 resetStates.walkaway.goal = [resetStates.walkaway.goal, bb_walkaway];
 resetStates.walkaway.erCw1Final = [resetStates.walkaway.erCw1Final, bb_walkaway_erCw1Final];
 resetStates.wait.goal = resetStates.approach.goal([2,1,4,3,6,5,8,7],:);
+resetStates.approachReset.goal = resetStates.approach.goal([8,5,6,7,2,3,4,1],:);
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% initialize output variables
+predictedPedTraj_MHP = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
 
 

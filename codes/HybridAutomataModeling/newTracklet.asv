@@ -3,7 +3,7 @@
 % this tracklet
 % Output: set of tracklets with additionally a new tracklet
 
-function [data, kfData, probability, startNode, endNode, isActive, eventFlag, Goal, newTrackletId, flag, resetFlag] = newTracklet(data, kfData, probability, startNode, endNode, isActive, eventFlag, Goal, node_no, prob_tracklet, currentTrackletId, parentTrackletId, flag)
+function [data, kfData, probability, startNode, endNode, isActive, eventFlag, Goal, newTrackletId, flag] = newTracklet(data, kfData, probability, startNode, endNode, isActive, eventFlag, Goal, node_no, prob_tracklet, currentTrackletId, parentTrackletId, flag)
     % new tracklet id
     newTrackletId = currentTrackletId + 1;
     

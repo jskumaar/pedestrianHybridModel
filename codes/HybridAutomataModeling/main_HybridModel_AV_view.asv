@@ -49,7 +49,7 @@ configure_MHP;
 % % d) Read data or compile data?
 flag.dataCompile = false;
 % flag.dataCompile = true;
-% [formattedTracksData, tracksMetaData, tracks] = load_compile_data(flag, dataset);
+[formattedTracksData, tracksMetaData, tracks] = load_compile_data(flag, dataset);
 
 % e) initialize variables
 GapFeaturesAllScenes = struct('recordingId',[],'pedcarTrackId',[],'pedTrackTimeStep',[],'egoCarTrack',[],'pedCloseCw',[],'F_pedSpeed',[],'F_pedDistToCW',[],...
@@ -71,6 +71,7 @@ flag.pred = false; % this is to run the close CW function ('hybridState') w/o hy
 % For every ego-vehicle at every time step, trajectories are predicted for
 % all pedestrians within the the interaction zone.
 
+
 %%%%%%%%%%%%%%%%%%%%%%%
 % prediction loop starts for all cars in the dataset
 for sceneId = 1:N_Scenes
@@ -79,16 +80,19 @@ for sceneId = 1:N_Scenes
     trackTimeStep = 1;  % time loop of the scene  
     carMovingTracks = tracks{sceneId}.carMovingTracks;
     N_tracks = size(formattedTracksData{sceneId},1);
-    % assume every moving car track is an ego-vehicle
+    % assume every moving car track is an ego-AV
     for track_index = 1:length(carMovingTracks)
+%     for carTrackId = 6:20
         % initialize track variables
         carTrackId = carMovingTracks(track_index);
         carData = formattedTracksData{sceneId}{carTrackId};
+        carHeading = 0;
         pedIndexInTrackHistory = -1*ones(N_tracks,1);
         pedInSceneId = 1;
         %%%%%%%%%%%%%%%%%%%%%%%
         % track time loop starts
         for trackTimeStep = 1:size(carData.recordingId,1)
+            tic   % start timer here; before this data reading, from here the process is similar to how an AV would process its information
             trackTime = carData.frame(trackTimeStep);
             carPosPixels = double([carData.xCenterPix(trackTimeStep), carData.yCenterPix(trackTimeStep)]);
             carHeading = carData.calcHeading(trackTimeStep);
@@ -108,6 +112,10 @@ for sceneId = 1:N_Scenes
             %%%%%%%%%%%%%%%%%%%%%%%
             % run the prediction if there is a pedestrian within the range
             if ~isempty(activePedWithinRange)
+                % Update the current data of all active cars
+                % 10 - xVelocity, 11- yVelocity, 12- xAcceleration, 13 - yAcceleration, 14-lonVelocity, 16-lonAcceleration, 17 - latAcceleration, 
+                % 18 - xCenterPix, 19 - yCenterPix, 21- closestCW, 23- calcHeading, 24 - car_lane
+                variablesToCopy = [10, 11, 12, 13, 14, 16, 17, 18, 19, 21, 23, 24];
                 currentTSActiveCarData = cell(length(activeCarWithinRange),1);                
                 actCarNos =  length(activeCarWithinRange);
                 tempCarTrackCurrentTimeStep = zeros(1,actCarNos);
@@ -209,7 +217,7 @@ for sceneId = 1:N_Scenes
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%
                     % Save the predictions
-%                     if pedTrackTimeStep >= Params.AdjustedSampFreq 
+                    if pedTrackTimeStep >= Params.AdjustedSampFreq 
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
@@ -220,7 +228,7 @@ for sceneId = 1:N_Scenes
                             x=1;
                         end
                         
-%                     end
+                    end
                 end % end of all pedestrians
                      
             end  % if there are active pedestrians   

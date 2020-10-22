@@ -344,15 +344,14 @@ for timeStep = 1:predHorizon
                             % current tracklet becomes inactive
                             trackletIsActive(trackletNo) = false;
                             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                            trackletData{trackletNo}.HybridState(end+1,:)  = trackletData{trackletNo}.HybridState(end,:); 
-                            flag.hybridStatePred(trackletNo) = false;
+                            trackletData{trackletNo}.HybridState(end+1,:) = strings;
                             %%%%%%%%%%%%%%%%%%%%%%%%%
                             % update states and other parameters of
                             % pedestrian for the tracklet's last step
                             kf = predictionKFtracklet{trackletNo};
-                            [tempData, kf, flag, resetFlag] = updatePedContStates(kf, trackletData{trackletNo}, trackletNo, Params, resetStates, timeStep, flag, resetFlag);
+                            [tempData, kf, flag, resetFlag] = updatePedContStates(kf, trackletData{newTrackletId}, newTrackletId, Params, resetStates, timeStep, flag, resetFlag);
 %                             [tempData, kf] = updatePedContStates(kf, trackletData{trackletNo}, trackletNo, AVStates, cw, Params, resetStates, trackletGoal(trackletNo,:), timeStep, flag);
-                            trackletData{trackletNo} = tempData; 
+                            trackletData{newTrackletId} = tempData; 
                             trackletKfData{trackletNo}(end+1, :) = [kf.x', diag(kf.P)']; 
                             predictionKFtracklet{trackletNo} = kf;
                             % Update the hybrid state and Close CW
@@ -417,7 +416,7 @@ for timeStep = 1:predHorizon
                                 resetFlag.sample_goal(newTrackletId)  = true;
                                 [tempData, kf, flag, resetFlag] = updatePedContStates(kf, trackletData{newTrackletId}, newTrackletId, Params, resetStates, timeStep, flag, resetFlag);
 %                                 [tempData, kf] = updatePedContStates(kf, trackletData{newTrackletId}, trackletNo, AVStates, cw, Params, resetStates, trackletGoal(newTrackletId,:), timeStep, flag);
-                                trackletData{newTrackletId} = tempData; 
+                                trackletData{end} = tempData; 
                                 trackletKfData{newTrackletId}(1, :) = [kf.x', diag(kf.P)']; 
                                 predictionKFtracklet{newTrackletId} = kf;
                                 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -431,7 +430,7 @@ for timeStep = 1:predHorizon
                                 trackletData{newTrackletId} = tempData;
                                 %%%%%%%%%%%%%%%%%%%%%%%%%
                                 % update flags
-                                flag.hybridStatePred(newTrackletId) = true;
+                                flag.hybridStatePred(end) = true;
                                 %%%%%%%%%%%%%%%%%%%%%%%%%
                             end
                             %%%%%%%%%%%%%%%%%%%%%%%%%

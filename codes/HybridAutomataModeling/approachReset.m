@@ -33,27 +33,13 @@ lonVelocity = inf;
 % check_goal = false;
 % sample_goal = true;
 % [~, pedGoalPixels] = check_sample_goal(predData, trackletNo, resetStates, Params, flag, check_goal, sample_goal);
-% 
-% 
-% 
-% 
-% 
-% 
-
-
-
-
-
-
-
-
 
 
 %% 2) tracklet for crossing intent   
 % if crosswalk 1
 if closestCW==1
     if pedCwAngle(1) < 0  % East right lane (Lane 1)
-        %approaching from left
+        % approaching from left
         if abs(calcHeading) < 90 
              pedGoalPixels = reset.walkaway.goal(1,1:2);
              pedGoalDisp = pedGoalPixels - pedPosPixels;
@@ -174,7 +160,7 @@ elseif closestCW==3
 elseif closestCW==4
    if abs(pedCwAngle(4)) < 90  % North right lane (Lane 7)
           if (calcHeading) > 0 
-              pedGoalPixels = reset.walkaway.goal(7,1:2) ;
+             pedGoalPixels = reset.walkaway.goal(7,1:2) ;
              pedGoalDisp = reset.walkaway.goal(7,1:2) - pedPosPixels;
              calcHeading = atan2(pedGoalDisp(2), pedGoalDisp(1)) *180/pi;
              vel = norm( [xVelocity, yVelocity]);
@@ -271,11 +257,6 @@ if flag_reachCrosswalk && N==1
     end
 end
     
-
-
-
-
-
 
 
 %updatedPredData
