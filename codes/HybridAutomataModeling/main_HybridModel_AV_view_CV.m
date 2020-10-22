@@ -20,14 +20,14 @@ clearvars -except resetStates annotatedImageEnhanced formattedTracksData tracks 
 
 %% setup
 % % a) addpath of necessary directories
-p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
-p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
-p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
-% p1 = genpath('E:\pedestrianHybridModel\codes');
-% p2 = genpath('E:\pedestrianHybridModel\datasets');
+% p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+% p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+% p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
+p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
+p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
 addpath(p1)
 addpath(p2)
-addpath(p3)
+% addpath(p3)
 
 % % b)load models
 % load the gap acceptance model

@@ -42,7 +42,7 @@ end
 % has changed)
 if strcmp(HybridState,'Approach')
     goal_bounding_box = reshape(resetStates.approach.goal(swInd,3:end), [2,4])';
-elseif (strcmp(HybridState,'Wait') || strcmp(HybridState,'Crossing'))
+elseif (strcmp(HybridState,'Wait') || strcmp(HybridState,'Crossing') || strcmp(HybridState,'Jaywalking'))
     goal_bounding_box = reshape(resetStates.wait.goal(swInd,3:end), [2,4])';
 elseif strcmp(HybridState,'Walk_away')
     goal_bounding_box = reshape(resetStates.walkaway.goal(swInd,3:end), [2,4])';

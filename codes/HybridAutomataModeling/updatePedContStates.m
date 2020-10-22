@@ -63,7 +63,7 @@ if (pedGoalPixels(1)~=0 && pedGoalPixels(1)~=inf) && ( pedGoalPixels(2)~=0 && pe
     calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
     vel = norm( [xVelocity(end), yVelocity(end)]);
     % if pedestrian is starting to cross from wait, then sample a velocity
-    if strcmp(HybridState(end),'Crossing') && ((size(HybridState,1)>1 && strcmp(HybridState(end-1),'Wait')) || vel < 0.2)
+    if (strcmp(HybridState(end),'Crossing')||strcmp(HybridState,'Jaywalking')) && ((size(HybridState,1)>1 && strcmp(HybridState(end-1),'Wait')) || vel < 0.2)
         vel = rand + 1; % choose a velocity between 1 - 2 m/s
     end    
     xVelocity(end) = vel*cosd(calcHeading(end));
@@ -85,6 +85,11 @@ updated_X = [xCenter(end);
              yVelocity(end)];
 kf.x = updated_X;   % in case there is a discrete transition triggering state reset, the states get updated based on the rest while the covariance remains the same as if it were a constant velocity propagation            
 %%%%%%%%%%%%%%%%%%%%%%%          
+
+%% debug
+if isnan(xVelocity(end))
+    x=1;
+end
 
 %updatedPredData
 predData.trackLifetime = trackLifetime;

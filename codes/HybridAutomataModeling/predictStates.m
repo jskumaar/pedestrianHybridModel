@@ -610,17 +610,17 @@ for timeStep = 1:predHorizon
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %     plot predicted vehicle and pedestrian states
-    if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
-        for ii=1:size(currentTSActiveCarData,1)
-            carPosPixels = int32([currentTSActiveCarData{ii}.xCenter(timeStep), currentTSActiveCarData{ii}.yCenter(timeStep)]/(orthopxToMeter*scaleFactor));
-            annotatedImageEnhanced(-carPosPixels(2), carPosPixels(1)) = 150;
-        end
-        
-        for jj=1:size(trackletData,1)
-            annotatedImageEnhanced(int32(-trackletData{jj}.yCenter(end)/(orthopxToMeter*scaleFactor)), int32(trackletData{jj}.xCenter(end)/(orthopxToMeter*scaleFactor))) = 75;
-        end
-    end
-    imshow(annotatedImageEnhanced);
+%     if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
+%         for ii=1:size(currentTSActiveCarData,1)
+%             carPosPixels = int32([currentTSActiveCarData{ii}.xCenter(timeStep), currentTSActiveCarData{ii}.yCenter(timeStep)]/(orthopxToMeter*scaleFactor));
+%             annotatedImageEnhanced(-carPosPixels(2), carPosPixels(1)) = 150;
+%         end
+%         
+%         for jj=1:size(trackletData,1)
+%             annotatedImageEnhanced(int32(-trackletData{jj}.yCenter(end)/(orthopxToMeter*scaleFactor)), int32(trackletData{jj}.xCenter(end)/(orthopxToMeter*scaleFactor))) = 75;
+%         end
+%     end
+%     imshow(annotatedImageEnhanced);
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
      
