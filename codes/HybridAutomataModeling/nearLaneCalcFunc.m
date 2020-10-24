@@ -129,4 +129,4 @@ elseif currentPedTrackData.closestCW(end) == 4
 end
 
 % update lane
-currentPedTrackData.Lane = Lane;
+currentPedTrackData.Lane(end) = Lane;

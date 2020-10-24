@@ -50,7 +50,7 @@ pedGoalPixels = predData.goalPositionPixels(end,:);
 pedGoalDispPixels = [inf, inf];
 
 % sample new goal location 
-if ( predTimeStep==1 || (size(HybridState,1)>1 && closestCW(end)~=closestCW(end-1)) || flag.reachGoal(trackletNo) || resetFlag.sample_goal(trackletNo) )  
+if ( (size(HybridState,1)>1 && closestCW(end)~=closestCW(end-1)) || flag.reachGoal(trackletNo) || resetFlag.sample_goal(trackletNo) )  
     [~, pedGoalPixels, resetFlag] = check_sample_goal(predData, trackletNo, resetStates, Params, flag, resetFlag);
     % reset reach goal flag
     flag.reachGoal(trackletNo) = false;
@@ -63,8 +63,10 @@ if (pedGoalPixels(1)~=0 && pedGoalPixels(1)~=inf) && ( pedGoalPixels(2)~=0 && pe
     calcHeading(end) = atan2(pedGoalDispPixels(2), pedGoalDispPixels(1)) *180/pi;
     vel = norm( [xVelocity(end), yVelocity(end)]);
     % if pedestrian is starting to cross from wait, then sample a velocity
-    if (strcmp(HybridState(end),'Crossing')||strcmp(HybridState,'Jaywalking')) && ((size(HybridState,1)>1 && strcmp(HybridState(end-1),'Wait')) || vel < 0.2)
+    if (strcmp(HybridState(end),'Crossing')||strcmp(HybridState(end),'Jaywalking')) && ((size(HybridState,1)>1 && strcmp(HybridState(end-1),'Wait')) || vel < 0.2)
         vel = rand + 1; % choose a velocity between 1 - 2 m/s
+    elseif strcmp(HybridState(end),'Wait')
+        vel = 0; % reset velocity to zero when waiting
     end    
     xVelocity(end) = vel*cosd(calcHeading(end));
     yVelocity(end) = vel*sind(calcHeading(end)); 
@@ -105,6 +107,8 @@ predData.goalPositionPixels(end, :) = pedGoalPixels;
 resetFlag.check_goal(trackletNo) = true;
 resetFlag.sample_goal(trackletNo) = false;
 [flag,~,~] = check_sample_goal(predData, trackletNo, resetStates, Params, flag, resetFlag);
-
+% if flag.reachGoal(trackletNo) && strcmp(predData.HybridState(end),'Approach')
+%     flag.reachCrosswalk(trackletNo) = true;
+% end
 
 end

@@ -152,7 +152,24 @@ resetStates.approachReset.goal = resetStates.approach.goal([8,5,6,7,2,3,4,1],:);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% initialize output variables
-predictedPedTraj_MHP = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
+%% Needed for pedestrian lane calculation %%%%%%%%%%%%%%%%
 
+resetStates.carCW.goal = [625, -275;
+                    630, -295;
+                    400, -340;
+                    385, -315;
+                    505, -385;
+                    480, -395;
+                    425, -175;
+                    445, -165];
+
+                
+resetStates.carLane.goal  = [980, -205;
+                       995, -235;
+                       110, -420;
+                       100, -390;
+                       575, -565;
+                       545, -575;
+                       375, -130;
+                       415, -120];
 

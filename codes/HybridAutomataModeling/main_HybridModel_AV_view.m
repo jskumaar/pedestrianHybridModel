@@ -29,7 +29,7 @@ addpath(p1)
 addpath(p2)
 % addpath(p3)
 
-% % b)load SVM models
+% b)load SVM models
 % load the gap acceptance model
 % load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
 % GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
@@ -45,6 +45,9 @@ addpath(p2)
 % 
 %c) parameters
 configure_MHP;
+% initialize output variables
+predictedPedTraj_MHP = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
+
 % % 
 % % d) Read data or compile data?
 flag.dataCompile = false;
@@ -73,14 +76,14 @@ flag.pred = false; % this is to run the close CW function ('hybridState') w/o hy
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % prediction loop starts for all cars in the dataset
-for sceneId = 1:N_Scenes
+for sceneId = 4:4
     %initialize scene variables
     pedIndexWithinSceneHistory = [];
     trackTimeStep = 1;  % time loop of the scene  
     carMovingTracks = tracks{sceneId}.carMovingTracks;
     N_tracks = size(formattedTracksData{sceneId},1);
     % assume every moving car track is an ego-vehicle
-    for track_index = 1:length(carMovingTracks)
+    for track_index = 3:length(carMovingTracks)
         % initialize track variables
         carTrackId = carMovingTracks(track_index);
         carData = formattedTracksData{sceneId}{carTrackId};
@@ -153,7 +156,7 @@ for sceneId = 1:N_Scenes
                     pedTrackTimeStep = (trackTime - currentPedData.frame(1))/Params.reSampleRate + 1;
                     
                     %% debug
-                    if sceneId==1 && track_index==2 && pedIndexWithinScene==5 && pedTrackTimeStep==57
+                    if sceneId==4 && track_index==1 && pedIndexWithinScene==5 && pedTrackTimeStep==11
                         x=1;
                     end
                     
@@ -214,12 +217,29 @@ for sceneId = 1:N_Scenes
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
                         
-                        %% debug
-                        prevTimeStep = predictedPedTraj_MHP{sceneId}{track_index}{pedIndexWithinScene}.timeStep(end-1,1);
-                        if pedTrackTimeStep-prevTimeStep~=1 && prevTimeStep~=inf
-                            x=1;
-                        end
-                        
+%                         %% debug
+%                         prevTimeStep = predictedPedTraj_MHP{sceneId}{track_index}{pedIndexWithinScene}.timeStep(end-1,1);
+%                         if pedTrackTimeStep-prevTimeStep~=1 && prevTimeStep~=inf
+%                             x=1;
+%                         end
+%                         % ground truth
+%                         GT_trajectory = [formattedTracksData{sceneId}{pedIndexWithinScene}.xCenter(pedTrackTimeStep:end),  formattedTracksData{sceneId}{pedIndexWithinScene}.xCenter(pedTrackTimeStep:end)];
+%                         pred_trajectory = predictedPedTraj_MHP{sceneId}{track_index}{pedIndexWithinScene}.data{end}/(Params.orthopxToMeter*Params.scaleFactor);
+%                        
+%                         
+%                         for ii=1:length(currentTSActiveCarData)
+%                             carPosPixels = int32([currentTSActiveCarData{ii}.xCenter, currentTSActiveCarData{ii}.yCenter]/(Params.orthopxToMeter*Params.scaleFactor));
+%                             for kk=1:length(carPosPixels)
+%                                 annotatedImageEnhanced(-carPosPixels(kk,2), carPosPixels(kk,1)) = 150;
+%                             end
+%                         end
+% 
+%                         for jj=1:size(pred_trajectory,1)
+%                             temp_pred_trajectory = reshape(pred_trajectory(jj,3:end), [(length(pred_trajectory)-2)/2, 2]);
+%                             annotatedImageEnhanced(-carPosPixels(kk,2), carPosPixels(kk,1)) = 150;
+%                         end
+%                         imshow(annotatedImageEnhanced)
+%                         x=1;
 %                     end
                 end % end of all pedestrians
                      

@@ -49,7 +49,7 @@ function [data, kfData, probability, startNode, endNode, isActive, eventFlag, Go
     flag.EgoCar(newTrackletId) = false;
     flag.GapStart(newTrackletId) = false;
     flag.sampleWaitTime(newTrackletId) = false;
-    flag.startCross(newTrackletId) = false;
+    flag.startToCross(newTrackletId) = false;
     flag.finishedCrossing(newTrackletId) = false;
     flag.reachCrosswalk(newTrackletId) = false;    
     flag.checkIntent(newTrackletId) = false;
@@ -58,6 +58,8 @@ function [data, kfData, probability, startNode, endNode, isActive, eventFlag, Go
     flag.predHorizonEnd(newTrackletId) = false;
     flag.checkIntentWOEgo(newTrackletId) = false;
     flag.reachGoal(newTrackletId) = false;
+    flag.startedCrossing (newTrackletId) = false;
+    flag.finishedCrossingDelayReached(newTrackletId) = false;
     
     resetFlag.approachReset(newTrackletId) = false;
     resetFlag.walkawayReset(newTrackletId) = false;
