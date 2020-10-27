@@ -20,7 +20,7 @@ addpath(p2)
 addpath(p3)
 % 
 % % load predictions
-% load('trial_2_oneScene_MHP.mat');
+% load('trial_5_Scene4_MHP.mat');
 % predictedPedTraj_MHP = predictedPedTraj;
 % load('trial_2_allScenes_CV.mat');
 % load('trial_2_allScenes_baseHybrid.mat');
@@ -72,7 +72,7 @@ for sceneId = 1:N_scenes
         if ~isempty(predictedPedTraj_MHP{sceneId}{car_index})
             
             pedPredictionForEachCar_MHP = predictedPedTraj_MHP{sceneId}{car_index};
-            pedPredictionForEachCar_HBase = predictedPedTraj_HBase{sceneId}{car_index};
+%             pedPredictionForEachCar_HBase = predictedPedTraj_HBase{sceneId}{car_index};
             pedPredictionForEachCar_CV = predictedPedTraj_CV{sceneId}{car_index};
             
             N_ped_pred = size(pedPredictionForEachCar_MHP,1); %if there are no predictions for a pedestrian, that entry is empty
@@ -87,7 +87,7 @@ for sceneId = 1:N_scenes
                         N_GTTimeSteps = size(GTPedData.frame, 1);
                         % prediction
                         pedPredictions_MHP = pedPredictionForEachCar_MHP{pedTrackId}; % the first data is a place holder, 'inf' value
-                        pedPredictions_HBase = pedPredictionForEachCar_HBase{pedTrackId};
+%                         pedPredictions_HBase = pedPredictionForEachCar_HBase{pedTrackId};
                         pedPredictions_CV = pedPredictionForEachCar_CV{pedTrackId};
 
                         % if the pedestrian was ab active pedestrian
@@ -95,8 +95,8 @@ for sceneId = 1:N_scenes
                             pedPredictionsData_MHP = pedPredictions_MHP.data(2:end); %the first entry in pedPredictions.data is a dummy entry
                             pedKFPredictionsData_MHP = pedPredictions_MHP.kfData(2:end);
 
-                            pedPredictionsData_HBase = pedPredictions_HBase.data(2:end); %the first entry in pedPredictions.data is a dummy entry
-                            pedKFPredictionsData_HBase = pedPredictions_HBase.kfData(2:end);
+%                             pedPredictionsData_HBase = pedPredictions_HBase.data(2:end); %the first entry in pedPredictions.data is a dummy entry
+%                             pedKFPredictionsData_HBase = pedPredictions_HBase.kfData(2:end);
 
                             pedPredictionsData_CV = pedPredictions_CV.data(2:end); %the first entry in pedPredictions.data is a dummy entry
                             pedKFPredictionsData_CV = pedPredictions_CV.kfData(2:end);
@@ -140,21 +140,21 @@ for sceneId = 1:N_scenes
 
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         % Base Hybrid predictions
-                                        N_futures_HBase = size(pedPredictionsData_HBase{predictionTimeStep},1);  
-                                       [~, mostProbablePredictionId_HBase] = max(pedPredictionsData_HBase{predictionTimeStep}(:,2));  %probability of the tracks is in the second column
+%                                         N_futures_HBase = size(pedPredictionsData_HBase{predictionTimeStep},1);  
+%                                        [~, mostProbablePredictionId_HBase] = max(pedPredictionsData_HBase{predictionTimeStep}(:,2));  %probability of the tracks is in the second column
 
-                                        for predId = 1:N_futures_HBase
-                                            temp = pedPredictionsData_HBase{predictionTimeStep}(predId, :);
-
-                                            if mod([length(temp)/2 - 1],1) == 0
-                                                temp = reshape(temp(3:end), [2, length(temp)/2 - 1])';
-                                                tempIsMHPUsed = true;
-                                            else
-                                                temp = reshape(temp(2:end), [2, floor(length(temp)/2) - 1])';
-                                                tempIsMHPUsed = false;
-                                            end
-                                            mostProbablePredictedTrajectory_HBase(predId,:,:) = temp([end-Params.predHorizon+1:end], :);
-                                        end
+%                                         for predId = 1:N_futures_HBase
+%                                             temp = pedPredictionsData_HBase{predictionTimeStep}(predId, :);
+% 
+%                                             if mod([length(temp)/2 - 1],1) == 0
+%                                                 temp = reshape(temp(3:end), [2, length(temp)/2 - 1])';
+%                                                 tempIsMHPUsed = true;
+%                                             else
+%                                                 temp = reshape(temp(2:end), [2, floor(length(temp)/2) - 1])';
+%                                                 tempIsMHPUsed = false;
+%                                             end
+%                                             mostProbablePredictedTrajectory_HBase(predId,:,:) = temp([end-Params.predHorizon+1:end], :);
+%                                         end
 
 
                                         % constant velocity predictions
@@ -170,12 +170,12 @@ for sceneId = 1:N_scenes
                                         N_PredTimeSteps = size(GTTrajectory,1);
                                         tempError_MHP = GTTrajectory - reshape(mostProbablePredictedTrajectory_MHP(mostProbablePredictionId_MHP,1:N_PredTimeSteps,:),[N_PredTimeSteps,2]);
                                         predError_MHP = vecnorm(tempError_MHP, 2, 2);
-                                        tempError_HBase = GTTrajectory - reshape(mostProbablePredictedTrajectory_HBase(mostProbablePredictionId_HBase,1:N_PredTimeSteps,:),[N_PredTimeSteps,2]);
-                                        predError_HBase = vecnorm(tempError_HBase, 2, 2);
+%                                         tempError_HBase = GTTrajectory - reshape(mostProbablePredictedTrajectory_HBase(mostProbablePredictionId_HBase,1:N_PredTimeSteps,:),[N_PredTimeSteps,2]);
+%                                         predError_HBase = vecnorm(tempError_HBase, 2, 2);
                                         tempError_CV = GTTrajectory - mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,:);
                                         predError_CV = vecnorm(tempError_CV, 2, 2);
 
-                                        if predError_MHP(1) > 0.2
+                                        if (predError_MHP(1) > 0.2 || predError_MHP(end) > 6)
                                                 % plot
                                                 figure()
                                                 cw_x = cw.center_x*orthopxToMeter*scaleFactor;
@@ -188,10 +188,10 @@ for sceneId = 1:N_scenes
                                                     plot(mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,2), 'b*', 'MarkerSize',8); hold on;
                                                     text(mostProbablePredictedTrajectory_MHP(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
                                                 end
-                                                for predId = 1:N_futures_HBase
-                                                    plot(mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,2), 'b*', 'MarkerSize',8); hold on;
-                                                    text(mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
-                                                end
+%                                                 for predId = 1:N_futures_HBase
+%                                                     plot(mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,2), 'b*', 'MarkerSize',8); hold on;
+%                                                     text(mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
+%                                                 end
                 %                                 plot(mostProbablePredictedTrajectory_HBase(1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(1:N_PredTimeSteps,2), 'k*', 'MarkerSize',8); hold on;
                                                 plot(mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,2), 'r*', 'MarkerSize',8); hold on;
                                                 x=1;
@@ -208,15 +208,15 @@ for sceneId = 1:N_scenes
                                         N = N_PredTimeSteps;
                                         ADE_MHP(index, 1:N) = [cumsum(predError_MHP)./cumsum(1:N_PredTimeSteps)'];
                                         FDE_MHP(index, 1:N) = [predError_MHP];
-                                        ADE_HBase(index, 1:N) = [cumsum(predError_HBase)./cumsum(1:N_PredTimeSteps)'];
-                                        FDE_HBase(index, 1:N) = [predError_MHP];
+%                                         ADE_HBase(index, 1:N) = [cumsum(predError_HBase)./cumsum(1:N_PredTimeSteps)'];
+%                                         FDE_HBase(index, 1:N) = [predError_MHP];
                                         ADE_CV(index, 1:N) = [cumsum(predError_CV)./cumsum(1:N_PredTimeSteps)'];
                                         FDE_CV(index, 1:N) = [ predError_CV];                       
 
                                         averageDistanceError_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = cumsum(predError_MHP)./cumsum(1:N_PredTimeSteps,1)';
                                         finalDistanceError_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = predError_MHP;
-                                        averageDistanceError_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = cumsum(predError_HBase)./cumsum(1:N_PredTimeSteps,1)';
-                                        finalDistanceError_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = predError_HBase;
+%                                         averageDistanceError_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = cumsum(predError_HBase)./cumsum(1:N_PredTimeSteps,1)';
+%                                         finalDistanceError_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = predError_HBase;
                                         averageDistanceError_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = cumsum(predError_CV)./cumsum(1:N_PredTimeSteps,1)';
                                         finalDistanceError_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = predError_CV;
                                         isMHPUsed{sceneId}{car_index}{pedTrackId}(predictionTimeStep,1) = tempIsMHPUsed;

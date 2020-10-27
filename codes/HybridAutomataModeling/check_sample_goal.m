@@ -7,7 +7,9 @@ scaleFactor = Params.scaleFactor;
 orthopxToMeter = Params.orthopxToMeter;
 
 % ped states
+pedPos = [trackletData.xCenter(end), trackletData.yCenter(end)];
 pedPosPixels = [trackletData.xCenter(end), trackletData.yCenter(end)]/(scaleFactor*orthopxToMeter);
+goalPos = trackletData.goalPositionPixels(end,:)*(scaleFactor*orthopxToMeter);
 HybridState = trackletData.HybridState(end);
 cwInd = trackletData.closestCW(end);
 Lane = trackletData.Lane(end);
@@ -64,26 +66,22 @@ end
 % hold when samplign a new goal, so the flag is reset after sampling new goal in 'updatePedContStates.m'.
 if resetFlag.check_goal(trackletNo)
     if goal_bounding_box(1,1)~=inf
-%         for ii=1:4
-%            if abs(pedPosPixels(1)) < abs(goal_bounding_box(ii,1)) &&  abs(pedPosPixels(2)) < abs(goal_bounding_box(ii,2)) 
-%                insideBB(ii) = 1;
-%            else
-%                insideBB(ii) = 0;
-%            end
-%         end
-
-%         if sum(insideBB)==0 || sum(insideBB)==4
+        % circular bounds on the goal location
+        dispGoal = vecnorm(goalPos-pedPos,2,2);
+        if dispGoal < 2
+            flag.reachGoal(trackletNo) = true;
+        else
+            flag.reachGoal(trackletNo) = false;               
+        end
+            
+        
+        %another way; rectangular bounds on the goal location
+%         if ( pedPosPixels(1)<max(goal_bounding_box(:,1)) && pedPosPixels(1)>min(goal_bounding_box(:,1)) && ...
+%              pedPosPixels(2)<max(goal_bounding_box(:,2)) && pedPosPixels(2)>min(goal_bounding_box(:,2)) )
 %             flag.reachGoal(trackletNo) = true;
 %         else
 %             flag.reachGoal(trackletNo) = false;
 %         end
-
-        if ( pedPosPixels(1)<max(goal_bounding_box(:,1)) && pedPosPixels(1)>min(goal_bounding_box(:,1)) && ...
-             pedPosPixels(2)<max(goal_bounding_box(:,2)) && pedPosPixels(2)>min(goal_bounding_box(:,2)) )
-            flag.reachGoal(trackletNo) = true;
-        else
-            flag.reachGoal(trackletNo) = false;
-        end
 
     else
         flag.reachGoal(trackletNo) = false;

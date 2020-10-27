@@ -4,12 +4,13 @@
 % in the current time step.
 
 % function [predictionTrajectoryMatrix, predictionKFtrajectory, predGapFeatures, predCrossFeatures] = predictStates(kf, currentPedData, ~, currentTSActiveCarData, crossCarData, AVStates, pedTrackTimeStep, cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModelCar, Prob_CrossIntentModelNoCar, Params, flag)
-function [predictionTrajectoryMatrix, predictionKFtrajectory, predGapFeatures, predCrossFeatures] = predictStates(kf, currentPedData, ~, currentTSActiveCarData, carTrackCurrentTimeStep, AVStates, pedTrackTimeStep, cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModelCar, Prob_CrossIntentModelNoCar, Params, flag)
+function [predictionTrajectoryMatrix, predictionKFtrajectory, predGapFeatures] = predictStates_baseHybrid_v2(kf, currentPedData, ~, currentTSActiveCarData, carTrackCurrentTimeStep, AVStates, pedTrackTimeStep, cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Params, flag)
 
 %% 1) setup
-% load the exponential distribution of wait times
-load('waitDistribution_ego_exp.mat') 
-waitDistribution = waitDistribution_ego_exp;
+% load the exponential distribution of cross times after
+% load('crossDelayExpDist.mat') 
+load('waitTimeWithEgo_expDist.mat') 
+waitDistribution = waitTimeWithEgo_expDist;
 %%%%%%%%%%%%%%%%%%%    
 % parameters
 predHorizon = Params.predHorizon;
@@ -35,11 +36,10 @@ flag.startingFromWait = false;
 flag.checkIntentWOEgo = false;
 flag.reachGoal = false;
 flag.finishedCrossingDelayReached = false;
-gapId = ones(10,20);
-overallGapId = 1;
+gapId = 1;
 crossId = 1;
 newTrackletId = 1;
-% GapCheckTimeInHorizon = [];
+GapCheckTimeInHorizon = -1*ones(10,1);
 predGapFeatures = cell(10,1);
 predCrossFeatures = cell(10,1);
 predictionKFtracklet = cell(10,1);
@@ -114,18 +114,18 @@ resetFlag.sample_goal = false;
 tempData = egoCarFunc(trackletData{1}, currentTSActiveCarData, carTrackCurrentTimeStep, cw, annotatedImageEnhanced,  Params, 1, resetStates);                                       
 trackletData{1} = tempData;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                       
-%% debug
-% a) ground truth
-endTimeStep = min(length(currentPedData.xCenter), pedTrackTimeStep+predHorizon);
-trajectory_GT = [currentPedData.xCenter(pedTrackTimeStep+1:endTimeStep), currentPedData.yCenter(pedTrackTimeStep+1:endTimeStep)];
-trajectory_CV = [currentPedData.xCenter(pedTrackTimeStep), currentPedData.yCenter(pedTrackTimeStep)];
-vel = [currentPedData.xVelocity(pedTrackTimeStep), currentPedData.yVelocity(pedTrackTimeStep)];
-for yy = 1:predHorizon
-    trajectory_CV(end+1,:) = trajectory_CV(end,:) + vel*Params.delta_T;
-end
-trajectory_CV = trajectory_CV(2:end,:);
-%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%                       
+% %% debug
+% % a) ground truth
+% endTimeStep = min(length(currentPedData.xCenter), pedTrackTimeStep+predHorizon);
+% trajectory_GT = [currentPedData.xCenter(pedTrackTimeStep+1:endTimeStep), currentPedData.yCenter(pedTrackTimeStep+1:endTimeStep)];
+% trajectory_CV = [currentPedData.xCenter(pedTrackTimeStep), currentPedData.yCenter(pedTrackTimeStep)];
+% vel = [currentPedData.xVelocity(pedTrackTimeStep), currentPedData.yVelocity(pedTrackTimeStep)];
+% for yy = 1:predHorizon
+%     trajectory_CV(end+1,:) = trajectory_CV(end,:) + vel*Params.delta_T;
+% end
+% trajectory_CV = trajectory_CV(2:end,:);
+%%%%%%%%%%%
 
 %% 3) Prediction loop 
 for timeStep = 1:predHorizon             
@@ -143,7 +143,7 @@ for timeStep = 1:predHorizon
                     if isempty(currentTSActiveCarData)
                         trackletData{trackletNo}.activeCar_ind(end) = inf; % there is no active car anymore. No data available or out of observation
                     elseif trackletData{trackletNo}.activeCar_ind(end) > 1
-                        trackletData{trackletNo}.activeCar_ind(end) = trackletData{trackletNo}.activeCar_ind(end)-1;                        
+                        trackletData{trackletNo}.activeCar_ind(end) = trackletData{trackletNo}.activeCar_ind(end)-1;                       
                     end
                 end
             end
@@ -201,9 +201,9 @@ for timeStep = 1:predHorizon
                     % pedestrian has reached the decision zone or when the
                     % pedestrians' observation (1st time step starts from
                     % 'Wait'.
-%                       if size(trackletData{trackletNo}.trackLifetime, 1) >= AdjustedSampFreq
+                      if size(trackletData{trackletNo}.trackLifetime, 1) >= AdjustedSampFreq
                             [GapFeatures, egoVehGapHist, flag] = compileGapFeatures(trackletData{trackletNo}, currentTSEgoCarData, carTrackCurrentTimeStep(egoActiveCarInd), egoVehGapHist, pedTrackTimeStep, Params, flag, trackletNo, timeStep);  
-%                       end  
+                      end  
                 else
                     flag.EgoCar(trackletNo) = false;
                 end   %end of if loop for the presence of an ego-vehicle                  
@@ -230,24 +230,22 @@ for timeStep = 1:predHorizon
                             trackletData{trackletNo}.probGapAccept = prob_GA_outputs(2);
                             % Time for gap check within the prediction horizon
                             % (this is relative time and not the absolute time)
-                            GapCheckTimeInHorizon(gapId(trackletNo),trackletNo) = timeStep;
+                            GapCheckTimeInHorizon(gapId) = timeStep;
                             %%%%%%%%%%%%%%%%%%%%%%%%%
                             % save gap check variables
                             GapFeatures.predDecision = trackletData{trackletNo}.probGapAccept;
                             GapFeatures.timeStepInHorizon = timeStep;
-                            predGapFeatures{overallGapId} = GapFeatures;           
+                            predGapFeatures{gapId} = GapFeatures;           
                             % update gap id
-                            gapId(trackletNo) = gapId(trackletNo) + 1;
-                            overallGapId = overallGapId+1;
+                            gapId = gapId + 1;
                             %%%%%%%%%%%%%%%%%%%
                     % if gap starts from wait and there is no close
                     % vehicle, accept the gap
-                elseif flag.startingFromWait(trackletNo) && ~flag.EgoCar(trackletNo) && ~flag.sampleWaitTime(trackletNo)
+                elseif flag.startingFromWait(trackletNo) && ~flag.EgoCar(trackletNo)
                             trackletData{trackletNo}.probGapAccept = 1;
-                            GapCheckTimeInHorizon(gapId(trackletNo),trackletNo) = timeStep;
+                            GapCheckTimeInHorizon(gapId) = timeStep;
                             GapFeatures.timeStepInHorizon = timeStep;
-                            gapId(trackletNo) = gapId(trackletNo) + 1;   
-                            overallGapId = overallGapId+1;
+                            gapId = gapId + 1;                           
                 end
                 %%%%%%%%%%%%%%%%%%%%%%%%%
                 % Sample wait time if a gap has non-zero probability
@@ -256,19 +254,15 @@ for timeStep = 1:predHorizon
                    % wait start of this pedestrian. For now, add a fixed time step
                    %time_start_cross = int32(exprnd(crossDelayExpDist.mu)/dt);
 %                    timestartToCross = 0.4*AdjustedSampFreq;                 % 0.4 s second fixed delay; mean value is 0.4741 s
-                   if flag.EgoCar(trackletNo)
-                       timestartToCross(trackletNo) = floor((exprnd(waitDistribution.mu)/Params.delta_T));                     
-                   else
-                       timestartToCross(trackletNo) = 1;
-                   end
-                   flag.sampleWaitTime(trackletNo) = true;
+                    timestartToCross = int32(random(waitDistribution)/Params.delta_T);
+                    flag.sampleWaitTime(trackletNo) = true;   
                 end
                 %%%%%%%%%%%%%%%%%%%%%%%%%
                 % Check if sampled wait time is reached
                 if flag.sampleWaitTime(trackletNo) && ~flag.startToCross(trackletNo)
                     % >= to allow for the pedestrian to reach the crosswalk
                     % if they are still approaching
-                    if timeStep >= GapCheckTimeInHorizon(gapId(trackletNo)-1,trackletNo) + timestartToCross(trackletNo)
+                    if timeStep >= GapCheckTimeInHorizon(gapId-1) + timestartToCross
                         flag.startToCross(trackletNo) = true;
                     else
                         flag.startToCross(trackletNo) = false;
@@ -292,7 +286,8 @@ for timeStep = 1:predHorizon
                 if flag.finishedCrossing(trackletNo) && ~flag.finishedCrossingDelayReached(trackletNo) && timeStep-finishedCrossTime(trackletNo)>=2
                     flag.finishedCrossingDelayReached(trackletNo) = true;
                 end
-                %%%%%%%%%%%%%
+                    
+                %%%%%%%%%%%%%%%%%%%%%%%%%
                 %check reach goal for 1st tracklet (when there is no goal
                 %location assigned)
                 if trackletNo==1
@@ -310,7 +305,8 @@ for timeStep = 1:predHorizon
                         x=1;
                     end
                 end
-                %%%%%%%%%%%%%%%%%%%%%%%%%
+                
+
                 % Step 4c: (Reach Crosswalk) Check if the pedestrian
                 % has reached the crosswalk - (a) Either in Approach or Wait State, (b) Goal Disp (dist to sidewalk) is small, (c) Was not at crosswalk before, (d) was approaching the same crosswalk                
                 if ( size(trackletData{trackletNo}.trackLifetime,1) >= 2 &&...
@@ -321,57 +317,8 @@ for timeStep = 1:predHorizon
                    flag.reachCrosswalk(trackletNo) = true; 
                    flag.checkIntent(trackletNo) = true;
                    flag.atCrosswalk(trackletNo) = true;
-                   % compile cross intent check features and check
-                   % probability based on whether there is an ego-car
-                   % or not
-                   ped_CloseCar_id = trackletData{trackletNo}.closeCar_ind(end);
-
-                   if (ped_CloseCar_id ~=0 && ped_CloseCar_id ~=inf && ~isempty(carTrackCurrentTimeStep))
-                       % compile features for estimating crossing intent
-                       [CrossFeatures, flag] = compileCrossFeatures(currentPedData, trackletData, trackletNo, trackletStartNode, trackletEndNode, pedTrackTimeStep, timeStep, Params, flag, currentTSEgoCarData, carTrackCurrentTimeStep(egoActiveCarInd));
-                       
-                       % flag gets updated if there are no close vehicles,
-                       % when veh-ped dist is inf
-                       if ~flag.checkIntentWOEgo(trackletNo)
-                           CrossFeatures.pedTrackTimeStep = pedTrackTimeStep;
-                           CrossFeatures.timeStepInHorizon = timeStep;
-                           mean_veh_speed = CrossFeatures.mean_veh_speed;
-                           mean_veh_acc = CrossFeatures.mean_veh_acc;
-                           mean_DTCurb = CrossFeatures.mean_DTCurb;
-                           mean_veh_ped_dist = CrossFeatures.mean_veh_ped_dist;
-                           mean_ped_speed = CrossFeatures.mean_ped_speed;
-                           gaze_ratio = CrossFeatures.gaze_ratio;
-                           mean_DTCW = CrossFeatures.mean_DTCW;
-                           isSamedirection = CrossFeatures.isSameDirection;
-                           isNearLane = CrossFeatures.isNearLane;
-                           duration_ego_vehicle = CrossFeatures.duration_ego_vehicle;
-                           % predict
-                           CrossSVMFeatures = table(mean_veh_speed, mean_veh_acc, mean_DTCurb , mean_veh_ped_dist, duration_ego_vehicle,...
-                                                    mean_ped_speed, gaze_ratio, mean_DTCW, isSamedirection, isNearLane);
-                           [~, prob_CI_outputs] = predict(Prob_CrossIntentModelCar, CrossSVMFeatures);
-                            trackletData{trackletNo}.probCrossingIntent = prob_CI_outputs(2);
-                       end
-                   else
-                       flag.checkIntentWOEgo(trackletNo) = true;
-                   end
-                   % check crossIntent 
-                   if flag.checkIntentWOEgo(trackletNo)
-                       [CrossFeatures, flag] = compileCrossFeatures(currentPedData, trackletData, trackletNo, trackletStartNode, trackletEndNode, pedTrackTimeStep, timeStep, Params, flag);
-                       mean_DTCurb = CrossFeatures.mean_DTCurb;
-                       mean_ped_speed = CrossFeatures.mean_ped_speed;
-                       mean_DTCW = CrossFeatures.mean_DTCW;
-                       % predict
-                       CrossSVMFeatures = table(mean_DTCurb , mean_ped_speed, mean_DTCW);
-                       [~, prob_CI_outputs] = predict(Prob_CrossIntentModelNoCar, CrossSVMFeatures);
-                       trackletData{trackletNo}.probCrossingIntent = prob_CI_outputs(2);
-                   end
-                   
-                   % save cross intent features
-                   CrossFeatures.pedTrackTimeStep = pedTrackTimeStep;
-                   CrossFeatures.timeStepInHorizon = timeStep;
-                   CrossFeatures.closestCW = currentPedData.closestCW(pedTrackTimeStep);
-                   predCrossFeatures{crossId} = CrossFeatures;
-                   crossId = crossId + 1;
+                   % crossing intent probability is 1
+                   trackletData{trackletNo}.probCrossingIntent = 1;                   
                 else
                     flag.reachCrosswalk(trackletNo) = false;                         
                 end
@@ -470,7 +417,7 @@ for timeStep = 1:predHorizon
                                 trackletEventFlag(newTrackletId) = false;
                                 % update gap acceptance probability of
                                 % parent tracklet
-%                                 trackletData{newTrackletId}.probGapAccept = trackletData{trackletNo}.probGapAccept;
+                                trackletData{newTrackletId}.probGapAccept = trackletData{trackletNo}.probGapAccept;
                                 predictionKFtracklet{newTrackletId} = predictionKFtracklet{newTrackletId-1};                       
                                 %%%%%%%%%%%%%%%%%%%%%%%%%
                                 % update states and other parameters of
@@ -486,7 +433,7 @@ for timeStep = 1:predHorizon
                                 % started walking towards the road to
                                 % cross, but is still on the sidewalk, so
                                 % considered as 'Approach'
-                                trackletData{newTrackletId}.HybridState(end,:) = 'Approach';
+                                trackletData{newTrackletId}.HybridState(end,:) = 'Approach'; 
                                 %%%%%%%%%%%%%%%%%%%%%%%%%
                                 % update flags
                                 flag.hybridStatePred(newTrackletId) = true;
@@ -517,15 +464,15 @@ for timeStep = 1:predHorizon
                             if trackletData{trackletNo}.probCrossingIntent~=1
                                 [trackletData, trackletKfData, trackletProbability, trackletStartNode, trackletEndNode, trackletIsActive, trackletEventFlag, trackletGoal, newTrackletId, flag, resetFlag] = newTracklet(trackletData, trackletKfData, trackletProbability, trackletStartNode, trackletEndNode, trackletIsActive, trackletEventFlag, trackletGoal, node_no, 1-trackletData{trackletNo}.probCrossingIntent, newTrackletId, trackletNo, flag);
                                 parentTracklet(newTrackletId) = trackletNo;
-                                pedHeading = atan2(trackletData{trackletNo}.yCenter(end), trackletData{trackletNo}.xCenter(end))*180/pi;
+                                pedHeading = atan2(trackletData{trackletNo}.yCenter(end), trackletData{trackletNo}.xCenter(end));
                                 cwInd = trackletData{trackletNo}.closestCW(end);
                                 Lane = trackletData{trackletNo}.Lane(end);
                                 if  ( (cwInd==1 && abs(pedHeading)>90) || (cwInd==2 && abs(pedHeading)<90) || ...
                                       (cwInd==3 && pedHeading>0) || (cwInd==4 && pedHeading<0) )
-                                    trackletData{end}.HybridState(end,:) = 'Approach'; 
+                                    trackletData{newTrackletId}.HybridState(end,:) = 'Approach';
                                     resetFlag.approachReset(newTrackletId) = true;
                                 else
-                                    trackletData{end}.HybridState(end,:) = 'Walk_away';
+                                    trackletData{newTrackletId}.HybridState(end,:) = 'Walk_away'; 
                                     resetFlag.walkawayReset(newTrackletId) = true;
                                 end
 
@@ -540,7 +487,6 @@ for timeStep = 1:predHorizon
                                 % tracklet based on the next goal location
                                 kf = predictionKFtracklet{newTrackletId};
 %                                 [tempData, kf] = approachReset(trackletData{newTrackletId}, kf, Params, cw, resetStates, flag.reachCrosswalk(trackletNo)); 
-                                
                                 resetFlag.sample_goal(newTrackletId)  = true;
                                 [tempData, kf, flag, resetFlag] = updatePedContStates(kf, trackletData{newTrackletId}, newTrackletId, Params, resetStates, timeStep, flag, resetFlag);
                                 trackletData{newTrackletId} = tempData; 
@@ -549,7 +495,7 @@ for timeStep = 1:predHorizon
                                 % update close CW
                                 [tempData2, flag] = hybridState_v2(trackletData{newTrackletId}, cw, flag, annotatedImageEnhanced, Params, newTrackletId, resetStates);
                                 trackletData{newTrackletId} = tempData2;
-                               
+                                trackletData{end}.HybridState(end,:) = 'Approach';  % in case it was altered during hybrid state update
                                 % Find the ego-car (note that timeStep is incremented by '1' as ego-car for current time step is needed) and update the ped-car states
                                 tempData = egoCarFunc(trackletData{newTrackletId}, currentTSActiveCarData, carTrackCurrentTimeStep, cw, annotatedImageEnhanced,  Params, timeStep, resetStates);                                       
                                 trackletData{newTrackletId} = tempData;                              
@@ -760,41 +706,41 @@ end
 % copy the cell to a matrix
 predictionTrajectoryMatrix = double(cell2mat(predictionTrajectory));
 
-%% debug
-
-%% plot predicted vehicle and pedestrian states
-if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
-    if ~isempty(currentTSActiveCarData)
-        for ii=1:size(currentTSActiveCarData,1)
-            carPosPixels = int32([currentTSActiveCarData{ii}.xCenter, currentTSActiveCarData{ii}.yCenter]/(orthopxToMeter*scaleFactor));      
-            for zz=1:size(carPosPixels,1)
-                annotatedImageEnhanced(-carPosPixels(zz,2), carPosPixels(zz,1)) = 150;
-            end
-        end
-    end
-    
-    % predicted trajectory
-    for jj=1:size(trackletData,1)
-        pedPixels = int32([trackletData{jj}.xCenter, trackletData{jj}.yCenter]/(orthopxToMeter*scaleFactor));
-        for zz=1:size(pedPixels,1)
-            annotatedImageEnhanced(-pedPixels(zz,2), pedPixels(zz,1)) = 90;
-        end
-    end
-
-    % constant velocity
-    CVPixels = trajectory_CV/(orthopxToMeter*scaleFactor);
-    for zz=1:size(CVPixels,1)
-        annotatedImageEnhanced(int32(-CVPixels(zz,2)), int32(CVPixels(zz,1))) = 125;
-    end
-    
-    % ground truth
-    GTPixels = trajectory_GT/(orthopxToMeter*scaleFactor);
-    for zz=1:size(GTPixels,1)
-        annotatedImageEnhanced(int32(-GTPixels(zz,2)), int32(GTPixels(zz,1))) = 255;  
-    end
-end
-imshow(annotatedImageEnhanced);
-pause(0.3);
+% % %% debug
+% % 
+% %% plot predicted vehicle and pedestrian states
+% if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
+%     if ~isempty(currentTSActiveCarData)
+%         for ii=1:size(currentTSActiveCarData,1)
+%             carPosPixels = int32([currentTSActiveCarData{ii}.xCenter, currentTSActiveCarData{ii}.yCenter]/(orthopxToMeter*scaleFactor));      
+%             for zz=1:size(carPosPixels,1)
+%                 annotatedImageEnhanced(-carPosPixels(zz,2), carPosPixels(zz,1)) = 150;
+%             end
+%         end
+%     end
+%     
+%     % predicted trajectory
+%     for jj=1:size(trackletData,1)
+%         pedPixels = int32([trackletData{jj}.xCenter, trackletData{jj}.yCenter]/(orthopxToMeter*scaleFactor));
+%         for zz=1:size(pedPixels,1)
+%             annotatedImageEnhanced(-pedPixels(zz,2), pedPixels(zz,1)) = 90;
+%         end
+%     end
+% 
+%     % constant velocity
+%     CVPixels = trajectory_CV/(orthopxToMeter*scaleFactor);
+%     for zz=1:size(CVPixels,1)
+%         annotatedImageEnhanced(int32(-CVPixels(zz,2)), int32(CVPixels(zz,1))) = 125;
+%     end
+%     
+%     % ground truth
+%     GTPixels = trajectory_GT/(orthopxToMeter*scaleFactor);
+%     for zz=1:size(GTPixels,1)
+%         annotatedImageEnhanced(int32(-GTPixels(zz,2)), int32(GTPixels(zz,1))) = 255;  
+%     end
+% end
+% imshow(annotatedImageEnhanced);
+% pause(0.3);
 % 
 % % find most likely trajectory
 % if ~isempty(trajectory_GT)
@@ -819,8 +765,8 @@ pause(0.3);
 % imwrite(annotatedImageEnhanced_text, filename);
 % 
 % %     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %% remove empty data

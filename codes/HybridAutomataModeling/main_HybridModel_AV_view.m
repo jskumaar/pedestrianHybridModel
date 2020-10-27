@@ -25,12 +25,13 @@ clearvars -except resetStates annotatedImageEnhanced formattedTracksData tracks 
 % p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
 p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
 p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
+p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
 addpath(p1)
 addpath(p2)
-% addpath(p3)
+addpath(p3)
 
-% b)load SVM models
-% load the gap acceptance model
+% % b)load SVM models
+% % load the gap acceptance model
 % load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
 % GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
 % Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
@@ -46,7 +47,10 @@ addpath(p2)
 %c) parameters
 configure_MHP;
 % initialize output variables
-predictedPedTraj_MHP = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
+% predictedPedTraj_MHP = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
+% predictedPedTraj_HBase = cell(12, 211, 613);
+predictedPedTraj_MHP = cell(12, 211, 613);
+
 
 % % 
 % % d) Read data or compile data?
@@ -76,14 +80,14 @@ flag.pred = false; % this is to run the close CW function ('hybridState') w/o hy
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % prediction loop starts for all cars in the dataset
-for sceneId = 4:4
+for sceneId = 1:N_Scenes
     %initialize scene variables
     pedIndexWithinSceneHistory = [];
     trackTimeStep = 1;  % time loop of the scene  
     carMovingTracks = tracks{sceneId}.carMovingTracks;
     N_tracks = size(formattedTracksData{sceneId},1);
     % assume every moving car track is an ego-vehicle
-    for track_index = 3:length(carMovingTracks)
+    for track_index = 1:length(carMovingTracks)
         % initialize track variables
         carTrackId = carMovingTracks(track_index);
         carData = formattedTracksData{sceneId}{carTrackId};
@@ -144,7 +148,7 @@ for sceneId = 4:4
                     currentTSActiveCarData{carLoopId}.changeLane = false;
                     currentTSActiveCarData{carLoopId}.reachGoal = false;
                 end
-                
+            
 
                 %%%%%%%%%%%%%%%%%%%%%%%
                 % For every active pedestrian run the trajectory prediction        
@@ -156,10 +160,9 @@ for sceneId = 4:4
                     pedTrackTimeStep = (trackTime - currentPedData.frame(1))/Params.reSampleRate + 1;
                     
                     %% debug
-                    if sceneId==4 && track_index==1 && pedIndexWithinScene==5 && pedTrackTimeStep==11
+                    if sceneId==1 && track_index==14 && pedIndexWithinScene==54 && pedTrackTimeStep==66
                         x=1;
                     end
-                    
                     
                     
                     %%%%%%%%%%%%%%%%%%%%%%%
@@ -189,26 +192,37 @@ for sceneId = 4:4
                     % car for the pedestrian, else run a constant velocity
                     % model
                     if flag.EgoCar
-                        [pedPredictions, pedKFpredictions, predGapFeatures, predCrossFeatures] = predictStates(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, carTrackCurrentTimeStepInPredictionData, AVStates, pedTrackTimeStep, ...
-                                                                           cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModelCar,Prob_CrossIntentModelNoCar, Params, flag);
-                        % Gap features
-                        N_gaps = size(predGapFeatures,1);
-                        if N_gaps >=1
-                            predGapFeatures.recordingId = sceneId;
-                            predGapFeatures.pedcarTrackId = pedIndexWithinScene;
-                            GapFeaturesAllScenes(GapFeatureId:GapFeatureId+N_gaps-1) =  predGapFeatures;
-                            GapFeatureId = GapFeatureId + N_gaps;
-                        end
+                        if strcmp(predictionModel,"MultipleHybridPedestrian")
+                            [pedPredictions, pedKFpredictions, predGapFeatures, predCrossFeatures] = predictStates(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, carTrackCurrentTimeStepInPredictionData, AVStates, pedTrackTimeStep, ...
+                                                                          cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModelCar,Prob_CrossIntentModelNoCar, Params, flag);
+                        elseif strcmp(predictionModel,"BaselineHybrid")
+                            [pedPredictions, pedKFpredictions, predGapFeatures] = predictStates_baseHybrid_v2(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, carTrackCurrentTimeStepInPredictionData, AVStates, pedTrackTimeStep, ...
+                                                                         cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Params, flag);
+                        elseif strcmp(predictionModel,"ConstantVelocity")
+                            [pedPredictions, pedKFpredictions] = HPed_MHP(kf, currentPedData, Params, pedTrackTimeStep);
+                        end                                         
+                       % Gap features
+                       if strcmp(predictionModel,"MultipleHybridPedestrian") || strcmp(predictionModel,"BaselineHybrid")
+                            N_gaps = size(predGapFeatures,1);
+                            if N_gaps >=1
+                                predGapFeatures.recordingId = sceneId;
+                                predGapFeatures.pedcarTrackId = pedIndexWithinScene;
+                                GapFeaturesAllScenes(GapFeatureId:GapFeatureId+N_gaps-1) =  predGapFeatures;
+                                GapFeatureId = GapFeatureId + N_gaps;
+                            end
+                       end
                         % Cross intent features
-                        N_cross = size(predCrossFeatures,1);
-                        if N_cross >=1
-                            predCrossFeatures.recordingId = sceneId;
-                            predCrossFeatures.pedcarTrackId = pedIndexWithinScene;
-                            CrossFeaturesAllScenes(CrossFeatureId:CrossFeatureId+N_cross-1) = predCrossFeatures;
-                            CrossFeatureId = CrossFeatureId + N_cross;
+                        if strcmp(predictionModel,"MultipleHybridPedestrian")
+                            N_cross = size(predCrossFeatures,1);
+                            if N_cross >=1
+                                predCrossFeatures.recordingId = sceneId;
+                                predCrossFeatures.pedcarTrackId = pedIndexWithinScene;
+                                CrossFeaturesAllScenes(CrossFeatureId:CrossFeatureId+N_cross-1) = predCrossFeatures;
+                                CrossFeatureId = CrossFeatureId + N_cross;
+                            end
                         end
                     else
-                        [pedPredictions, pedKFpredictions] = HPed_CV(kf, currentPedData, Params, pedTrackTimeStep);
+                        [pedPredictions, pedKFpredictions] = HPed_MHP(kf, currentPedData, Params, pedTrackTimeStep);
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%
                     % Save the predictions

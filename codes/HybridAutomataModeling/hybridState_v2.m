@@ -116,9 +116,14 @@ if ~flag.outOfPlay
         elseif (annotatedImage_enhanced(-posPixels(2), posPixels(1))==150)
            Region(end) = "Sidewalk";  
            onRoad = false;
-        elseif (annotatedImage_enhanced(-posPixels(2), posPixels(1))==0)
-           Region(end) = "OutOfRange";
+        elseif (annotatedImage_enhanced(-posPixels(2), posPixels(1))==0) && ...
+               ( ( (posPixels(1)>=Params.sidewalk.xmin(1)) && (posPixels(1)<=Params.sidewalk.xmax(1)) && (-posPixels(2)>=-Params.sidewalk.ymin(1)) && (-posPixels(2)<=-Params.sidewalk.ymax(1))  ) ||...
+                 ( (posPixels(1)>=Params.sidewalk.xmin(2)) && (posPixels(1)<=Params.sidewalk.xmax(2)) && (-posPixels(2)>=-Params.sidewalk.ymin(2)) && (-posPixels(2)<=-Params.sidewalk.ymax(2))  ) )
+           Region(end) = "Sidewalk";  
            onRoad = false;
+        elseif (annotatedImage_enhanced(-posPixels(2), posPixels(1))==0)
+            Region(end) = "OutOfRange";
+            onRoad = false;
         else          
            onRoad = false;
         end 

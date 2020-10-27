@@ -35,11 +35,10 @@ flag.startingFromWait = false;
 flag.checkIntentWOEgo = false;
 flag.reachGoal = false;
 flag.finishedCrossingDelayReached = false;
-gapId = ones(10,20);
-overallGapId = 1;
+gapId = 1;
 crossId = 1;
 newTrackletId = 1;
-% GapCheckTimeInHorizon = [];
+GapCheckTimeInHorizon = -1*ones(10,1);
 predGapFeatures = cell(10,1);
 predCrossFeatures = cell(10,1);
 predictionKFtracklet = cell(10,1);
@@ -201,9 +200,9 @@ for timeStep = 1:predHorizon
                     % pedestrian has reached the decision zone or when the
                     % pedestrians' observation (1st time step starts from
                     % 'Wait'.
-%                       if size(trackletData{trackletNo}.trackLifetime, 1) >= AdjustedSampFreq
+                      if size(trackletData{trackletNo}.trackLifetime, 1) >= AdjustedSampFreq
                             [GapFeatures, egoVehGapHist, flag] = compileGapFeatures(trackletData{trackletNo}, currentTSEgoCarData, carTrackCurrentTimeStep(egoActiveCarInd), egoVehGapHist, pedTrackTimeStep, Params, flag, trackletNo, timeStep);  
-%                       end  
+                      end  
                 else
                     flag.EgoCar(trackletNo) = false;
                 end   %end of if loop for the presence of an ego-vehicle                  
@@ -235,19 +234,17 @@ for timeStep = 1:predHorizon
                             % save gap check variables
                             GapFeatures.predDecision = trackletData{trackletNo}.probGapAccept;
                             GapFeatures.timeStepInHorizon = timeStep;
-                            predGapFeatures{overallGapId} = GapFeatures;           
+                            predGapFeatures{gapId(trackletNo),trackletNo} = GapFeatures;           
                             % update gap id
                             gapId(trackletNo) = gapId(trackletNo) + 1;
-                            overallGapId = overallGapId+1;
                             %%%%%%%%%%%%%%%%%%%
                     % if gap starts from wait and there is no close
                     % vehicle, accept the gap
-                elseif flag.startingFromWait(trackletNo) && ~flag.EgoCar(trackletNo) && ~flag.sampleWaitTime(trackletNo)
+                elseif flag.startingFromWait(trackletNo) && ~flag.EgoCar(trackletNo)
                             trackletData{trackletNo}.probGapAccept = 1;
                             GapCheckTimeInHorizon(gapId(trackletNo),trackletNo) = timeStep;
                             GapFeatures.timeStepInHorizon = timeStep;
-                            gapId(trackletNo) = gapId(trackletNo) + 1;   
-                            overallGapId = overallGapId+1;
+                            gapId(trackletNo) = gapId(trackletNo) + 1;                           
                 end
                 %%%%%%%%%%%%%%%%%%%%%%%%%
                 % Sample wait time if a gap has non-zero probability
@@ -372,6 +369,7 @@ for timeStep = 1:predHorizon
                    CrossFeatures.closestCW = currentPedData.closestCW(pedTrackTimeStep);
                    predCrossFeatures{crossId} = CrossFeatures;
                    crossId = crossId + 1;
+                   
                 else
                     flag.reachCrosswalk(trackletNo) = false;                         
                 end
@@ -470,7 +468,7 @@ for timeStep = 1:predHorizon
                                 trackletEventFlag(newTrackletId) = false;
                                 % update gap acceptance probability of
                                 % parent tracklet
-%                                 trackletData{newTrackletId}.probGapAccept = trackletData{trackletNo}.probGapAccept;
+                                trackletData{newTrackletId}.probGapAccept = trackletData{trackletNo}.probGapAccept;
                                 predictionKFtracklet{newTrackletId} = predictionKFtracklet{newTrackletId-1};                       
                                 %%%%%%%%%%%%%%%%%%%%%%%%%
                                 % update states and other parameters of

@@ -2,6 +2,10 @@
 
 % choose the dataset
 dataset="inD";
+% choose the model
+predictionModel = "MultipleHybridPedestrian";
+% predictionModel = "BaselineHybrid";
+% predictionModel = "ConstantVelocity";
 
 %%  configure dataset parameters
 if strcmp(dataset,"inD")

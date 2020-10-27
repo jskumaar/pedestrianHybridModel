@@ -172,4 +172,12 @@ resetStates.carLane.goal  = [980, -205;
                        545, -575;
                        375, -130;
                        415, -120];
+                   
+%%%%%%%%%%%%%%%%%%%%
+% sidewalk region not originally annotated
+Params.sidewalk.xmin = [650, 730]; 
+Params.sidewalk.xmax = [1000, 1000];
+Params.sidewalk.ymin = [-150, -270];
+Params.sidewalk.ymax = [-250, -320];
+
 

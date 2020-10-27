@@ -7,7 +7,7 @@ for sceneId = 1:12
             crossStart = [];
             crossedCW = [];
             for ii=2:N_ts
-                if strcmp(trackData.HybridState(ii),'Crossing')&& ~strcmp(trackData.HybridState(ii-1),'Crossing')
+                if (strcmp(trackData.HybridState(ii),'Crossing')||strcmp(trackData.HybridState(ii),'Jaywalking'))&& (~strcmp(trackData.HybridState(ii-1),'Crossing')&&~strcmp(trackData.HybridState(ii),'Jaywalking'))
                     crossStart = [crossStart; ii];
                 end
                 

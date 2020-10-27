@@ -82,49 +82,57 @@
 % end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% plot tracklets
-N_tracklets = size(trackletData,1);
-scaleDownFactor = Params.scaleFactor;
-orthopxToMeter = Params.orthopxToMeter;
-sf = scaleDownFactor*orthopxToMeter;
-cw_x = cw.center_x*sf;
-cw_y = cw.center_y*sf;
-shift = 0.5;
-figure()
-for id = 1:1
-%    xCenter =  trackletData{id}.xCenter;
-%    yCenter =  trackletData{id}.yCenter;
-   
-   goal_x =  [resetStates.approach.goal(:,1), resetStates.walkaway.goal(:,1)]*sf;
-   goal_y =  [resetStates.approach.goal(:,2), resetStates.walkaway.goal(:,2)]*sf;
-   
-%     plot(xCenter, yCenter, '*', 'MarkerSize', 8); hold on;
-    plot(cw_x, cw_y, 'r*','MarkerSize', 8);hold on;
-    axis equal
-%     text(xCenter(1), yCenter(1)-shift,strcat(num2str(id)));
-    plot(goal_x, goal_y, 'g*','MarkerSize', 8);hold on;
-    text(goal_x(1), goal_y(1)-shift,strcat('G-',num2str(id)));
-    
-    for jj=1:8
-        pgon = polyshape(resetStates.approach.goal(jj,[3,7,5,9])*sf,resetStates.approach.goal(jj,[4,8,6,10])*sf);
-        pgon2 = polyshape(resetStates.walkaway.goal(jj,[3,7,5,9])*sf,resetStates.walkaway.goal(jj,[4,8,6,10])*sf);
-        plot(pgon); hold on;
-        plot(pgon2); hold on;
-    end
-end
+% %% plot tracklets
+% N_tracklets = size(trackletData,1);
+% scaleDownFactor = Params.scaleFactor;
+% orthopxToMeter = Params.orthopxToMeter;
+% sf = scaleDownFactor*orthopxToMeter;
+% cw_x = cw.center_x*sf;
+% cw_y = cw.center_y*sf;
+% shift = 0.5;
+% figure()
+% for id = 1:1
+% %    xCenter =  trackletData{id}.xCenter;
+% %    yCenter =  trackletData{id}.yCenter;
+%    
+%    goal_x =  [resetStates.approach.goal(:,1), resetStates.walkaway.goal(:,1)]*sf;
+%    goal_y =  [resetStates.approach.goal(:,2), resetStates.walkaway.goal(:,2)]*sf;
+%    
+% %     plot(xCenter, yCenter, '*', 'MarkerSize', 8); hold on;
+%     plot(cw_x, cw_y, 'r*','MarkerSize', 8);hold on;
+%     axis equal
+% %     text(xCenter(1), yCenter(1)-shift,strcat(num2str(id)));
+%     plot(goal_x, goal_y, 'g*','MarkerSize', 8);hold on;
+%     text(goal_x(1), goal_y(1)-shift,strcat('G-',num2str(id)));
+%     
+%     for jj=1:8
+%         pgon = polyshape(resetStates.approach.goal(jj,[3,7,5,9])*sf,resetStates.approach.goal(jj,[4,8,6,10])*sf);
+%         pgon2 = polyshape(resetStates.walkaway.goal(jj,[3,7,5,9])*sf,resetStates.walkaway.goal(jj,[4,8,6,10])*sf);
+%         plot(pgon); hold on;
+%         plot(pgon2); hold on;
+%     end
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%% debug: plot predicted trajectories
-figure()
-for ii=1:size(predictionTrajectoryMatrix,1)
-    tempPredMatrix = reshape(predictionTrajectoryMatrix(ii,end-2*Params.predHorizon+1:end),[2, Params.predHorizon])';
-    plot(tempPredMatrix(:,1), tempPredMatrix(:,2), '*', 'MarkerSize', 10); hold on;
-    %     for jj=1:size(tempPredMatrix,1)
-%         plot(tempPredMatrix(jj,1), tempPredMatrix(jj,2), '*', 'MarkerSize', 10); hold on;
-%         pause(0.1)
-%     end
-end
+% %% debug: plot predicted trajectories
+% figure()
+% for ii=1:size(predictionTrajectoryMatrix,1)
+%     tempPredMatrix = reshape(predictionTrajectoryMatrix(ii,end-2*Params.predHorizon+1:end),[2, Params.predHorizon])';
+%     plot(tempPredMatrix(:,1), tempPredMatrix(:,2), '*', 'MarkerSize', 10); hold on;
+%     %     for jj=1:size(tempPredMatrix,1)
+% %         plot(tempPredMatrix(jj,1), tempPredMatrix(jj,2), '*', 'MarkerSize', 10); hold on;
+% %         pause(0.1)
+% %     end
+% end
 %  
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+pedPosPixels = [750, -320];
+annotatedImageEnhanced(-int32(pedPosPixels(2)), int32(pedPosPixels(1))) = 255;
+imshow(annotatedImageEnhanced)
+
+
 
