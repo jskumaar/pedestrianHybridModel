@@ -5,7 +5,7 @@
 % a) dataset
 N_Scenes = 12;
 Params.raw_T = 0.04;   % sampling rate is 25 Hz, 0.04 seconds for each data point
-Params.SampFreq = int32(1/Params.raw_T);
+Params.SampFreq = (1/Params.raw_T);
 recordingMetaData = readtable(strcat(num2str(18),'_recordingMeta.csv'));
 Params.orthopxToMeter = recordingMetaData.orthoPxToMeter;
 Params.scaleFactor = 12;   % this was calculated manually; used in pixels to m conversion

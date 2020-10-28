@@ -8,7 +8,6 @@ function [predictionTrajectoryMatrix, predictionKFtrajectory, predGapFeatures] =
 
 %% 1) setup
 % load the exponential distribution of cross times after
-% load('crossDelayExpDist.mat') 
 load('waitTimeWithEgo_expDist.mat') 
 waitDistribution = waitTimeWithEgo_expDist;
 %%%%%%%%%%%%%%%%%%%    
@@ -254,7 +253,11 @@ for timeStep = 1:predHorizon
                    % wait start of this pedestrian. For now, add a fixed time step
                    %time_start_cross = int32(exprnd(crossDelayExpDist.mu)/dt);
 %                    timestartToCross = 0.4*AdjustedSampFreq;                 % 0.4 s second fixed delay; mean value is 0.4741 s
-                    timestartToCross = int32(random(waitDistribution)/Params.delta_T);
+                   if flag.EgoCar(trackletNo)
+                       timestartToCross(trackletNo) = floor((exprnd(waitDistribution.mu)/Params.delta_T));                     
+                   else
+                       timestartToCross(trackletNo) = 1;
+                   end
                     flag.sampleWaitTime(trackletNo) = true;   
                 end
                 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -285,8 +288,7 @@ for timeStep = 1:predHorizon
                 % start of new tracklets
                 if flag.finishedCrossing(trackletNo) && ~flag.finishedCrossingDelayReached(trackletNo) && timeStep-finishedCrossTime(trackletNo)>=2
                     flag.finishedCrossingDelayReached(trackletNo) = true;
-                end
-                    
+                end                    
                 %%%%%%%%%%%%%%%%%%%%%%%%%
                 %check reach goal for 1st tracklet (when there is no goal
                 %location assigned)
@@ -305,8 +307,7 @@ for timeStep = 1:predHorizon
                         x=1;
                     end
                 end
-                
-
+                %%%%%%%%%%%%%%%%%%%%%%%
                 % Step 4c: (Reach Crosswalk) Check if the pedestrian
                 % has reached the crosswalk - (a) Either in Approach or Wait State, (b) Goal Disp (dist to sidewalk) is small, (c) Was not at crosswalk before, (d) was approaching the same crosswalk                
                 if ( size(trackletData{trackletNo}.trackLifetime,1) >= 2 &&...
@@ -417,7 +418,7 @@ for timeStep = 1:predHorizon
                                 trackletEventFlag(newTrackletId) = false;
                                 % update gap acceptance probability of
                                 % parent tracklet
-                                trackletData{newTrackletId}.probGapAccept = trackletData{trackletNo}.probGapAccept;
+%                                 trackletData{newTrackletId}.probGapAccept = trackletData{trackletNo}.probGapAccept;
                                 predictionKFtracklet{newTrackletId} = predictionKFtracklet{newTrackletId-1};                       
                                 %%%%%%%%%%%%%%%%%%%%%%%%%
                                 % update states and other parameters of
@@ -494,8 +495,7 @@ for timeStep = 1:predHorizon
                                 predictionKFtracklet{newTrackletId} = kf;
                                 % update close CW
                                 [tempData2, flag] = hybridState_v2(trackletData{newTrackletId}, cw, flag, annotatedImageEnhanced, Params, newTrackletId, resetStates);
-                                trackletData{newTrackletId} = tempData2;
-                                trackletData{end}.HybridState(end,:) = 'Approach';  % in case it was altered during hybrid state update
+                                trackletData{newTrackletId} = tempData2;      
                                 % Find the ego-car (note that timeStep is incremented by '1' as ego-car for current time step is needed) and update the ped-car states
                                 tempData = egoCarFunc(trackletData{newTrackletId}, currentTSActiveCarData, carTrackCurrentTimeStep, cw, annotatedImageEnhanced,  Params, timeStep, resetStates);                                       
                                 trackletData{newTrackletId} = tempData;                              

@@ -173,58 +173,58 @@ for sceneId = 1:1
                                                 x=1;
                                             end
                                         
-%                                             % trajectory error
-%                                             N_PredTimeSteps = size(GTTrajectory,1);
-%                                             tempError_MHP = GTTrajectory - reshape(mostProbablePredictedTrajectory_MHP(mostProbablePredictionId_MHP,1:N_PredTimeSteps,:),[N_PredTimeSteps,2]);
-%                                             predError_MHP = vecnorm(tempError_MHP, 2, 2);
-%                                             tempError_HBase = GTTrajectory - reshape(mostProbablePredictedTrajectory_HBase(mostProbablePredictionId_HBase,1:N_PredTimeSteps,:),[N_PredTimeSteps,2]);
-%                                             predError_HBase = vecnorm(tempError_HBase, 2, 2);
-%                                             tempError_CV = GTTrajectory - mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,:);
-%                                             predError_CV = vecnorm(tempError_CV, 2, 2);
-% 
-%     %                                         if (predError_MHP(1) > 0.2 || predError_MHP(end) > 6)
-%                                                     % plot
-%                                                     clf
-%                                                     cw_x = cw.center_x*orthopxToMeter*scaleFactor;
-%                                                     cw_y = cw.center_y*orthopxToMeter*scaleFactor;
-%                                                     plot(cw_x, cw_y, 'ro','MarkerSize', 8);hold on;
-%     
-%                                                     plot(GTTrajectory(:,1), GTTrajectory(:,2), 'g*', 'MarkerSize',8); hold on;
-%                                                     shift = 1;
-%                                                     for ii = 1:N_futures_MHP
-% %                                                         predId = mostProbablePredictionId_MHP;
-%                                                         predId = ii;
-%                                                         if predId == mostProbablePredictionId_MHP
-%                                                             plot(mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,2), 'b*', 'MarkerSize',8); hold on;
-%                                                         else
-%                                                             plot(mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,2), 'm*', 'MarkerSize',8); hold on;
-%                                                         end
-%                                                             text(mostProbablePredictedTrajectory_MHP(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
-%                                                     end
-%                                                     for predId = 1:N_futures_HBase
-%                                                         plot(mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,2), 'k*', 'MarkerSize',8); hold on;
-%                                                         text(mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
-%                                                     end
-%                                                     
-%                                                     plot(mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,2), 'r*', 'MarkerSize',8); hold on;
-%                                                     x=1;
-%                                                     
-%                                                     sceneId
-%                                                     car_index
-%                                                     pedTrackId
-%                                                     startTimeStep-1
-%                                                     x=1;
-%     %                                      
+                                            % trajectory error
+                                            N_PredTimeSteps = size(GTTrajectory,1);
+                                            tempError_MHP = GTTrajectory - reshape(mostProbablePredictedTrajectory_MHP(mostProbablePredictionId_MHP,1:N_PredTimeSteps,:),[N_PredTimeSteps,2]);
+                                            predError_MHP = vecnorm(tempError_MHP, 2, 2);
+                                            tempError_HBase = GTTrajectory - reshape(mostProbablePredictedTrajectory_HBase(mostProbablePredictionId_HBase,1:N_PredTimeSteps,:),[N_PredTimeSteps,2]);
+                                            predError_HBase = vecnorm(tempError_HBase, 2, 2);
+                                            tempError_CV = GTTrajectory - mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,:);
+                                            predError_CV = vecnorm(tempError_CV, 2, 2);
+
+    %                                         if (predError_MHP(1) > 0.2 || predError_MHP(end) > 6)
+                                                    % plot
+                                                    clf
+                                                    cw_x = cw.center_x*orthopxToMeter*scaleFactor;
+                                                    cw_y = cw.center_y*orthopxToMeter*scaleFactor;
+                                                    plot(cw_x, cw_y, 'ro','MarkerSize', 8);hold on;
+    
+                                                    plot(GTTrajectory(:,1), GTTrajectory(:,2), 'g*', 'MarkerSize',8); hold on;
+                                                    shift = 1;
+                                                    for ii = 1:N_futures_MHP
+%                                                         predId = mostProbablePredictionId_MHP;
+                                                        predId = ii;
+                                                        if predId == mostProbablePredictionId_MHP
+                                                            plot(mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,2), 'b*', 'MarkerSize',8); hold on;
+                                                        else
+                                                            plot(mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,2), 'm*', 'MarkerSize',8); hold on;
+                                                        end
+                                                            text(mostProbablePredictedTrajectory_MHP(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
+                                                    end
+                                                    for predId = 1:N_futures_HBase
+                                                        plot(mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,2), 'k*', 'MarkerSize',8); hold on;
+                                                        text(mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
+                                                    end
+                                                    
+                                                    plot(mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,2), 'r*', 'MarkerSize',8); hold on;
+                                                    x=1;
+                                                    
+                                                    sceneId
+                                                    car_index
+                                                    pedTrackId
+                                                    startTimeStep-1
+                                                    x=1;
+    %                                         end
 
 
-                    %                        deterministic error metrics for the entire prediction horizon
+                    %                         deterministic error metrics for the entire prediction horizon
                                             N = N_PredTimeSteps;
                                             ADE_MHP(index, 1:N) = cumsum(predError_MHP)./(1:N_PredTimeSteps)';
-                                            FDE_MHP(index, 1:N) = predError_MHP;
-                                            ADE_HBase(index, 1:N) = cumsum(predError_HBase)./(1:N_PredTimeSteps)';
-                                            FDE_HBase(index, 1:N) = predError_MHP;
-                                            ADE_CV(index, 1:N) = cumsum(predError_CV)./(1:N_PredTimeSteps)';
-                                            FDE_CV(index, 1:N) =  predError_CV;                       
+                                            FDE_MHP(index, 1:N) = [predError_MHP];
+                                            ADE_HBase(index, 1:N) = [cumsum(predError_HBase)./(1:N_PredTimeSteps)'];
+                                            FDE_HBase(index, 1:N) = [predError_MHP];
+                                            ADE_CV(index, 1:N) = [cumsum(predError_CV)./cumsum(1:N_PredTimeSteps)'];
+                                            FDE_CV(index, 1:N) = [ predError_CV];                       
 
 %                                             averageDistanceError_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = cumsum(predError_MHP)./cumsum(1:N_PredTimeSteps,1)';
 %                                             finalDistanceError_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep} = predError_MHP;
@@ -237,7 +237,7 @@ for sceneId = 1:1
 %                                             round(mean(ADE_MHP,1),1)
 %                                             round(mean(ADE_HBase,1),1)
 %                                             round(mean(ADE_CV,1),1)
-                                        
+                                        end
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
                 %                         %% probabiistic error metrics
@@ -264,8 +264,8 @@ for sceneId = 1:1
                 %                         FSR_CV(index, 1:N) = [ FSR_ratio_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
 
                                         % 
-                                            index = index+1;
-                                         end
+                                        index = index+1;
+
                         
                         
                                 end            

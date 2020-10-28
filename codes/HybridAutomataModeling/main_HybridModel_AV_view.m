@@ -47,9 +47,9 @@ addpath(p3)
 %c) parameters
 configure_MHP;
 % initialize output variables
-% predictedPedTraj_MHP = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
+predictedPedTraj_MHP = cell(12, 211, 613); %maximum sizes of scenes, no. of moving cars, and tracks in scene respectively; pre-allocated for speed
 % predictedPedTraj_HBase = cell(12, 211, 613);
-predictedPedTraj_MHP = cell(12, 211, 613);
+% predictedPedTraj_CV = cell(12, 211, 613);
 
 
 % % 
@@ -64,7 +64,7 @@ GapFeaturesAllScenes = struct('recordingId',[],'pedcarTrackId',[],'pedTrackTimeS
                               'F_isSameDirection',[],'predDecision',[],'timeStepInHorizon',[]);
 CrossFeaturesAllScenes = struct('recordingId',[],'pedcarTrackId',[],'pedTrackTimeStep',[],'timeStepInHorizon',[],'mean_ped_speed',[],...
                                 'mean_DTCurb',[],'mean_DTCW',[],'mean_veh_speed',[],'mean_veh_acc',[],'mean_veh_ped_dist',[],...
-                                'gaze_ratio',[],'isSameDirection',[], 'isNearLane',[], 'duration_ego_vehicle',[],'closestCW',[]);
+                                'gaze_ratio',[],'isSameDirection',[], 'isNearLane',[], 'duration_ego_vehicle',[],'closestCW',[],'predDecision',[]);
 predPedIndex = 0;
 GapFeatureId = 1;
 CrossFeatureId = 1;
@@ -80,7 +80,7 @@ flag.pred = false; % this is to run the close CW function ('hybridState') w/o hy
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % prediction loop starts for all cars in the dataset
-for sceneId = 1:N_Scenes
+for sceneId = 1:1
     %initialize scene variables
     pedIndexWithinSceneHistory = [];
     trackTimeStep = 1;  % time loop of the scene  
@@ -178,6 +178,7 @@ for sceneId = 1:N_Scenes
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(1) = inf;
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{1} = inf;
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{1} = inf;
+                        predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.predictionModel(1) = 0;
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%                    
                     % initialize the kalman filter
@@ -195,11 +196,14 @@ for sceneId = 1:N_Scenes
                         if strcmp(predictionModel,"MultipleHybridPedestrian")
                             [pedPredictions, pedKFpredictions, predGapFeatures, predCrossFeatures] = predictStates(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, carTrackCurrentTimeStepInPredictionData, AVStates, pedTrackTimeStep, ...
                                                                           cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModelCar,Prob_CrossIntentModelNoCar, Params, flag);
+                             predModelForTimeStep = 2;
                         elseif strcmp(predictionModel,"BaselineHybrid")
                             [pedPredictions, pedKFpredictions, predGapFeatures] = predictStates_baseHybrid_v2(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, carTrackCurrentTimeStepInPredictionData, AVStates, pedTrackTimeStep, ...
                                                                          cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Params, flag);
+                             predModelForTimeStep = 1;
                         elseif strcmp(predictionModel,"ConstantVelocity")
                             [pedPredictions, pedKFpredictions] = HPed_MHP(kf, currentPedData, Params, pedTrackTimeStep);
+                            predModelForTimeStep = 0;
                         end                                         
                        % Gap features
                        if strcmp(predictionModel,"MultipleHybridPedestrian") || strcmp(predictionModel,"BaselineHybrid")
@@ -223,6 +227,7 @@ for sceneId = 1:N_Scenes
                         end
                     else
                         [pedPredictions, pedKFpredictions] = HPed_MHP(kf, currentPedData, Params, pedTrackTimeStep);
+                        predModelForTimeStep = 0;
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%
                     % Save the predictions
@@ -230,7 +235,7 @@ for sceneId = 1:N_Scenes
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
                         predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
-                        
+                        predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.predictionModel(end+1,1) = predModelForTimeStep;
 %                         %% debug
 %                         prevTimeStep = predictedPedTraj_MHP{sceneId}{track_index}{pedIndexWithinScene}.timeStep(end-1,1);
 %                         if pedTrackTimeStep-prevTimeStep~=1 && prevTimeStep~=inf
