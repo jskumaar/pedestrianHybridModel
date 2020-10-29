@@ -135,24 +135,21 @@
 % imshow(annotatedImageEnhanced)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[~,idx] = sortrows(MHP_good_ADE_performance_indices(:,6),'descend');
-MHP_good_ADE_sorted = MHP_good_ADE_performance_indices(idx,:);
-[~,idx2] = sortrows(MHP_good_FDE_performance_indices(:,6),'descend');
-MHP_good_FDE_sorted = MHP_good_FDE_performance_indices(idx2,:);
+% [~,idx] = sortrows(MHP_good_ADE_performance_indices(:,6),'descend');
+% MHP_good_ADE_sorted = MHP_good_ADE_performance_indices(idx,:);
+% [~,idx2] = sortrows(MHP_good_FDE_performance_indices(:,6),'descend');
+% MHP_good_FDE_sorted = MHP_good_FDE_performance_indices(idx2,:);
 
-[~,idx] = sortrows(MHP_bad_ADE_performance_indices(:,6),'descend');
-MHP_bad_ADE_sorted = MHP_bad_ADE_performance_indices(idx,:);
-[~,idx2] = sortrows(MHP_bad_FDE_performance_indices(:,6),'descend');
-MHP_bad_FDE_sorted = MHP_bad_FDE_performance_indices(idx2,:);
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sceneId = 1;
-car_index = 46;
-pedTrackId = 167;
-predictionTimeStep = 33;
-actualTimeStep = 75;
+car_index = 65;
+pedTrackId = 226;
+predictionTimeStep = 46;
+actualTimeStep = 62;
 
 mostProbablePredictedTrajectory_MHP = [];
 mostProbablePredictedTrajectory_HBase = [];

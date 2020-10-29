@@ -1,6 +1,6 @@
 %% This function calculates the predicted probability of the predictions given a ground truth trajectory
 
-function [probGT, GTLikelihood, FRS_ratio] = probMetrics(GTTrajectory, pedPredictionsData, ped_KF_PredictionsData, Params, type)
+function [probGT, GTLikelihood, FRS_ratio, probSpace_2D_overall] = probMetrics(GTTrajectory, pedPredictionsData, ped_KF_PredictionsData, Params, type)
 
 % parameters
 max_velocity = 2.5; % in m/s
@@ -16,6 +16,7 @@ yLim = [Params.yMin, Params.yMax];
 % FRS parameters
 head_steps = [0: 360/90: 360]; 
 vel_steps = [0: max_velocity/20: max_velocity];
+probSpace_2D_overall = zeros(Params.imgSize(1), Params.imgSize(2));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % size of the predicted trajectory
@@ -106,6 +107,8 @@ for futureNo = 1:N_futures
             probSpace(predHorTime, y_ind, x_ind) = probSpace(predHorTime, y_ind, x_ind) + probTrajectory*pdf(FRS_id);     
         end
         probSpace_2D = reshape(probSpace(predHorTime,:,:), Params.imgSize);  % for testing      
+        % compile the prediction likelihoods
+        probSpace_2D_overall = probSpace_2D_overall + probSpace_2D;
         %%%%%%%%%%%%%%%%%%%%
         %% Metrics
         % a) Prob. Metric 1: Ground truth probability (metric not used in paper)

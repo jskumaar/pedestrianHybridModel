@@ -7,7 +7,7 @@ function [GapFeatures, egoVehGapHist, flag] = compileGapFeatures(PedData, curren
 GapFeatures = [];
 decZone = Params.decZone;
 AdjustedSampFreq = Params.AdjustedSampFreq;
-SampFreq = Params.SampFreq;
+SampFreq = double(Params.SampFreq);
 % variables for faster downstream processing
 pedVel = [PedData.xVelocity, PedData.yVelocity];
 closeCar_ind = PedData.closeCar_ind;

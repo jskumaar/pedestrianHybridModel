@@ -2,15 +2,15 @@
 
 % find the number of pedestrians and the no of time instances
 
-total_comp_time = 3611.3;
+total_comp_time = 11010.151;
 
-N_scenes = size(predictedPedTraj,1);
+N_scenes = size(predictedPedTraj_MHP,1);
 total_N_timeSteps = 0;
 total_N_car = 0;
 total_N_ped = 0;
 
 for sceneId  = 1:N_scenes
-    scenePred = predictedPedTraj{N_scenes};
+    scenePred = predictedPedTraj_MHP{N_scenes};
     N_cars = size(scenePred,1);
     for carId = 1:N_cars
        carPred = scenePred{carId};
