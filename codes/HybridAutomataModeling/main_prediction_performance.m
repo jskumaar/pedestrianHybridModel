@@ -9,12 +9,12 @@
 % Probabilistic Metrics
 % 1) Predicted probability
 
-p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
-p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
-p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
-% p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
-% p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
-% p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
+% p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+% p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+% p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
+p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
+p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
+p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
 addpath(p1)
 addpath(p2)
 addpath(p3)
@@ -22,7 +22,7 @@ addpath(p3)
 intersection_img = imread('18_background.png');
 img_size = size(intersection_img);
  
-% % load predictions
+% load predictions
 % load('trial_7_allScenes_MHP_10_26_clean.mat');
 % load('trial4_allScenes_CV.mat');
 % load('trial_6_allScenes_HBase_10_25_clean.mat');
@@ -273,61 +273,86 @@ for sceneId = 1:12
                                     type = 'CV';
                                     [predictedProbability_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep},  likelihood_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = probMetrics(GTTrajectory, pedPredictionsData_CV{predictionTimeStep}, pedKFPredictionsData_CV{predictionTimeStep}, Params, type);
                                     
-%                                     % plot predicted probability
-%                                     temp_prob2D_MHP(:,:,1) = prob2D_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
-%                                     temp_prob2D_HBase(:,:,1) = prob2D_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
-%                                     temp_prob2D_CV(:,:,1) = prob2D_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
-%                                     prob2D_GT_image = zeros(img_size);
-%                                     for ii=1:length(GTTrajectory)                                      
-%                                         ind = int32([-GTTrajectory(ii,2), GTTrajectory(ii,1)]/(orthopxToMeter*scaleFactor));
-%                                         prob2D_GT_image(ind(1),ind(2),:) = 255 ;
-%                                     end
-%                                     % denote the start point of the
-%                                     % trajectory
-%                                     ind = int32([-GTTrajectory(1,2), GTTrajectory(1,1)]/(orthopxToMeter*scaleFactor));
-%                                     prob2D_GT_image = insertShape(prob2D_GT_image, 'FilledCircle', [ind(2), ind(1), 3],'Color',[1,1,1],'Opacity',1);
-% %                                     imshow(prob2D_GT_image)
-%                                     
-%                                     % Note: Color selection. White for
-%                                     % ground truth, green for MHP
-%                                     % trajectories, red for constant
-%                                     % velocity and blue for HBase
-%                                     imshow(intersection_img)
+                                    % plot predicted probability
+                                    temp_prob2D_MHP(:,:,1) = prob2D_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
+                                    temp_prob2D_MHP_map = temp_prob2D_MHP;
+                                    temp_prob2D_MHP_map(temp_prob2D_MHP_map>1) = 1;
                                     
-%                                     prob2D_MHP_image = cat(3, zeros(size(temp_prob2D_MHP)), (temp_prob2D_MHP), zeros(size(temp_prob2D_MHP)));
-%                                     green = cat(3, zeros(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
-%                                     hold on
-%                                     prob_pred_image = imshow(green);
-%                                     prob_pred_image.AlphaDataMapping = 'none';
-%                                     hold off
-%                                     set(prob_pred_image, 'AlphaData', prob2D_MHP_image)
-%                                     imshow(prob_pred_image)
-% 
-%                                     prob2D_MHP_image = cat(3, zeros(size(temp_prob2D_MHP)), (temp_prob2D_MHP), zeros(size(temp_prob2D_MHP)));
-% %                                     green = cat(3, zeros(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
-%                                     figure1 = figure;
-%                                     ax1 = axes('Parent',figure1);
-%                                     ax2 = axes('Parent',figure1);
-% 
-%                                     prob_pred_image = imshow(prob2D_MHP_image);
-%                                     [a,map,alpha] = imread(prob_pred_image);
-%                                     I = imshow(a,'Parent',ax2);
-%                                     set(I,'AlphaData',alpha);
-%                                     imshow('18_background.png','Parent',ax1);
-%                                     
-%                                     set(prob_pred_image, 'AlphaData', prob2D_MHP_image)
-%                                     imshow(prob_pred_image)
-
+                                    temp_prob2D_HBase(:,:,1) = prob2D_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
+                                    temp_prob2D_HBase_map = temp_prob2D_HBase;
+                                    temp_prob2D_HBase_map(temp_prob2D_HBase_map>1) = 1;
                                     
-
+                                    temp_prob2D_CV(:,:,1) = prob2D_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
+                                    temp_prob2D_CV_map = temp_prob2D_CV;
+                                    temp_prob2D_CV_map(temp_prob2D_CV_map>1) = 1;
+                                    
+                                    GT_image = zeros([img_size(1), img_size(2)]);
+                                    for ii=1:length(GTTrajectory)                                      
+                                        ind = int32([-GTTrajectory(ii,2), GTTrajectory(ii,1)]/(orthopxToMeter*scaleFactor));
+                                        GT_image(ind(1),ind(2)) = 255 ;
+                                    end
+                                    % denote the start point of the
+                                    % trajectory
+                                    ind = int32([-GTTrajectory(1,2), GTTrajectory(1,1)]/(orthopxToMeter*scaleFactor));
+                                    GT_image = insertShape(GT_image, 'FilledCircle', [ind(2), ind(1), 2],'Color','yellow','Opacity',1);
+                                    GT_image_gray = rgb2gray(GT_image);
+                                    
+                                    img_combined = temp_prob2D_MHP + temp_prob2D_HBase + temp_prob2D_CV + GT_image_gray;
+                                    
+                                    ind_first = find(img_combined~=0,1,'first');
+                                    ind_last = find(img_combined~=0,1,'last');
+                                    crop_x_min = floor(ind_first/img_size(1)); 
+                                    crop_x_max = floor(ind_last/img_size(1));
+                                    crop_y_min = mod(ind_first,img_size(1)); 
+                                    crop_y_max = mod(ind_last,img_size(1));
+                                    
+                                    % Note: Color selection. White for
+                                    % ground truth, green for MHP
+                                    % trajectories, red for constant
+                                    % velocity and blue for HBase
+                                    imshow(intersection_img)
+                                    alpha(0.8)
+                                    hold on
+                                    green = cat(3, zeros(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
+                                    prob_pred_image = imshow(green);
+                                    hold on
+                                    set(prob_pred_image, 'AlphaData', temp_prob2D_MHP_map)
+                                    blue = cat(3, zeros(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)));
+                                    prob_pred_image_2 = imshow(blue);
+                                    hold on
+                                    set(prob_pred_image_2, 'AlphaData', temp_prob2D_HBase_map)
+                                    red = cat(3, ones(size(temp_prob2D_MHP)),zeros(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
+                                    prob_pred_image_3 = imshow(red);
+                                    hold on;
+                                    set(prob_pred_image_3, 'AlphaData', temp_prob2D_CV_map)
+%                                     white = cat(3, ones(size(temp_prob2D_MHP)),ones(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)));
+                                    yellow = cat(3, ones(size(temp_prob2D_MHP)),ones(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
+                                    prob_pred_image_4 = imshow(yellow);
+                                    set(prob_pred_image_4, 'AlphaData', 0.6*GT_image_gray)
+                                    % crop and zoom image to include the relevant
+                                    % trajectories
+                                    saveas(gcf, 'File.png');
+                                    
                                     
 %                                     % combined trajectory image
 %                                     prob_pred_image = prob2D_MHP_image + prob2D_HBase_image + prob2D_CV_image + prob2D_GT_image;
 %                                     imshow(prob_pred_image)
 %                                     x=1;
-%                                     
-                                    
-                                    
+% %                                     
+%                                     %%%%%%%%%%%%%%%%%%%%
+% %                                     overlay images w/o transparency
+%                                     prob2D_MHP_map = cat(3, zeros(size(temp_prob2D_MHP)), (temp_prob2D_MHP), zeros(size(temp_prob2D_MHP)));
+% %                                     green = cat(3, zeros(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
+%                                     figure1 = figure;
+%                                     ax1 = axes('Parent',figure1);
+%                                     ax2 = axes('Parent',figure1);
+% 
+%                                     prob_pred_image = imshow(prob2D_MHP_map);
+%                                     [a,map,alpha] = imread(prob_pred_image);
+%                                     I = imshow(a,'Parent',ax2);
+%                                     set(I,'AlphaData',alpha);
+%                                     imshow('18_background.png','Parent',ax1);
+%                                                                         
                                     
                                     
                                     
