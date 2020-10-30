@@ -150,7 +150,7 @@ if ~flag.outOfPlay
        distPedLane(6,1) = norm(dispPedSW(3,3:4));
        distPedLane(7,1) = norm(dispPedSW(4,1:2));
        distPedLane(8,1) = norm(dispPedSW(4,3:4));
-       % check closest SW
+       % initialize closest SW
        [sortedSWdist, sortedSWindex] = sort(distPedLane);
        swInd_temp = sortedSWindex(1);
        swInd = ceil(swInd_temp/2);

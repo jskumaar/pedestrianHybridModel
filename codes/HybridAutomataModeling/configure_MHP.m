@@ -40,12 +40,12 @@ Params.headingRateLimit = 50; %(degrees/s)
 
 %% Kalman filter model - single differentiator point mass model
 % Process and Measurement covariances
-Q = [0.01,  0,   0,    0;
-      0,  0.01,  0,    0;
-      0,   0,  0.001,  0;
-      0,   0,    0,  0.001];
+Q = 2*[0.01,  0,    0,    0;
+         0,  0.01,  0,    0;
+         0,   0,  0.003,  0;
+         0,   0,    0,  0.003];
   
-R = 0.002*eye(2);   % must be zero if using ground truth (accelerometer noise)
+R = 0.005*eye(2);   % must be zero if using ground truth (accelerometer noise)
 
 % System dynamics (prediction model: constnat velocity)
 sys = [];

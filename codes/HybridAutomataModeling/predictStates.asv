@@ -286,9 +286,6 @@ for timeStep = 1:predHorizon
                          ( strcmp(trackletData{trackletNo}.HybridState(end),'Approach') && strcmp(trackletData{trackletNo}.HybridState(end-1),'Crossing') ) )                    
                         flag.finishedCrossing(trackletNo) = true;
                         finishedCrossTime(trackletNo) = timeStep;
-                        if trackletData{trackletNo}.closestCW(end-1)~=trackletData{trackletNo}.closestCW(1)
-                            x=1;
-                        end
                         walkawayCW(trackletNo) = trackletData{trackletNo}.closestCW(end-1);
                     end         
                 end

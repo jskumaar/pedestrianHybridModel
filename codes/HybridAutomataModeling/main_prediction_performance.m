@@ -9,12 +9,12 @@
 % Probabilistic Metrics
 % 1) Predicted probability
 
-% p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
-% p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
-% p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
-p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
-p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
-p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
+p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
+% p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
+% p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
+% p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
 addpath(p1)
 addpath(p2)
 addpath(p3)
@@ -22,7 +22,7 @@ addpath(p3)
 intersection_img = imread('18_background.png');
 img_size = size(intersection_img);
  
-% load predictions
+% % load predictions
 % load('trial_7_allScenes_MHP_10_26_clean.mat');
 % load('trial4_allScenes_CV.mat');
 % load('trial_6_allScenes_HBase_10_25_clean.mat');
@@ -63,12 +63,23 @@ FSR_CV = -1*ones(N,Params.predHorizon);
 
 % loop for all scenes
 index = 1;
+
+indices_imp = [1,108,303,34,88,9.28933333994465];
+
+sceneId_interest = indices_imp(1);
+car_index_interest = indices_imp(2);
+pedTrackId_interest = indices_imp(3);
+predictionTimeStep_interest = indices_imp(4);
+actualTimeStep_interest = indices_imp(5);
+
 figure()
-for sceneId = 1:12
+% for sceneId = 1:N_Scenes
+for sceneId = sceneId_interest
     
     N_car = size(predictedPedTraj_MHP{sceneId},1);
     % for every ego-car
-    for car_index = 1:N_car
+%     for car_index = 1:N_car
+    for car_index = car_index_interest
         % if there is a car
         if ~isempty(predictedPedTraj_MHP{sceneId}{car_index})
             % predictions of all pedestrians who interacted with the ego-car for
@@ -79,7 +90,8 @@ for sceneId = 1:12
             % no. of pedestrians interacted with the ego-car
             N_ped_pred = size(pedPredictionForEachCar_MHP,1); %if there are no predictions for a pedestrian, that entry is empty
             % for all pedestrians
-            for pedTrackId = 1:N_ped_pred
+%             for pedTrackId = 1:N_ped_pred
+            for pedTrackId = pedTrackId_interest
                 % if there was a crossing event or reached Crosswalk event
                 % in that pedestrian trajectory, compare the prediction performance
                 if ~isempty(crossStartTimeSteps{sceneId}{pedTrackId}) || ~isempty(crossedCWTimeSteps{sceneId}{pedTrackId})
@@ -108,7 +120,8 @@ for sceneId = 1:12
                             N_timeSteps = size(pedPredictionsData_MHP, 1);
                             % for all prediction time steps; note that this
                             % may not correspond to the actual time steps of the pedestrian track
-                            for predictionTimeStep = 1:N_timeSteps 
+%                             for predictionTimeStep = 1:N_timeSteps 
+                            for predictionTimeStep = predictionTimeStep_interest
                                 %check if its a interesting timestep
                                 N = find(indices_interest_filtered(:,1)==sceneId & indices_interest_filtered(:,2)==pedTrackId & predictionTimeStep >= indices_interest_filtered(:,3)-event_TS);
                                 if ~isempty(N)
@@ -188,38 +201,7 @@ for sceneId = 1:12
 %                                         % plot interesting trajectories
 % % 
 %                                         if (predError_MHP(1) > 0.2 || predError_MHP(end) > 6)
-%                                             
-%                                             clf
-%                                             cw_x = cw.center_x*orthopxToMeter*scaleFactor;
-%                                             cw_y = cw.center_y*orthopxToMeter*scaleFactor;
-%                                             plot(cw_x, cw_y, 'ro','MarkerSize', 8);hold on;
-% 
-%                                             plot(GTTrajectory(:,1), GTTrajectory(:,2), 'g*', 'MarkerSize',8); hold on;
-%                                             shift = 1;
-%                                             for ii = 1:N_futures_MHP
-%                                                         predId = mostProbablePredictionId_MHP;
-%                                                 predId = ii;
-%                                                 if predId == mostProbablePredictionId_MHP
-%                                                     plot(mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,2), 'b*', 'MarkerSize',8); hold on;
-%                                                 else
-%                                                     plot(mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,1:N_PredTimeSteps,2), 'm*', 'MarkerSize',8); hold on;
-%                                                 end
-%                                                     text(mostProbablePredictedTrajectory_MHP(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_MHP(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
-%                                             end
-%                                             for predId = 1:N_futures_HBase
-%                                                 plot(mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,1:N_PredTimeSteps,2), 'k*', 'MarkerSize',8); hold on;
-%                                                 text(mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,1), mostProbablePredictedTrajectory_HBase(predId,N_PredTimeSteps,2)-shift,strcat(num2str(predId)));
-%                                             end
-% 
-%                                             plot(mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,1), mostProbablePredictedTrajectory_CV(1:N_PredTimeSteps,2), 'r*', 'MarkerSize',8); hold on;
-%                                             x=1;
-% 
-%                                             sceneId
-%                                             car_index
-%                                             pedTrackId
-%                                             startTimeStep-1
-%                                             x=1;
-%                                      
+%                                                 plot_trajectory.m
 %                                         end
 %                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         
@@ -274,90 +256,9 @@ for sceneId = 1:12
                                     [predictedProbability_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep},  likelihood_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = probMetrics(GTTrajectory, pedPredictionsData_CV{predictionTimeStep}, pedKFPredictionsData_CV{predictionTimeStep}, Params, type);
                                     
                                     % plot predicted probability
-                                    temp_prob2D_MHP(:,:,1) = prob2D_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
-                                    temp_prob2D_MHP_map = temp_prob2D_MHP;
-                                    temp_prob2D_MHP_map(temp_prob2D_MHP_map>1) = 1;
-                                    
-                                    temp_prob2D_HBase(:,:,1) = prob2D_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
-                                    temp_prob2D_HBase_map = temp_prob2D_HBase;
-                                    temp_prob2D_HBase_map(temp_prob2D_HBase_map>1) = 1;
-                                    
-                                    temp_prob2D_CV(:,:,1) = prob2D_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
-                                    temp_prob2D_CV_map = temp_prob2D_CV;
-                                    temp_prob2D_CV_map(temp_prob2D_CV_map>1) = 1;
-                                    
-                                    GT_image = zeros([img_size(1), img_size(2)]);
-                                    for ii=1:length(GTTrajectory)                                      
-                                        ind = int32([-GTTrajectory(ii,2), GTTrajectory(ii,1)]/(orthopxToMeter*scaleFactor));
-                                        GT_image(ind(1),ind(2)) = 255 ;
-                                    end
-                                    % denote the start point of the
-                                    % trajectory
-                                    ind = int32([-GTTrajectory(1,2), GTTrajectory(1,1)]/(orthopxToMeter*scaleFactor));
-                                    GT_image = insertShape(GT_image, 'FilledCircle', [ind(2), ind(1), 2],'Color','yellow','Opacity',1);
-                                    GT_image_gray = rgb2gray(GT_image);
-                                    
-                                    img_combined = temp_prob2D_MHP + temp_prob2D_HBase + temp_prob2D_CV + GT_image_gray;
-                                    
-                                    ind_first = find(img_combined~=0,1,'first');
-                                    ind_last = find(img_combined~=0,1,'last');
-                                    crop_x_min = floor(ind_first/img_size(1)); 
-                                    crop_x_max = floor(ind_last/img_size(1));
-                                    crop_y_min = mod(ind_first,img_size(1)); 
-                                    crop_y_max = mod(ind_last,img_size(1));
-                                    
-                                    % Note: Color selection. White for
-                                    % ground truth, green for MHP
-                                    % trajectories, red for constant
-                                    % velocity and blue for HBase
-                                    imshow(intersection_img)
-                                    alpha(0.8)
-                                    hold on
-                                    green = cat(3, zeros(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
-                                    prob_pred_image = imshow(green);
-                                    hold on
-                                    set(prob_pred_image, 'AlphaData', temp_prob2D_MHP_map)
-                                    blue = cat(3, zeros(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)));
-                                    prob_pred_image_2 = imshow(blue);
-                                    hold on
-                                    set(prob_pred_image_2, 'AlphaData', temp_prob2D_HBase_map)
-                                    red = cat(3, ones(size(temp_prob2D_MHP)),zeros(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
-                                    prob_pred_image_3 = imshow(red);
-                                    hold on;
-                                    set(prob_pred_image_3, 'AlphaData', temp_prob2D_CV_map)
-%                                     white = cat(3, ones(size(temp_prob2D_MHP)),ones(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)));
-                                    yellow = cat(3, ones(size(temp_prob2D_MHP)),ones(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
-                                    prob_pred_image_4 = imshow(yellow);
-                                    set(prob_pred_image_4, 'AlphaData', 0.6*GT_image_gray)
-                                    % crop and zoom image to include the relevant
-                                    % trajectories
-                                    saveas(gcf, 'File.png');
-                                    
-                                    
-%                                     % combined trajectory image
-%                                     prob_pred_image = prob2D_MHP_image + prob2D_HBase_image + prob2D_CV_image + prob2D_GT_image;
-%                                     imshow(prob_pred_image)
-%                                     x=1;
-% %                                     
-%                                     %%%%%%%%%%%%%%%%%%%%
-% %                                     overlay images w/o transparency
-%                                     prob2D_MHP_map = cat(3, zeros(size(temp_prob2D_MHP)), (temp_prob2D_MHP), zeros(size(temp_prob2D_MHP)));
-% %                                     green = cat(3, zeros(size(temp_prob2D_MHP)), ones(size(temp_prob2D_MHP)), zeros(size(temp_prob2D_MHP)));
-%                                     figure1 = figure;
-%                                     ax1 = axes('Parent',figure1);
-%                                     ax2 = axes('Parent',figure1);
-% 
-%                                     prob_pred_image = imshow(prob2D_MHP_map);
-%                                     [a,map,alpha] = imread(prob_pred_image);
-%                                     I = imshow(a,'Parent',ax2);
-%                                     set(I,'AlphaData',alpha);
-%                                     imshow('18_background.png','Parent',ax1);
-%                                                                         
-                                    
-                                    
-                                    
-                                    
-                                    % predicted probability of ground truth
+                                    plot_trajectory_on_image.m
+                                                                        
+                                    % predict1`ed probability of ground truth
                                     N = length(predictedProbability_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep});
                                     PP_MHP(index, 1:N) = predictedProbability_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
                                     PP_HBase(index, 1:N) = predictedProbability_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep};

@@ -411,30 +411,30 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-for sceneId = 1:12
-    N_tracks = size(formattedTracksData{sceneId},1);
-    for trackId = 1:N_tracks
-        trackData = formattedTracksData{sceneId}{trackId};
-        fn = fieldnames(trackData);
-        x=1;
-        clear variable_new
-        for fieldId = 1:length(fn)
-            fni = string(fn(fieldId));
-            if ( strcmp(fni, 'latDispPedCw') || strcmp(fni, 'longDispPedCw') || strcmp(fni, 'long_disp_ped_car') || strcmp(fni, 'isPedSameDirection') ||....
-                 strcmp(fni, 'isLooking') || strcmp(fni, 'closeCar_ind')  ) 
-                variable = trackData.(fni);
-                if size(variable,1)==1
-                    variable_new(:,1) = variable(1,1:end);
-                else
-                    variable_new(:,1) = variable(1:end,1);
-                end
-                trackData.(fni) = variable_new; 
-            end
-            x=1;
-        end
-    
-        formattedTracksData{sceneId}{trackId} = trackData;
-    end
-    
-    
-end
+% for sceneId = 1:12
+%     N_tracks = size(formattedTracksData{sceneId},1);
+%     for trackId = 1:N_tracks
+%         trackData = formattedTracksData{sceneId}{trackId};
+%         fn = fieldnames(trackData);
+%         x=1;
+%         clear variable_new
+%         for fieldId = 1:length(fn)
+%             fni = string(fn(fieldId));
+%             if ( strcmp(fni, 'latDispPedCw') || strcmp(fni, 'longDispPedCw') || strcmp(fni, 'long_disp_ped_car') || strcmp(fni, 'isPedSameDirection') ||....
+%                  strcmp(fni, 'isLooking') || strcmp(fni, 'closeCar_ind')  ) 
+%                 variable = trackData.(fni);
+%                 if size(variable,1)==1
+%                     variable_new(:,1) = variable(1,1:end);
+%                 else
+%                     variable_new(:,1) = variable(1:end,1);
+%                 end
+%                 trackData.(fni) = variable_new; 
+%             end
+%             x=1;
+%         end
+%     
+%         formattedTracksData{sceneId}{trackId} = trackData;
+%     end
+%     
+%     
+% end

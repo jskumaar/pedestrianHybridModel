@@ -12,6 +12,7 @@ pedPosPixels = [trackletData.xCenter(end), trackletData.yCenter(end)]/(scaleFact
 goalPos = trackletData.goalPositionPixels(end,:)*(scaleFactor*orthopxToMeter);
 HybridState = trackletData.HybridState(end);
 cwInd = trackletData.closestCW(end);
+swInd = trackletData.swInd(end);
 Lane = trackletData.Lane(end);
 
 % initialize goal bounding box
@@ -19,22 +20,42 @@ goal_bounding_box = inf*ones(4,2);
 goal = [inf, inf];
 
 % check sidewalk number 
+if swInd==1 && strcmp(Lane,'Right')
+    swInd_side = 1;
+elseif swInd==1
+    swInd_side = 2;
+elseif  swInd==2 && strcmp(Lane,'Right')
+    swInd_side = 3;
+elseif swInd==2
+    swInd_side = 4;
+elseif  swInd==3 && strcmp(Lane,'Right')
+    swInd_side = 5;
+elseif swInd==3
+    swInd_side = 6;
+elseif swInd==4 && strcmp(Lane,'Right')
+    swInd_side=7;
+elseif swInd==4
+    swInd_side=8;
+end
+
+% check crosswalk side to approach
+% check sidewalk number 
 if cwInd==1 && strcmp(Lane,'Right')
-    swInd = 1;
+    cwInd_side = 1;
 elseif cwInd==1
-    swInd = 2;
+    cwInd_side = 2;
 elseif  cwInd==2 && strcmp(Lane,'Right')
-    swInd = 3;
+    cwInd_side = 3;
 elseif cwInd==2
-    swInd = 4;
-elseif  cwInd==3 && strcmp(Lane,'Right')
-    swInd = 5;
+    cwInd_side = 4;
+elseif cwInd==3 && strcmp(Lane,'Right')
+    cwInd_side = 5;
 elseif cwInd==3
-    swInd = 6;
-elseif  cwInd==4 && strcmp(Lane,'Right')
-    swInd=7;
+    cwInd_side = 6;
+elseif cwInd==4 && strcmp(Lane,'Right')
+    cwInd_side=7;
 elseif cwInd==4
-    swInd=8;
+    cwInd_side=8;
 end
 
 
@@ -43,20 +64,20 @@ end
 % no reset. For e.g. the track is starting initially or the close crosswalk
 % has changed)
 if strcmp(HybridState,'Approach')
-    goal_bounding_box = reshape(resetStates.approach.goal(swInd,3:end), [2,4])';
+    goal_bounding_box = reshape(resetStates.approach.goal(cwInd_side,3:end), [2,4])';
 elseif (strcmp(HybridState,'Wait') || strcmp(HybridState,'Crossing') || strcmp(HybridState,'Jaywalking'))
-    goal_bounding_box = reshape(resetStates.wait.goal(swInd,3:end), [2,4])';
+    goal_bounding_box = reshape(resetStates.wait.goal(swInd_side,3:end), [2,4])';
 elseif strcmp(HybridState,'Walk_away')
-    goal_bounding_box = reshape(resetStates.walkaway.goal(swInd,3:end), [2,4])';
+    goal_bounding_box = reshape(resetStates.walkaway.goal(swInd_side,3:end), [2,4])';
 end
 
 
 % update goal location if there is any reset flag
 if resetFlag.approachReset(trackletNo)
-    goal_bounding_box = reshape(resetStates.approachReset.goal(swInd,3:end), [2,4])';
+    goal_bounding_box = reshape(resetStates.approachReset.goal(swInd_side,3:end), [2,4])';
     resetFlag.approachReset(trackletNo) = false;
 elseif resetFlag.walkawayReset
-    goal_bounding_box = reshape(resetStates.walkaway.goal(swInd,3:end), [2,4])';
+    goal_bounding_box = reshape(resetStates.walkaway.goal(swInd_side,3:end), [2,4])';
     resetFlag.walkawayReset(trackletNo) = false;
 end
 

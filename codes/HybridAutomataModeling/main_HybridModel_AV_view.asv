@@ -30,18 +30,18 @@ addpath(p1)
 addpath(p2)
 addpath(p3)
 
-% % b)load SVM models
-% % load the gap acceptance model
-% load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
-% GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
-% Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
-% % load the crossing intent model
-% load('CrossIntent_inD_9Features_BS1_noDuration_FGaussianSVM_3s_v2.mat');
-% CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_FGaussianSVM_3s_v2.ClassificationSVM;
-% Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
-% load('CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.mat');
-% CrossIntentModelNoCar = CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.ClassificationSVM;
-% Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
+% b)load SVM models
+% load the gap acceptance model
+load('GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat', 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2');
+GapAcceptanceModel = GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.ClassificationSVM;
+Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
+% load the crossing intent model
+load('CrossIntent_inD_9Features_BS1_noDuration_FGaussianSVM_3s_v2.mat');
+CrossIntentModelCar = CrossIntent_inD_9Features_BS2_noDuration_FGaussianSVM_3s_v2.ClassificationSVM;
+Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
+load('CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.mat');
+CrossIntentModelNoCar = CrossIntent_NoCar_inD_3Features_BS1_noDuration_FGaussianSVM_v3.ClassificationSVM;
+Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentModelNoCar);
 
 % 
 %c) parameters
@@ -71,10 +71,10 @@ CrossFeatureId = 1;
 flag.pred = false; % this is to run the close CW function ('hybridState') w/o hybrid state update
 %%%%%%%%%%%%%%%%%%%%%%  setup ends  %%%%%%%%%%%%%%%%%%%%%
 
-indices_imp = [1,26,91,5,94];
+indices_imp = [1,108,303,34,88,9.28933333994465];
 
 sceneId_interest = indices_imp(1);
-car_index_interest = indices_imp(2)-1;
+car_index_interest = indices_imp(2);
 pedTrackId_interest = indices_imp(3);
 predictionTimeStep_interest = indices_imp(4);
 actualTimeStep_interest = indices_imp(5);
@@ -95,10 +95,9 @@ for sceneId = sceneId_interest
     N_tracks = size(formattedTracksData{sceneId},1);
     % assume every moving car track is an ego-vehicle
     for track_index = 1:length(carMovingTracks)
-%     for track_index = car_index_interest
         % initialize track variables
-        carTrackId = carMovingTracks(track_index);
-%         carTrackId = car_index_interest;
+%         carTrackId = carMovingTracks(track_index);
+        carTrackId = car_index_interest;
         carData = formattedTracksData{sceneId}{carTrackId};
         pedIndexInTrackHistory = -1*ones(N_tracks,1);
         pedInSceneId = 1;
@@ -170,8 +169,7 @@ for sceneId = sceneId_interest
                     pedTrackTimeStep = (trackTime - currentPedData.frame(1))/Params.reSampleRate + 1;
                     
                     %% debug
-%                     if sceneId==sceneId_interest && track_index==car_index_interest && pedIndexWithinScene==pedTrackId_interest && pedTrackTimeStep==predictionTimeStep_interest
-                    if sceneId==sceneId_interest && track_index==car_index_interest && pedIndexWithinScene==pedTrackId_interest
+                    if sceneId==sceneId_interest && track_index==car_index_interest && pedIndexWithinScene==pedTrackId_interest && pedTrackTimeStep==predictionTimeStep_interest
                         x=1;
                     end
                     
@@ -252,10 +250,10 @@ for sceneId = sceneId_interest
 %                         if pedTrackTimeStep-prevTimeStep~=1 && prevTimeStep~=inf
 %                             x=1;
 %                         end
-                        % ground truth
-                        GT_trajectory = [formattedTracksData{sceneId}{pedIndexWithinScene}.xCenter(pedTrackTimeStep:end),  formattedTracksData{sceneId}{pedIndexWithinScene}.xCenter(pedTrackTimeStep:end)];
-                        pred_trajectory = predictedPedTraj_MHP{sceneId}{track_index}{pedIndexWithinScene}.data{end}/(Params.orthopxToMeter*Params.scaleFactor);
-                       
+%                         % ground truth
+%                         GT_trajectory = [formattedTracksData{sceneId}{pedIndexWithinScene}.xCenter(pedTrackTimeStep:end),  formattedTracksData{sceneId}{pedIndexWithinScene}.xCenter(pedTrackTimeStep:end)];
+%                         pred_trajectory = predictedPedTraj_MHP{sceneId}{track_index}{pedIndexWithinScene}.data{end}/(Params.orthopxToMeter*Params.scaleFactor);
+%                        
 %                         
 %                         for ii=1:length(currentTSActiveCarData)
 %                             carPosPixels = int32([currentTSActiveCarData{ii}.xCenter, currentTSActiveCarData{ii}.yCenter]/(Params.orthopxToMeter*Params.scaleFactor));
