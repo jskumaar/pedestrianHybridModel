@@ -1,6 +1,6 @@
 %% This script checks if a gap has started and calculates the gap features
 
-function [GapFeatures, egoVehGapHist, flag] = func_compileGapFeatures(PedData, currentTSEgoCarData, carTrackCurrentTimeStep, egoVehGapHist, pedTrackTimeStep, Params, flag, trackletNo, predTimeStep)
+function [GapFeatures, egoVehGapHist, flag] = compileGapFeatures(PedData, currentTSEgoCarData, carTrackCurrentTimeStep, egoVehGapHist, pedTrackTimeStep, Params, flag, trackletNo, predTimeStep)
 
 %% 1)setup
 % parameters
