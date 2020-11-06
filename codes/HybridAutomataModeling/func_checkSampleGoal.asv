@@ -71,12 +71,12 @@ elseif strcmp(HybridState,'Walk_away')
 end
 
 % special cases
-if ( strcmp(HybridState,'Walk_away') && swInd_side==1 && flag.reachGoal(trackletNo) && ~flag.reachCrosswalk(trackletNo)) 
-    goal_bounding_box = reshape(resetStates.walkaway.erCw1Final(3:end), [2,4])';
+if ( strcmp(HybridState,'Walk_away') && cwInd==1 && flag.reachGoal(trackletNo) && ~flag.reachCrosswalk(trackletNo)) 
+    goal_bounding_box = reshape(resetStates.walkaway.erCw1Final(3:end), [2,4]);
+elseif ( strcmp(HybridState,'Approach') && cwInd==1 && flag.reachGoal(trackletNo) && abs(pedHeading) > 90)
+    goal_bounding_box = reshape(resetStates.approach.goal(8,3:end), [2,4]);
 end
-if ( strcmp(HybridState,'Approach') && swInd_side==1 && flag.reachGoal(trackletNo) && ~flag.reachCrosswalk(trackletNo)) 
-    goal_bounding_box = reshape(resetStates.approach.goal(1, 3:end), [2,4])';
-end
+
 
 %% debug
 if (strcmp(HybridState,'Walk_away') && cwInd==1  ) || ( strcmp(HybridState,'Approach') && cwInd==1 )

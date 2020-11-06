@@ -41,10 +41,10 @@ script_modelSetup;
 debugMode = true;
 % debugMode = false;
 
-indices_imp = [1, 46, 167, 34, 76];
+indices_imp = [1	21	71	68	136];
 
 sceneId_interest = indices_imp(1);
-car_index_interest = indices_imp(2)-1;
+car_index_interest = indices_imp(2);
 pedTrackId_interest = indices_imp(3);
 predictionTimeStep_interest = indices_imp(4);
 actualTimeStep_interest = indices_imp(5);
@@ -58,14 +58,14 @@ actualTimeStep_interest = indices_imp(5);
 %%%%%%%%%%%%%%%%%%%%%%%
 % prediction loop starts for all cars in the dataset
 %% debug
-% for sceneId = 1: N_scenes 
+% for sceneId = 1: 1 
 for sceneId = sceneId_interest
     % scene variables
     carMovingTracks = tracks{sceneId}.carMovingTracks;
     % assume every moving car track is an ego-vehicle
     %% debug
-    for track_index = 1:length(carMovingTracks)
-%     for track_index = car_index_interest
+%     for track_index = 1:length(carMovingTracks)
+    for track_index = car_index_interest
         % initialize track variables
         carTrackId = carMovingTracks(track_index);
 %         carTrackId = car_index_interest;
@@ -123,13 +123,13 @@ for sceneId = sceneId_interest
                     % initialize pedestrian variables and time step
                     pedIndexWithinScene = activePedWithinRange(pedLoopId);
                     %% debug
-%                     if pedIndexWithinScene == pedTrackId_interest
+                    if pedIndexWithinScene == pedTrackId_interest
                     %% debug
 %                     if sceneId==sceneId_interest && track_index==car_index_interest && pedIndexWithinScene==pedTrackId_interest && pedTrackTimeStep==predictionTimeStep_interest
                     if sceneId==sceneId_interest && track_index==car_index_interest && pedIndexWithinScene==pedTrackId_interest
                         x=1;
                     end
-                    
+
                     currentPedData = formattedTracksData{sceneId}{pedIndexWithinScene};
                     currentPedMetaData = tracksMetaData{sceneId}(pedIndexWithinScene, :);            
                     pedTrackTimeStep = (trackTime - currentPedData.frame(1))/Params.reSampleRate + 1;        
@@ -145,17 +145,14 @@ for sceneId = sceneId_interest
                             predPedIndex = predPedIndex + 1;   % this index keeps track of all pedestrians from all scenes               
                             % initialize the pedestrian
                             newPedestrianStruct = struct('sceneId',sceneId,'carTrackId',carTrackId,'pedcarTrackId',pedIndexWithinScene,'timeStep',[],'data',cell(1,1),'kfData',cell(1,1),'predictionModel',[]);                        
-                            predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1} =  newPedestrianStruct;
+                            predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1} =  newPedestrianStruct;
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%     
-                    if pedTrackTimeStep==57
-                        x=1;
-                    end
+
                     %% debug
-                    if ~isempty(predictedPedTraj_HBase{sceneId}{track_index}{pedIndexWithinScene}.timeStep) && pedTrackTimeStep - predictedPedTraj_HBase{sceneId}{track_index}{pedIndexWithinScene}.timeStep(end)>1
+                    if pedTrackTimeStep==actualTimeStep_interest
                         x=1;
                     end
-                    
                     %%%%%%%%%%%%%%%%%%%%%%%
                     
                     % Run the appropriate prediction framework if there is an ego car for the pedestrian, else run a constant velocity model
@@ -198,11 +195,16 @@ for sceneId = sceneId_interest
                             predModelForTimeStep = 0;
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%
+                    %% debug
+                    if pedTrackTimeStep==actualTimeStep_interest
+                        x=1;
+                    end
                     % Save the predictions
-                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
-                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
-                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
-                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.predictionModel(end+1,1) = predModelForTimeStep;
+                    predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
+                    predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
+                    predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
+                    predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.predictionModel(end+1,1) = predModelForTimeStep;
+                    end % debug end 
                 end % end of all pedestrians
                      
             end  % if there are active pedestrians   

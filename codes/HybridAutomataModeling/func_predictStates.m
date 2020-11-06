@@ -433,7 +433,7 @@ for timeStep = 1:predHorizon
                             if trackletData{trackletNo}.probCrossingIntent~=1
                                 [trackletData, trackletKfData, trackletProbability, trackletStartNode, trackletEndNode, trackletIsActive, trackletEventFlag, trackletGoal, newTrackletId, flag, resetFlag] = func_newTracklet(trackletData, trackletKfData, trackletProbability, trackletStartNode, trackletEndNode, trackletIsActive, trackletEventFlag, trackletGoal, node_no, 1-trackletData{trackletNo}.probCrossingIntent, newTrackletId, trackletNo, flag);
                                 parentTracklet(newTrackletId) = trackletNo;
-                                pedHeading = atan2(trackletData{trackletNo}.yCenter(end), trackletData{trackletNo}.xCenter(end))*180/pi;
+                                pedHeading = atan2(trackletData{trackletNo}.yVelocity(end), trackletData{trackletNo}.xVelocity(end))*180/pi;
                                 cwInd = trackletData{trackletNo}.closestCW(end);
                                 Lane = trackletData{trackletNo}.Lane(end);
                                 if  ( (cwInd==1 && abs(pedHeading)>90) || (cwInd==2 && abs(pedHeading)<90) || ...
@@ -670,12 +670,27 @@ for timeStep = 1:predHorizon
                 end     % end of event check        
                 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
                 %% update the continuous state of pedestrian if the tracklet is still active
-                if trackletIsActive(trackletNo)                  
+                if trackletIsActive(trackletNo)  
+                    % check if a new goal needs to be sampled
+                    %% debug
+                    if flag.reachGoal(trackletNo)==1
+                        x=1;
+                    end
+                    if flag.reachGoal(trackletNo) && strcmp(trackletData{trackletNo}.HybridState(end),"Walk_away") && (trackletData{trackletNo}.closestCW(end)==1 || trackletData{trackletNo}.closestCW(end)==4)
+                        resetFlag.sample_goal(trackletNo) = true;
+                        resetFlag.check_goal(trackletNo) = false;
+                        [tempData, ~, flag, resetFlag] = func_updatePedContStates(kf, trackletData{trackletNo}, trackletNo, Params, resetStates, timeStep, flag, resetFlag);
+                        trackletData{trackletNo}.goalPositionPixels(end,:) = tempData.goalPositionPixels(end,:);
+                        % reset flags
+                        resetFlag.sample_goal(trackletNo) = false;
+                        resetFlag.check_goal(trackletNo) = true;
+                    end
+        
+                    % state updates
                     trackletData{trackletNo}.HybridState(end+1,:) = trackletData{trackletNo}.HybridState(end,:); 
                     flag.hybridStatePred(trackletNo) = false;
                     % continuous state updates
                     kf = predictionKFtracklet{trackletNo};
-%                     trackletData{trackletNo}.HybridState(end+1,1) =strings;
                     [tempData, kf, flag, resetFlag] = func_updatePedContStates(kf, trackletData{trackletNo}, trackletNo, Params, resetStates, timeStep, flag, resetFlag);
                     trackletData{trackletNo} = tempData; 
                     trackletKfData{trackletNo}(end+1, :) = [kf.x', diag(kf.P)']; 
@@ -756,26 +771,26 @@ predictionTrajectoryMatrix = double(cell2mat(predictionTrajectory));
 % 
 %% debug
 %% plot predicted vehicle and pedestrian states
-% % if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
-%     if ~isempty(currentTSActiveCarData_copy)
-%         for ii=1:size(currentTSActiveCarData_copy,1)
-%             carPosPixels = int32([currentTSActiveCarData_copy{ii}.xCenter, currentTSActiveCarData_copy{ii}.yCenter]/(orthopxToMeter*scaleFactor));      
-%             for zz=1:size(carPosPixels,1)
-%                 annotatedImageEnhanced(-carPosPixels(zz,2), carPosPixels(zz,1)) = 150;
-%             end
-%         end
-%     end
-%     
-%     % predicted trajectory
-%     for jj=1:size(trackletData,1)
-%         pedPixels = int32([trackletData{jj}.xCenter, trackletData{jj}.yCenter]/(orthopxToMeter*scaleFactor));
-%         for zz=1:size(pedPixels,1)
-%             if int32(pedPixels(zz,1)) > 0 && int32(pedPixels(zz,2)) < 0
-%                 annotatedImageEnhanced(-pedPixels(zz,2), pedPixels(zz,1)) = 90;
-%             end
-%         end
-%     end
-% 
+% if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
+    if ~isempty(currentTSActiveCarData_copy)
+        for ii=1:size(currentTSActiveCarData_copy,1)
+            carPosPixels = int32([currentTSActiveCarData_copy{ii}.xCenter, currentTSActiveCarData_copy{ii}.yCenter]/(orthopxToMeter*scaleFactor));      
+            for zz=1:size(carPosPixels,1)
+                annotatedImageEnhanced(-carPosPixels(zz,2), carPosPixels(zz,1)) = 150;
+            end
+        end
+    end
+    
+    % predicted trajectory
+    for jj=1:size(trackletData,1)
+        pedPixels = int32([trackletData{jj}.xCenter, trackletData{jj}.yCenter]/(orthopxToMeter*scaleFactor));
+        for zz=1:size(pedPixels,1)
+            if int32(pedPixels(zz,1)) > 0 && int32(pedPixels(zz,2)) < 0
+                annotatedImageEnhanced(-pedPixels(zz,2), pedPixels(zz,1)) = 90;
+            end
+        end
+    end
+
 %     % constant velocity
 %     CVPixels = trajectory_CV/(orthopxToMeter*scaleFactor);
 %     for zz=1:size(CVPixels,1)
@@ -783,17 +798,17 @@ predictionTrajectoryMatrix = double(cell2mat(predictionTrajectory));
 %             annotatedImageEnhanced(int32(-CVPixels(zz,2)), int32(CVPixels(zz,1))) = 125;
 %         end
 %     end
-%     
-%     % ground truth
-%     GTPixels = trajectory_GT/(orthopxToMeter*scaleFactor);
-%     for zz=1:size(GTPixels,1)
-%         if int32(GTPixels(zz,1)) > 0 && int32(GTPixels(zz,2)) < 0
-%             annotatedImageEnhanced(int32(-GTPixels(zz,2)), int32(GTPixels(zz,1))) = 255;  
-%         end
-%     end
-% % end
-% imshow(annotatedImageEnhanced);
-% pause(0.3);
+    
+    % ground truth
+    GTPixels = trajectory_GT/(orthopxToMeter*scaleFactor);
+    for zz=1:size(GTPixels,1)
+        if int32(GTPixels(zz,1)) > 0 && int32(GTPixels(zz,2)) < 0
+            annotatedImageEnhanced(int32(-GTPixels(zz,2)), int32(GTPixels(zz,1))) = 255;  
+        end
+    end
+% end
+imshow(annotatedImageEnhanced);
+pause(0.3);
 
 % % find most likely trajectory
 % if ~isempty(trajectory_GT)

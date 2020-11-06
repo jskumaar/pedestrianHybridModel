@@ -444,12 +444,12 @@
 % plot
 car_t0 = 94;
 car_tf = 104;
-ped_t0 = 88;
-ped_tf = 98;
+ped_t0 = 1;
+ped_tf = 162;
 sf = 0.0978;
 
 annotatedImageEnhanced_2 = annotatedImageEnhanced;
-pedData = formattedTracksData{1}{24};
+pedData = formattedTracksData{1}{299};
 
 for car_ts = car_t0:car_tf
    carPosPixels = int32([carData.xCenter(car_ts), carData.yCenter(car_ts)]/sf);   

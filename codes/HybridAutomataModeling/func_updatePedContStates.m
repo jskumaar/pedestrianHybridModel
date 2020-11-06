@@ -49,7 +49,7 @@ pedGoalPixels = predData.goalPositionPixels(end,:);
 pedGoalDispPixels = [inf, inf];
 
 % sample new goal location 
-if ( (size(HybridState,1)>1 && closestCW(end)~=closestCW(end-1)) || flag.reachGoal(trackletNo) || resetFlag.sample_goal(trackletNo) )  
+if ( (size(HybridState,1)>1 && closestCW(end)~=closestCW(end-1)) || resetFlag.sample_goal(trackletNo) )  
     [~, pedGoalPixels, resetFlag] = func_checkSampleGoal(predData, trackletNo, resetStates, Params, flag, resetFlag);
     % reset reach goal flag
     flag.reachGoal(trackletNo) = false;
@@ -102,5 +102,10 @@ resetFlag.sample_goal(trackletNo) = false;
 % if flag.reachGoal(trackletNo) && strcmp(predData.HybridState(end),'Approach')
 %     flag.reachCrosswalk(trackletNo) = true;
 % end
+
+%% debug
+if flag.reachGoal(trackletNo)
+    x=1;
+end
 
 end

@@ -29,24 +29,7 @@ prevSwInd = tracksData.swInd(end);
 prevCwInd = tracksData.closestCW(end);
 prevLane = tracksData.Lane(end);
 
-% check sidewalk number 
-if prevSwInd==1 && strcmp(prevLane,'Right')
-    prevSwInd_side = 1;
-elseif prevSwInd==1
-    prevSwInd_side = 2;
-elseif  prevSwInd==2 && strcmp(prevLane,'Right')
-    prevSwInd_side = 3;
-elseif prevSwInd==2
-    prevSwInd_side = 4;
-elseif  prevSwInd==3 && strcmp(prevLane,'Right')
-    prevSwInd_side = 5;
-elseif prevSwInd==3
-    prevSwInd_side = 6;
-elseif prevSwInd==4 && strcmp(prevLane,'Right')
-    prevSwInd_side=7;
-elseif prevSwInd==4
-    prevSwInd_side=8;
-end
+prevSwInd
 
 if size(tracksData.HybridState,1) ~= 1
     hybrid_state = tracksData.HybridState(end-1,:);
@@ -175,12 +158,12 @@ if ~flag.outOfPlay
        distPedLane(8,1) = norm(dispPedSW(4,3:4));
        % initialize closest SW
        [~, sortedSWindex] = sort(distPedLane);
-       swInd_side = sortedSWindex(1);
-       swInd = ceil(swInd_side/2);
+       swInd_temp = sortedSWindex(1);
+       swInd = ceil(swInd_temp/2);
        if swInd==0
            swInd=4;
        end
-       if mod(swInd_side,2) ~= 0
+       if mod(swInd_temp,2) ~= 0
            Lane = "Right";
        else
            Lane = "Left";
@@ -192,11 +175,11 @@ if ~flag.outOfPlay
        while(sw_sort_ind<8 && ~isSWTransPossible)
            % initialize
            sw_sort_ind = sw_sort_ind + 1;
-           swInd_side = sortedSWindex(sw_sort_ind);
-           swInd = ceil(swInd_side/2);
+           swInd_temp = sortedSWindex(sw_sort_ind);
+           swInd = ceil(swInd_temp/2);
 
            % sidewalk lane calculation
-           if  mod(swInd_side,2) ~= 0
+           if  mod(swInd_temp,2) ~= 0
                Lane = "Right";
            elseif ~onRoad
                Lane = "Left";
@@ -224,8 +207,7 @@ if ~flag.outOfPlay
                  % sidewalk lane
                  isSWTransPossible = false;
                  swInd = prevSwInd;
-                 Lane = prevLane;  
-                 swInd_side = prevSwInd_side;
+                 Lane = prevLane;                  
             end
        end       
        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -317,7 +299,7 @@ if ~flag.outOfPlay
            cwInd = sortedcwIndex(1);
        end
        % update the SW distance (in m)
-       distSW = distPedLane(swInd_side) * scaleDownFactor *orthopxToMeter;
+       distSW = distPedLane(swInd) * scaleDownFactor *orthopxToMeter;
        
 
        % longitudinal velocity (need to know closest CW to calculate this)
@@ -423,7 +405,11 @@ if ~flag.outOfPlay
        % lateral displacement to crosswalk
         latDispPedCwPixels = abs(dispRot_cw(cwInd,2)) - cw.centerLatOffset(cwInd);
        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+       
+       %% debig
+       if strcmp(hybrid_state,"Wait")
+           x=1;
+       end
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %% 2b) Hybrid state update    
     % run the hybrid state update only when needed (i.e. during update
