@@ -21,12 +21,12 @@ clearvars -except predictionModel resetStates annotatedImageEnhanced formattedTr
 
 %% %%%%%%%%%%%%%%%%%%%%  model setup  %%%%%%%%%%%%%%%%%%%%%
 % a) addpath of necessary directories
-p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
-p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
-p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
-% p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
-% p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
-% p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
+% p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+% p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+% p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
+p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
+p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
+p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
 addpath(p1)
 addpath(p2)
 addpath(p3)
@@ -58,14 +58,14 @@ actualTimeStep_interest = indices_imp(5);
 %%%%%%%%%%%%%%%%%%%%%%%
 % prediction loop starts for all cars in the dataset
 %% debug
-% for sceneId = 1: 1 
-for sceneId = sceneId_interest
+for sceneId = 1: 1 
+% for sceneId = sceneId_interest
     % scene variables
     carMovingTracks = tracks{sceneId}.carMovingTracks;
     % assume every moving car track is an ego-vehicle
     %% debug
-%     for track_index = 1:length(carMovingTracks)
-    for track_index = car_index_interest
+    for track_index = 1:length(carMovingTracks)
+%     for track_index = car_index_interest
         % initialize track variables
         carTrackId = carMovingTracks(track_index);
 %         carTrackId = car_index_interest;
@@ -83,12 +83,12 @@ for sceneId = sceneId_interest
             AVStates.carPosPixels =  double([carData.xCenterPix(trackTimeStep:egoCarEndTimeStep), carData.yCenterPix(trackTimeStep:egoCarEndTimeStep)]);
             AVStates.carHeading = carData.calcHeading(trackTimeStep:egoCarEndTimeStep);
             %%%%%%%%%%%%%%%%%%%%%%%
-            % run prediction of the ego-car is approaching a crosswalk, else run constant velocity predictions
-            if (carData.closestCW(trackTimeStep)~=0 || carData.closestCW(trackTimeStep)~=inf)
-               flag.EgoCar = true;
-            else
-               flag.EgoCar = false;
-            end
+%             % run prediction of the ego-car is approaching a crosswalk, else run constant velocity predictions
+%             if (carData.closestCW(trackTimeStep)~=0 || carData.closestCW(trackTimeStep)~=inf)
+%                flag.EgoCar = true;
+%             else
+%                flag.EgoCar = false;
+%             end
             %%%%%%%%%%%%%%%%%%%%%%%
             % find the agents withing the sensing range of the AV
             script_activeAgentsWithinRange;
@@ -123,7 +123,7 @@ for sceneId = sceneId_interest
                     % initialize pedestrian variables and time step
                     pedIndexWithinScene = activePedWithinRange(pedLoopId);
                     %% debug
-                    if pedIndexWithinScene == pedTrackId_interest
+%                     if pedIndexWithinScene == pedTrackId_interest
                     %% debug
 %                     if sceneId==sceneId_interest && track_index==car_index_interest && pedIndexWithinScene==pedTrackId_interest && pedTrackTimeStep==predictionTimeStep_interest
                     if sceneId==sceneId_interest && track_index==car_index_interest && pedIndexWithinScene==pedTrackId_interest
@@ -145,7 +145,7 @@ for sceneId = sceneId_interest
                             predPedIndex = predPedIndex + 1;   % this index keeps track of all pedestrians from all scenes               
                             % initialize the pedestrian
                             newPedestrianStruct = struct('sceneId',sceneId,'carTrackId',carTrackId,'pedcarTrackId',pedIndexWithinScene,'timeStep',[],'data',cell(1,1),'kfData',cell(1,1),'predictionModel',[]);                        
-                            predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1} =  newPedestrianStruct;
+                            predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1} =  newPedestrianStruct;
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%     
 
@@ -156,7 +156,7 @@ for sceneId = sceneId_interest
                     %%%%%%%%%%%%%%%%%%%%%%%
                     
                     % Run the appropriate prediction framework if there is an ego car for the pedestrian, else run a constant velocity model
-                    if flag.EgoCar
+%                     if flag.EgoCar
                             if strcmp(predictionModel,"MultipleHybridPedestrian")
                                 [pedPredictions, pedKFpredictions, predGapFeatures, predCrossFeatures] = func_predictStates(kf, currentPedData, currentPedMetaData, currentTSActiveCarData, carTrackCurrentTimeStepInPredictionData, AVStates, pedTrackTimeStep, ...
                                                                               cw, annotatedImageEnhanced, resetStates, Prob_GapAcceptanceModel, Prob_CrossIntentModelCar,Prob_CrossIntentModelNoCar, Params, flag);
@@ -189,22 +189,22 @@ for sceneId = sceneId_interest
                                     CrossFeatureId = CrossFeatureId + N_cross;
                                 end
                             end
-                    else
-                            % if there is no ego-car run a constant velocity prediction irrespective of the prediction model
-                            [pedPredictions, pedKFpredictions] = func_HPed_CV(kf, currentPedData, Params, pedTrackTimeStep);
-                            predModelForTimeStep = 0;
-                    end
+%                     else
+%                             % if there is no ego-car run a constant velocity prediction irrespective of the prediction model
+%                             [pedPredictions, pedKFpredictions] = func_HPed_CV(kf, currentPedData, Params, pedTrackTimeStep);
+%                             predModelForTimeStep = 0;
+%                     end
                     %%%%%%%%%%%%%%%%%%%%%%%
                     %% debug
                     if pedTrackTimeStep==actualTimeStep_interest
                         x=1;
                     end
                     % Save the predictions
-                    predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
-                    predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
-                    predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
-                    predictedPedTraj_MHP{sceneId}{track_index,1}{pedIndexWithinScene,1}.predictionModel(end+1,1) = predModelForTimeStep;
-                    end % debug end 
+                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
+                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
+                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
+                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.predictionModel(end+1,1) = predModelForTimeStep;
+%                     end % debug end 
                 end % end of all pedestrians
                      
             end  % if there are active pedestrians   

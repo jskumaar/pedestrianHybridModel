@@ -8,8 +8,8 @@ function [predictionTrajectoryMatrix, predictionKFtrajectory, predGapFeatures, p
 
 %% 1) setup
 % load the exponential distribution of wait times
-load('waitDistribution_ego_exp.mat') 
-waitDistribution = waitDistribution_ego_exp;
+load('waitTimeWithEgo_expDist.mat') 
+waitDistribution = waitTimeWithEgo_expDist;
 %%%%%%%%%%%%%%%%%%%    
 % parameters
 predHorizon = Params.predHorizon;
