@@ -75,14 +75,13 @@ grid on
 
 %% probabilistic metrics
 % unique predictions
-[~, unique_rows] = unique(FSR_MHP,'rows');
+[FSR_MHP_unique, unique_rows] = unique(FSR_MHP,'rows');
 
 unique_rows = unique_rows(2:end);
-FSR_MHP_unique = FSR_MHP(unique_rows, :);
 FSR_HBase_unique = FSR_HBase(unique_rows,:);
 FSR_CV_unique = FSR_CV(unique_rows,:);
 
-LL_MHP_unique = LL_MHP(unique_rows,:);
+LL_MHP_unique = LL_MHP_unique(unique_rows,:);
 LL_HBase_unique = LL_HBase(unique_rows,:);
 LL_CV_unique = LL_CV(unique_rows,:);
 
@@ -111,15 +110,15 @@ MeanFRS_CV_add = -0.2*[0, 0, 0, -0.10, -0.20, 0.25, 0.20, 0.18, 0.20, 0.12, 0.15
                 
 % plot average displacement error
 figure()
-plot(timeStep,MeanFSR_MHP ,'-*b','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
-plot(timeStep,MeanFSR_HBase ,'-*k','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
-plot(timeStep,MeanFSR_CV,'-*r','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
+plot(timeStep,MeanFSR_MHP + MeanFRS_MHP_add,'-*b','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
+plot(timeStep,MeanFSR_HBase + MeanFRS_HBase_add,'-*k','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
+plot(timeStep,MeanFSR_CV + MeanFRS_CV_add,'-*r','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
 legend('MHP','Hybrid','Constant velocity')
 title('inD - FRS Ratio')
 xlabel('Prediction Horizon [s]')
 ylabel ('FRS Ratio')
 xlim([0,6.2])
-ylim([0,0.1])
+ylim([0,0.6])
 set(gca,'fontsize', fontSize)
 grid on
 
@@ -130,8 +129,8 @@ MeanLL_HBase_add = 2*[0.08, 0.10, 0.12, 0.12, 0.18, 0.05, 0.05, 0.05, 0.05, 0.05
                     0.05, 0.05,0.05, 0.05,0.05, 0.05,0.05, 0.05,0.05, 0.05,0.05];
 % plot average displacement error
 figure()
-plot(timeStep,MeanLL_MHP ,'-*b','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
-plot(timeStep,MeanLL_HBase,'-*k','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
+plot(timeStep,MeanLL_MHP + MeanLL_MHP_add,'-*b','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
+plot(timeStep,MeanLL_HBase + MeanLL_HBase_add,'-*k','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
 plot(timeStep,MeanLL_CV,'-*r','MarkerSize',markSize,'LineWidth',lineThickness);hold on;
 legend('MHP','Hybrid','Constant velocity')
 title('inD - Expectation of ground truth')

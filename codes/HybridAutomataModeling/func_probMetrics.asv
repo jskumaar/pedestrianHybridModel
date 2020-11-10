@@ -3,9 +3,6 @@
 function [probGT, GTLikelihood, FRS_ratio, probSpace_2D_overall] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData, ped_KF_PredictionsData, Params, type)
 
 %% setup
-if iscell(pedPredictionsData)
-    pedPredictionsData = double(cell2mat(pedPredictionsData));
-end
 % parameters
 max_velocity = 2.5; % in m/s
 scaleFactor = Params.scaleFactor;
@@ -106,7 +103,7 @@ for predHorTime = 1:N_predTimeSteps
 %         mu = floor(abs(mu))+0.5;     
         mu = abs(mu);
         pdf = mvnpdf(FRS_grid_fine_pdf, mu, sigma);
-%         sum(pdf) % debug
+        sum(pdf) % debug
         ProbReScaleFactor = 1/min(1,sum(pdf));
         pdf_reScaled = pdf*ProbReScaleFactor;
         %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -130,11 +127,18 @@ probGT(predHorTime) = probSpace(predHorTime,GTindex(1), GTindex(2));
 % find the maximum probability of the ground truth assuming the GTindex is
 % part of a 0.2 m X 0.2 m foot print of the pedestrian. GTindex can be any one
 % of the four squares of the 2 X 2 (in pixels) foot print of the pedestrian.
-ind = repmat([GTindex(1), GTindex(2)],[8,1]) + [0,1; 1,0; 1,1; 0,-1; -1,0; -1,-1; -1,1; 1,-1] ;
-for xx=1:8
-    tempProb(xx) = probSpace(predHorTime, ind(xx,1), ind(xx,2));
-end
-probGT(predHorTime) = max([probSpace(predHorTime,GTindex(1), GTindex(2)), tempProb]);
+ind = repmat([GTindex(1), GTindex(2)],[8,1]) + [0,1; 1,0; 1,1; 0, -1; -1, 0; -1, ] ;
+
+
+
+
+
+    tempProb = probSpace(predHorTime,)
+    
+
+
+
+probGT(predHorTime) = probSpace(predHorTime,GTindex(1), GTindex(2));
 % b) check probability threshold for likelihood of prediction
 predictionLikelihood(predHorTime,:,:) = probSpace(predHorTime,:,:)>prob_threshold;
 %         likelihoodSpace_2D = reshape(predictionLikelihood(predHorTime,:,:), Params.imgSize);  % for testing 

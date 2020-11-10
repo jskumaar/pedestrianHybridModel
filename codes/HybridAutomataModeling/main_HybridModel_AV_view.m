@@ -41,7 +41,7 @@ script_modelSetup;
 debugMode = true;
 % debugMode = false;
 
-indices_imp = [1	21	71	68	136];
+indices_imp = [1	70	231	2	85];
 
 sceneId_interest = indices_imp(1);
 car_index_interest = indices_imp(2);
