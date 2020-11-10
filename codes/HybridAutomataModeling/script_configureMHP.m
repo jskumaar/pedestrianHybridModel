@@ -4,8 +4,8 @@
 dataset="inD";
 
 % choose the model
-predictionModel = "MultipleHybridPedestrian";
-% predictionModel = "BaselineHybrid";
+% predictionModel = "MultipleHybridPedestrian";
+predictionModel = "BaselineHybrid";
 % predictionModel = "ConstantVelocity";
 
 % choose the sub-models

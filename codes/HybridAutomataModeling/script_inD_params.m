@@ -29,7 +29,7 @@ Params.yMax = -560;  %in pixels
 % load background images
 annotatedImage = imread(strcat('annotated_',num2str(18),'_background.png'));        %using the same background image for all scenes as it roughly remains the same; also segmenting all images takes time.
 imgSize = size(annotatedImage);
-% 
+% % 
 % % for better visualization, increase the grayscale value of the different regions
 % annotatedImageEnhanced = annotatedImage;
 % for ii = 1:imgSize(1)

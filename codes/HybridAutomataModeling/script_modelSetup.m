@@ -3,19 +3,24 @@
 % 1) Load the SVM models
 % if strcmp(predictionModel,"MultipleHybridPedestrian")
 %     % load the gap acceptance model
-%     GapAcceptanceStruct = load(gapModelFile, gapModel);
+%     m = matfile(gapModelFile);
+%     GapAcceptanceStruct = m.(gapModel);
 %     GapAcceptanceModel = GapAcceptanceStruct.ClassificationSVM;
-%     Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);
+%     Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);  
 %     % load the crossing intent models - with and without an Ego Car
-%     CrossIntentModelStruct = load(crossIntentModelFile, crossIntentModel);
+%     m = matfile(crossIntentModelFile);
+%     CrossIntentModelStruct = m.(crossIntentModel);
 %     CrossIntentModelCar = CrossIntentModelStruct.ClassificationSVM;
 %     Prob_CrossIntentModelCar = fitSVMPosterior(CrossIntentModelCar);
-%     CrossIntentNoCarModelStruct = load(crossIntentNoCarModelFile, crossIntentNoCarModel);
+%     %%%
+%     m = matfile(crossIntentNoCarModelFile);
+%     CrossIntentNoCarModelStruct = m.(crossIntentNoCarModel);
 %     CrossIntentNoCarModel = CrossIntentNoCarModelStruct.ClassificationSVM;
-%     Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentNoCarModel);   
+%     Prob_CrossIntentModelNoCar = fitSVMPosterior(CrossIntentNoCarModel);    
 % elseif strcmp(predictionModel,"BaselineHybrid")
 %     % load the gap acceptance model
-%     GapAcceptanceStruct = load(gapModelFile, gapModel);
+%     m = matfile(gapModelFile);
+%     GapAcceptanceStruct = m.(gapModel);
 %     GapAcceptanceModel = GapAcceptanceStruct.ClassificationSVM;
 %     Prob_GapAcceptanceModel = fitSVMPosterior(GapAcceptanceModel);   
 % end

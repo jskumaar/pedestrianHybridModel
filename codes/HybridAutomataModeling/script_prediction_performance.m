@@ -16,12 +16,12 @@
 
 %% setup
 % path
-p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
-p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
-p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
-% p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
-% p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
-% p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
+% p1 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\codes');
+% p2 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\datasets');
+% p3 = genpath('G:\My Drive\Research\Projects\pedestrianHybridModel\results');
+p1 = genpath('E:\jskumaar\pedestrianHybridModel\codes');
+p2 = genpath('E:\jskumaar\pedestrianHybridModel\datasets');
+p3 = genpath('E:\jskumaar\pedestrianHybridModel\results');
 addpath(p1)
 addpath(p2)
 addpath(p3)
@@ -33,7 +33,7 @@ img_size = size(intersection_img);
 % load('trial_9_oneScene_MHP_11_05_clean.mat');
 % load('trial_8_oneScene_CV_11_03_clean.mat');
 % load('trial_9_oneScene_HBase_11_05_clean.mat');
-%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%
 % configure model parameters
 script_configureMHP;
 % identify event indices
@@ -215,7 +215,7 @@ for sceneId = 1:1
                                         bestPredictedTrajectory_MHP = reshape(temp(3:2*(N_PredTimeSteps+1)),[2, N_PredTimeSteps])';
                                         bestPredError_MHP = vecnorm(GTTrajectory - bestPredictedTrajectory_MHP, 2, 2);
 
-                                        %%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
                                         % Base Hybrid predictions
                                         N_futures_HBase = size(pedPredictionsData_HBase{predictionTimeStep},1);  
                                        [~, mostProbablePredictionId_HBase] = max(pedPredictionsData_HBase{predictionTimeStep}(:,2));  %probability of the tracks is in the second column
@@ -223,13 +223,14 @@ for sceneId = 1:1
                                         for predId = 1:N_futures_HBase
                                             temp = pedPredictionsData_HBase{predictionTimeStep}(predId, :);
     
-                                            if mod([length(temp)/2 - 1],1) == 0
+%                                             if mod([length(temp)/2 - 1],1) == 0
                                                 temp = reshape(temp(3:end), [2, length(temp)/2 - 1])';
                                                 tempIsMHPUsed = true;
-                                            else
-                                                temp = reshape(temp(2:end), [2, floor(length(temp)/2) - 1])';
-                                                tempIsMHPUsed = false;
-                                            end
+%                                             else
+%                                                 temp = reshape(temp(2:end), [2, floor(length(temp)/2) - 1])';
+%                                                 tempIsMHPUsed = false;
+%                                             end
+
                                             mostProbablePredictedTrajectory_HBase(predId,:,:) = temp(1:N_PredTimeSteps, :);
                                         end
 
@@ -287,6 +288,7 @@ for sceneId = 1:1
 
                                         %% probabiistic error metrics
                                         type = 'Not_CV';
+
                                         [predictedProbability_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, likelihood_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_MHP{predictionTimeStep}, pedKFPredictionsData_MHP{predictionTimeStep}, Params, type);
                                         [predictedProbability_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, likelihood_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_HBase{predictionTimeStep}, pedKFPredictionsData_HBase{predictionTimeStep}, Params, type);
                                         type = 'CV';
@@ -295,6 +297,7 @@ for sceneId = 1:1
     %                                     % plot predicted probability
     %                                     plot_trajectory_on_image.m
     %                                                                         
+
                                         % predict1`ed probability of ground truth
                                         N = length(predictedProbability_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep});
                                         PP_MHP(index, 1:N) = predictedProbability_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
@@ -310,9 +313,7 @@ for sceneId = 1:1
                                         FSR_MHP(index, 1:N) = [ FSR_ratio_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
                                         FSR_HBase(index, 1:N) = [ FSR_ratio_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
                                         FSR_CV(index, 1:N) = [ FSR_ratio_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
-                                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-                                         
-                                        % update index number
+                                        %%%%%%%%%%%%%%%%%%%%%%%%%%%%                                        % update index number
                                             index = index+1;
                                             
                                              %% debug
