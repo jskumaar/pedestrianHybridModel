@@ -769,46 +769,46 @@ end
 % copy the cell to a matrix
 predictionTrajectoryMatrix = double(cell2mat(predictionTrajectory));
 % 
-%% debug
-%% plot predicted vehicle and pedestrian states
-% if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
-    if ~isempty(currentTSActiveCarData_copy)
-        for ii=1:size(currentTSActiveCarData_copy,1)
-            carPosPixels = int32([currentTSActiveCarData_copy{ii}.xCenter, currentTSActiveCarData_copy{ii}.yCenter]/(orthopxToMeter*scaleFactor));      
-            for zz=1:size(carPosPixels,1)
-                annotatedImageEnhanced(-carPosPixels(zz,2), carPosPixels(zz,1)) = 150;
-            end
-        end
-    end
-    
-    % predicted trajectory
-    for jj=1:size(trackletData,1)
-        pedPixels = int32([trackletData{jj}.xCenter, trackletData{jj}.yCenter]/(orthopxToMeter*scaleFactor));
-        for zz=1:size(pedPixels,1)
-            if int32(pedPixels(zz,1)) > 0 && int32(pedPixels(zz,2)) < 0
-                annotatedImageEnhanced(-pedPixels(zz,2), pedPixels(zz,1)) = 90;
-            end
-        end
-    end
-
-%     % constant velocity
-%     CVPixels = trajectory_CV/(orthopxToMeter*scaleFactor);
-%     for zz=1:size(CVPixels,1)
-%         if int32(CVPixels(zz,1)) > 0 && int32(CVPixels(zz,2)) < 0
-%             annotatedImageEnhanced(int32(-CVPixels(zz,2)), int32(CVPixels(zz,1))) = 125;
+% %% debug
+% %% plot predicted vehicle and pedestrian states
+% % if (pedPosPixels(1)>=100 && pedPosPixels(1)<=950 && pedPosPixels(2)>=-560 && pedPosPixels(2)<=-100)
+%     if ~isempty(currentTSActiveCarData_copy)
+%         for ii=1:size(currentTSActiveCarData_copy,1)
+%             carPosPixels = int32([currentTSActiveCarData_copy{ii}.xCenter, currentTSActiveCarData_copy{ii}.yCenter]/(orthopxToMeter*scaleFactor));      
+%             for zz=1:size(carPosPixels,1)
+%                 annotatedImageEnhanced(-carPosPixels(zz,2), carPosPixels(zz,1)) = 150;
+%             end
 %         end
 %     end
-    
-    % ground truth
-    GTPixels = trajectory_GT/(orthopxToMeter*scaleFactor);
-    for zz=1:size(GTPixels,1)
-        if int32(GTPixels(zz,1)) > 0 && int32(GTPixels(zz,2)) < 0
-            annotatedImageEnhanced(int32(-GTPixels(zz,2)), int32(GTPixels(zz,1))) = 255;  
-        end
-    end
-% end
-imshow(annotatedImageEnhanced);
-pause(0.3);
+%     
+%     % predicted trajectory
+%     for jj=1:size(trackletData,1)
+%         pedPixels = int32([trackletData{jj}.xCenter, trackletData{jj}.yCenter]/(orthopxToMeter*scaleFactor));
+%         for zz=1:size(pedPixels,1)
+%             if int32(pedPixels(zz,1)) > 0 && int32(pedPixels(zz,2)) < 0
+%                 annotatedImageEnhanced(-pedPixels(zz,2), pedPixels(zz,1)) = 90;
+%             end
+%         end
+%     end
+% 
+% %     % constant velocity
+% %     CVPixels = trajectory_CV/(orthopxToMeter*scaleFactor);
+% %     for zz=1:size(CVPixels,1)
+% %         if int32(CVPixels(zz,1)) > 0 && int32(CVPixels(zz,2)) < 0
+% %             annotatedImageEnhanced(int32(-CVPixels(zz,2)), int32(CVPixels(zz,1))) = 125;
+% %         end
+% %     end
+%     
+%     % ground truth
+%     GTPixels = trajectory_GT/(orthopxToMeter*scaleFactor);
+%     for zz=1:size(GTPixels,1)
+%         if int32(GTPixels(zz,1)) > 0 && int32(GTPixels(zz,2)) < 0
+%             annotatedImageEnhanced(int32(-GTPixels(zz,2)), int32(GTPixels(zz,1))) = 255;  
+%         end
+%     end
+% % end
+% imshow(annotatedImageEnhanced);
+% pause(0.3);
 
 % % find most likely trajectory
 % if ~isempty(trajectory_GT)

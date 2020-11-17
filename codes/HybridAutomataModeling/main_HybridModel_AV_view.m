@@ -17,7 +17,7 @@
 
 %% debug
 % clearvars -except predictedPedTraj_MHP GapFeaturesAllScenes CrossFeaturesAllScenes predPedIndex GapFeatureId CrossFeatureId flag predictionModel resetStates annotatedImageEnhanced formattedTracksData tracks tracksMetaData cw Prob_CrossIntentModelCar Prob_CrossIntentModelNoCar Prob_GapAcceptanceModel Params
-clearvars -except predictionModel resetStates annotatedImageEnhanced formattedTracksData tracks tracksMetaData cw Prob_CrossIntentModelCar Prob_CrossIntentModelNoCar Prob_GapAcceptanceModel Params
+clearvars -except annotatedImageEnhanced formattedTracksData tracks tracksMetaData cw Prob_CrossIntentModelCar Prob_CrossIntentModelNoCar Prob_GapAcceptanceModel Params
 
 %% %%%%%%%%%%%%%%%%%%%%  model setup  %%%%%%%%%%%%%%%%%%%%%
 % a) addpath of necessary directories
@@ -58,7 +58,7 @@ actualTimeStep_interest = indices_imp(5);
 %%%%%%%%%%%%%%%%%%%%%%%
 % prediction loop starts for all cars in the dataset
 %% debug
-for sceneId = 1: 1 
+for sceneId = 1:12
 % for sceneId = sceneId_interest
     % scene variables
     carMovingTracks = tracks{sceneId}.carMovingTracks;
@@ -145,7 +145,7 @@ for sceneId = 1: 1
                             predPedIndex = predPedIndex + 1;   % this index keeps track of all pedestrians from all scenes               
                             % initialize the pedestrian
                             newPedestrianStruct = struct('sceneId',sceneId,'carTrackId',carTrackId,'pedcarTrackId',pedIndexWithinScene,'timeStep',[],'data',cell(1,1),'kfData',cell(1,1),'predictionModel',[]);                        
-                            predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1} =  newPedestrianStruct;
+                            predictedPedTraj_CV{sceneId}{track_index,1}{pedIndexWithinScene,1} =  newPedestrianStruct;
                     end
                     %%%%%%%%%%%%%%%%%%%%%%%     
 
@@ -200,10 +200,10 @@ for sceneId = 1: 1
                         x=1;
                     end
                     % Save the predictions
-                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
-                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
-                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
-                    predictedPedTraj_HBase{sceneId}{track_index,1}{pedIndexWithinScene,1}.predictionModel(end+1,1) = predModelForTimeStep;
+                    predictedPedTraj_CV{sceneId}{track_index,1}{pedIndexWithinScene,1}.timeStep(end+1,1) = pedTrackTimeStep;
+                    predictedPedTraj_CV{sceneId}{track_index,1}{pedIndexWithinScene,1}.data{end+1,1} = pedPredictions;
+                    predictedPedTraj_CV{sceneId}{track_index,1}{pedIndexWithinScene,1}.kfData{end+1,1} = pedKFpredictions;
+                    predictedPedTraj_CV{sceneId}{track_index,1}{pedIndexWithinScene,1}.predictionModel(end+1,1) = predModelForTimeStep;
 %                     end % debug end 
                 end % end of all pedestrians
                      

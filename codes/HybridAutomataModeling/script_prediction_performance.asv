@@ -90,7 +90,7 @@ for sceneId = 1:1
     N_car = size(predictedPedTraj_HBase{sceneId},1);
     % for every ego-car
     %% debug
-    for car_index = 42:N_car
+    for car_index = 1:N_car
 %     for car_index = car_index_interest
         % if there is a car
         if ~isempty(predictedPedTraj_MHP{sceneId}{car_index})
@@ -240,7 +240,7 @@ for sceneId = 1:1
                                         mostProbablePredictedTrajectory_CV = reshape(mostProbablePredictedTrajectory_CV{1}(3:2*(N_PredTimeSteps+1)), [2, N_PredTimeSteps])';
                                         % if the MHP was different than
                                         % constant velocity
-                                        if N_futures_MHP>1  && N_PredTimeSteps >=1
+                                         if N_futures_MHP>1  && N_PredTimeSteps >=1
                                             % trajectory error
                                             tempError_MHP = GTTrajectory - reshape(mostProbablePredictedTrajectory_MHP(mostProbablePredictionId_MHP,1:N_PredTimeSteps,:),[N_PredTimeSteps,2]);
                                             predError_MHP = vecnorm(tempError_MHP, 2, 2);
@@ -287,37 +287,48 @@ for sceneId = 1:1
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
                                         %% probabiistic error metrics
+%                                         type = 'Not_CV';
 %                                         [predictedProbability_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, likelihood_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_MHP{predictionTimeStep}, pedKFPredictionsData_MHP{predictionTimeStep}, Params, type);
-%                                   
-                                        %% probabiistic error metrics
+%                                         [predictedProbability_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, likelihood_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_HBase{predictionTimeStep}, pedKFPredictionsData_HBase{predictionTimeStep}, Params, type);
+%                                         type = 'CV';
+%                                         [predictedProbability_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep},  likelihood_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_CV{predictionTimeStep}, pedKFPredictionsData_CV{predictionTimeStep}, Params, type);
+                                        
+                                                                                %% probabiistic error metrics
                                         type = 'Not_CV';    
                                         [predictedProbability_MHP, likelihood_MHP, FSR_ratio_MHP, prob2D_MHP] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_MHP{predictionTimeStep}, pedKFPredictionsData_MHP{predictionTimeStep}, Params, type);
-                                        [predictedProbability_HBase, likelihood_HBase, FSR_ratio_HBase, prob2D_HBase] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_HBase{predictionTimeStep}, pedKFPredictionsData_HBase{predictionTimeStep}, Params, type);
+                                        [predictedProbability_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, likelihood_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_HBase{predictionTimeStep}, pedKFPredictionsData_HBase{predictionTimeStep}, Params, type);
                                         type = 'CV';
-                                        [predictedProbability_CV,  likelihood_CV, FSR_ratio_CV, prob2D_CV] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_CV{predictionTimeStep}, pedKFPredictionsData_CV{predictionTimeStep}, Params, type);
+                                        [predictedProbability_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep},  likelihood_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, FSR_ratio_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}, prob2D_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}] = func_probMetrics(GT_currentPos, GTTrajectory, pedPredictionsData_CV{predictionTimeStep}, pedKFPredictionsData_CV{predictionTimeStep}, Params, type);
                                         
+
+
     %                                     % plot predicted probability
     %                                     plot_trajectory_on_image.m
     %                                                                         
+
                                         % predict1`ed probability of ground truth
-                                        N = length(predictedProbability_MHP);
-                                        PP_MHP(index, 1:N) = predictedProbability_MHP;
-                                        PP_HBase(index, 1:N) = predictedProbability_HBase;
-                                        PP_CV(index, 1:N) = predictedProbability_CV;
+                                        N = length(predictedProbability_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep});
+                                        PP_MHP(index, 1:N) = predictedProbability_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
+                                        PP_HBase(index, 1:N) = predictedProbability_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
+                                        PP_CV(index, 1:N) = predictedProbability_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep};
                                         % likelihood of ground truth being among the
                                         % predictions
-                                        LL_MHP(index, 1:N) =  likelihood_MHP;
-                                        LL_HBase(index, 1:N) =  likelihood_HBase;
-                                        LL_CV(index, 1:N) = likelihood_CV;
+                                        LL_MHP(index, 1:N) = [ likelihood_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
+                                        LL_HBase(index, 1:N) = [ likelihood_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
+                                        LL_CV(index, 1:N) = [ likelihood_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
                                         % ratio between non-zero predictions and Forward reachable
                                         % set 
-                                        FSR_MHP(index, 1:N) = FSR_ratio_MHP;
-                                        FSR_HBase(index, 1:N) =  FSR_ratio_HBase;
-                                        FSR_CV(index, 1:N) =  FSR_ratio_CV;
+                                        FSR_MHP(index, 1:N) = [ FSR_ratio_MHP{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
+                                        FSR_HBase(index, 1:N) = [ FSR_ratio_HBase{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
+                                        FSR_CV(index, 1:N) = [ FSR_ratio_CV{sceneId}{car_index}{pedTrackId}{predictionTimeStep}];
                                         %%%%%%%%%%%%%%%%%%%%%%%%%%%%                                        % update index number
-                                        index = index+1;
+                                            index = index+1;
                                             
-                                        end % if there is a GT reference
+                                             %% debug
+                                                if index==30
+                                                    x=1;
+                                                end
+                                         end % if there is a GT reference
                                      end
 
                                 end            
@@ -352,8 +363,8 @@ MHP_bad_FDE_sorted = MHP_bad_FDE_performance_indices(idx2,:);
 
 [~,idx2] = sortrows(MHP_good_bestADE_performance_indices(:,6),'descend');
 MHP_good_bestADE_sorted = MHP_good_bestADE_performance_indices(idx2,:);
-% [~,idx] = sortrows(MHP_bad_bestADE_performance_indices(:,6),'descend');
-% MHP_bad_bestADE_sorted = MHP_bad_bestADE_performance_indices(idx,:);
+[~,idx] = sortrows(MHP_bad_bestADE_performance_indices(:,6),'descend');
+MHP_bad_bestADE_sorted = MHP_bad_bestADE_performance_indices(idx,:);
 
 %%%%%%%%%%%%
 MHP_bad_ADE_sorted_filtered = MHP_bad_ADE_sorted;

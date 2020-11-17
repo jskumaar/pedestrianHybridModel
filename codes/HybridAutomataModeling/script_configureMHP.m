@@ -5,8 +5,8 @@ dataset="inD";
 
 % choose the model
 % predictionModel = "MultipleHybridPedestrian";
-predictionModel = "BaselineHybrid";
-% predictionModel = "ConstantVelocity";
+% predictionModel = "BaselineHybrid";
+predictionModel = "ConstantVelocity";
 
 % choose the sub-models
 gapModelFile = 'GapAcceptance_inD_8Features_FGaussianSVM_BootStrappedTwice_v2.mat';
