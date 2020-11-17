@@ -124,8 +124,8 @@ if ~flag.outOfPlay
        Region(end) = "OutOfRange";
        onRoad = false;
        posPixels = int32([xCenterPix(end), yCenterPix(end)]);
-       if posPixels(1) > 0 && posPixels(2) < 0
-           % current region of pedestrian
+       if posPixels(1) > 0 && posPixels(1)<= 1170 && posPixels(2) < 0 && posPixels(2) >= -780
+           % current region of pedestrian 
             if (annotatedImage_enhanced(-posPixels(2), posPixels(1))==200)
                Region(end) = "Crosswalk_Marked";
                onRoad = true;

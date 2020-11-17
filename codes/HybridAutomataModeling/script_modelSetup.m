@@ -1,6 +1,6 @@
 %% This script sets up the model based on the configuration
 
-% 1) Load the SVM models
+% % 1) Load the SVM models
 % if strcmp(predictionModel,"MultipleHybridPedestrian")
 %     % load the gap acceptance model
 %     m = matfile(gapModelFile);
